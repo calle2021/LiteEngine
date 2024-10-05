@@ -1,2 +1,2 @@
-# PXL
+# PIXL
 A c++ game engine
