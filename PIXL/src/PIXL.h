@@ -1,5 +1,5 @@
 #pragma once
 
-namespace PXL {
+namespace PIXL {
 	void Welcome();
 }

@@ -1,7 +1,7 @@
-#include <PXL.h>
+#include <PIXL.h>
 
 int main()
 {
-	PXL::Welcome();
+	PIXL::Welcome();
 	return 0;
 }
