@@ -1,5 +1,3 @@
 #pragma once
-
-namespace PIXL {
-	void Welcome();
-}
+#include "PIXL/PIXLSample.h"
+#include "PIXL/WinApplication.h"

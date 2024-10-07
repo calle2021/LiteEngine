@@ -18,9 +18,24 @@
     <ClInclude Include="src\PIXL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\pixlpch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PIXL\WinApplication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PIXL\PIXLSample.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\PIXL.cpp">
+    <ClCompile Include="src\pixlpch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PIXL\WinApplication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PIXL\PIXLSample.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
