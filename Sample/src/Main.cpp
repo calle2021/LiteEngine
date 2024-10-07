@@ -10,8 +10,10 @@ int WINAPI wWinMain(
     _In_ int nShowCmd
 )
 {
-    Sample sample;
-    return PIXL::WinApplication::Run(&sample);
+    Sample* sample = new Sample();
+    int res = PIXL::WinApplication::Run(sample);
+    delete sample;
+    return res;
 }
 #else
 #error "Only support Windows."
