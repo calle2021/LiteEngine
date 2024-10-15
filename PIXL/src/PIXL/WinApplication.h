@@ -1,12 +1,21 @@
 #pragma once
+#include "windows.h"
 #include "PIXLSample.h"
 
-class PIXLSample;
-
 namespace PIXL {
+
+	struct WinArgs
+	{
+		HINSTANCE hins;
+		HINSTANCE pins;
+		LPWSTR cmd;
+		int showcmd;
+	};
+
 	class WinApplication
 	{
 	public:
-		static int Run(PIXL::PIXLSample* pixlSample);
+		static int Run(PIXL::PIXLSample* pixlSample, WinArgs args);
 	};
+
 }

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "PIXL.h"
 #include "Sample.h"
 
@@ -10,8 +9,12 @@ int WINAPI wWinMain(
     _In_ int nShowCmd
 )
 {
-    Sample* sample = new Sample();
-    int res = PIXL::WinApplication::Run(sample);
+#ifdef _DEBUG
+    PIXL::CONSOLE();
+    //PIXL::Logger::Init();
+#endif
+    auto sample = new Sample();
+    int res = PIXL::WinApplication::Run(sample, {hInstance, hPrevInstance, lpCmdLine, nShowCmd});
     delete sample;
     return res;
 }

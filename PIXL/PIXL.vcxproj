@@ -59,7 +59,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)\PIXL\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\PIXL\src;$(SolutionDir)\PIXL\external\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pixlpch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -78,7 +78,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)\PIXL\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\PIXL\src;$(SolutionDir)\PIXL\external\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pixlpch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -90,12 +90,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\PIXL\Logger.h" />
     <ClInclude Include="src\PIXL.h" />
     <ClInclude Include="src\pixlpch.h" />
     <ClInclude Include="src\PIXL\PIXLSample.h" />
+    <ClInclude Include="src\PIXL\Utility.h" />
     <ClInclude Include="src\PIXL\WinApplication.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\PIXL\Logger.cpp" />
     <ClCompile Include="src\pixlpch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

@@ -1,9 +1,14 @@
+/*Windows*/
 #ifdef _WIN32
 #include <Windows.h>
 #endif
 
-/*C++*/
+/*C++ stuff*/
 #include <stdio.h>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
+
 
 /*External*/
-#include <spdlog.h>
+//#include <spdlog\spdlog.h>
