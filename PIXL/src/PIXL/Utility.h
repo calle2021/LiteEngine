@@ -1,5 +1,7 @@
 #pragma once
-#include "Logger.h"
+#include <windows.h>
+#include <iostream>
+
 namespace PIXL {
 #ifdef _DEBUG
     #ifdef _WIN32

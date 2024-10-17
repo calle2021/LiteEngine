@@ -15,7 +15,7 @@ namespace PIXL {
 	class WinApplication
 	{
 	public:
-		static int Run(PIXL::PIXLSample* pixlSample, WinArgs args);
+		static int Run(PIXL::PIXLSample* sample, WinArgs args);
 	};
 
 }

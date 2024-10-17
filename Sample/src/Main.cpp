@@ -3,19 +3,20 @@
 
 #ifdef _WIN32
 int WINAPI wWinMain(
-    _In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPWSTR lpCmdLine,
-    _In_ int nShowCmd
+    _In_ HINSTANCE Hinstance,
+    _In_opt_ HINSTANCE PrevInstance,
+    _In_ LPWSTR CmdLine,
+    _In_ int ShowCmd
 )
 {
 #ifdef _DEBUG
     PIXL::CONSOLE();
-    //PIXL::Logger::Init();
+    PIXL::Logger::Init();
+    PIXL_APP_INFO("Hello from App!");
 #endif
-    auto sample = new Sample();
-    int res = PIXL::WinApplication::Run(sample, {hInstance, hPrevInstance, lpCmdLine, nShowCmd});
-    delete sample;
+    auto pixl_sample = new Sample();
+    int res = PIXL::WinApplication::Run(pixl_sample, { Hinstance, PrevInstance, CmdLine, ShowCmd });
+    delete pixl_sample;
     return res;
 }
 #else
