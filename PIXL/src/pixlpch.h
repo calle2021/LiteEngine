@@ -9,6 +9,5 @@
 #include <sstream>
 #include <stdexcept>
 
-
-/*External*/
-//#include <spdlog\spdlog.h>
+/*Internal*/
+#include "PIXL/Logger.h"

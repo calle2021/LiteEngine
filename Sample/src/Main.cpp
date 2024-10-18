@@ -3,10 +3,10 @@
 
 #ifdef _WIN32
 int WINAPI wWinMain(
-    _In_ HINSTANCE Hinstance,
-    _In_opt_ HINSTANCE PrevInstance,
-    _In_ LPWSTR CmdLine,
-    _In_ int ShowCmd
+    _In_ HINSTANCE hins,
+    _In_opt_ HINSTANCE pins,
+    _In_ LPWSTR cmdline,
+    _In_ int showcmd
 )
 {
 #ifdef _DEBUG
@@ -15,7 +15,7 @@ int WINAPI wWinMain(
     PIXL_APP_INFO("Welcome to Sample!");
 #endif
     auto pixl_sample = new Sample();
-    int res = PIXL::WinApplication::Run(pixl_sample, { Hinstance, PrevInstance, CmdLine, ShowCmd });
+    int res = PIXL::WinApplication::Run(pixl_sample, { hins, pins, cmdline, showcmd });
     delete pixl_sample;
     return res;
 }

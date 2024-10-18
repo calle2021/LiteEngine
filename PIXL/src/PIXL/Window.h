@@ -5,10 +5,10 @@ namespace PIXL {
 	class Window
 	{
 	public:
-		static int Run(WinArgs args);
+		static void Init(WinArgs args);
 		static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 	private:
-		static HWND s_hwnd;
+		static HWND hwnd;
 	};
 
 }

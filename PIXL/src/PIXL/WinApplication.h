@@ -8,6 +8,8 @@ namespace PIXL {
 	{
 	public:
 		static int Run(PIXL::PIXLSample* sample, WinArgs args);
+	private:
+
 	};
 
 }
