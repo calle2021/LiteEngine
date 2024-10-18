@@ -33,6 +33,9 @@
     <ClInclude Include="src\PIXL\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\PIXL\Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pixlpch.cpp">
@@ -41,10 +44,10 @@
     <ClCompile Include="src\PIXL\WinApplication.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\PIXL\PIXLSample.cpp">
+    <ClCompile Include="src\PIXL\Logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\PIXL\Logger.cpp">
+    <ClCompile Include="src\PIXL\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

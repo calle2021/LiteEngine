@@ -16,10 +16,10 @@ namespace PIXL{
 }
 
 #define PIXL_CORE_TRACE(...)			::PIXL::Logger::GetCoreLogger()->trace(__VA_ARGS__)
-#define PIXL_CORE_INFO(...)			::PIXL::Logger::GetCoreLogger()->info(__VA_ARGS__)
-#define PIXL_CORE_WARN(...)			::PIXL::Logger::GetCoreLogger()->warn(__VA_ARGS__)
+#define PIXL_CORE_INFO(...)				::PIXL::Logger::GetCoreLogger()->info(__VA_ARGS__)
+#define PIXL_CORE_WARN(...)				::PIXL::Logger::GetCoreLogger()->warn(__VA_ARGS__)
 #define PIXL_CORE_ERROR(...)			::PIXL::Logger::GetCoreLogger()->error(__VA_ARGS__)
-#define PIXL_CORE_CRITICAL(...)		::PIXL::Logger::GetCoreLogger()->critical(__VA_ARGS__)
+#define PIXL_CORE_CRITICAL(...)			::PIXL::Logger::GetCoreLogger()->critical(__VA_ARGS__)
 
 #define PIXL_APP_TRACE(...)				::PIXL::Logger::GetClientLogger()->trace(__VA_ARGS__)
 #define PIXL_APP_INFO(...)				::PIXL::Logger::GetClientLogger()->info(__VA_ARGS__)

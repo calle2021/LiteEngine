@@ -96,6 +96,7 @@
     <ClInclude Include="src\PIXL\PIXLSample.h" />
     <ClInclude Include="src\PIXL\Utility.h" />
     <ClInclude Include="src\PIXL\WinApplication.h" />
+    <ClInclude Include="src\PIXL\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PIXL\Logger.cpp" />
@@ -103,8 +104,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\PIXL\PIXLSample.cpp" />
     <ClCompile Include="src\PIXL\WinApplication.cpp" />
+    <ClCompile Include="src\PIXL\Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

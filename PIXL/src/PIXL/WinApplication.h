@@ -1,17 +1,9 @@
 #pragma once
 #include "windows.h"
 #include "PIXLSample.h"
+#include "Utility.h"
 
 namespace PIXL {
-
-	struct WinArgs
-	{
-		HINSTANCE hins;
-		HINSTANCE pins;
-		LPWSTR cmd;
-		int showcmd;
-	};
-
 	class WinApplication
 	{
 	public:

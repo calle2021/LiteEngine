@@ -12,7 +12,7 @@ int WINAPI wWinMain(
 #ifdef _DEBUG
     PIXL::CONSOLE();
     PIXL::Logger::Init();
-    PIXL_APP_INFO("Hello from App!");
+    PIXL_APP_INFO("Welcome to Sample!");
 #endif
     auto pixl_sample = new Sample();
     int res = PIXL::WinApplication::Run(pixl_sample, { Hinstance, PrevInstance, CmdLine, ShowCmd });
