@@ -36,6 +36,9 @@
     <ClInclude Include="src\PIXL\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\PIXL\PrecisionClock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pixlpch.cpp">
@@ -48,6 +51,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PIXL\Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PIXL\PrecisionClock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

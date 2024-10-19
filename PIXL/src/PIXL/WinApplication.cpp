@@ -1,6 +1,7 @@
 #include "pixlpch.h"
 #include "WinApplication.h"
 #include "Window.h"
+#include "PrecisionClock.h"
 
 namespace PIXL {
 	int PIXL::WinApplication::Run(PIXL::PIXLSample* pixlSample, WinArgs args)
@@ -8,6 +9,7 @@ namespace PIXL {
 		PIXL_CORE_INFO("Welcome to PIXL!");
 
 		PIXL::Window::Init(args);
+		PIXL::PrecisionClock::Init();
 
 		MSG msg = {};
 		while (msg.message != WM_QUIT) {
@@ -15,6 +17,7 @@ namespace PIXL {
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
+			double dt = PIXL::PrecisionClock::GetDeltaTime();
 		}
 		return static_cast<int>(msg.wParam);
 	}
