@@ -90,23 +90,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\PIXL\EventSystem.h" />
     <ClInclude Include="src\PIXL\Logger.h" />
     <ClInclude Include="src\PIXL.h" />
     <ClInclude Include="src\pixlpch.h" />
     <ClInclude Include="src\PIXL\PIXLSample.h" />
     <ClInclude Include="src\PIXL\PrecisionClock.h" />
     <ClInclude Include="src\PIXL\Utility.h" />
-    <ClInclude Include="src\PIXL\WinApplication.h" />
+    <ClInclude Include="src\PIXL\Application.h" />
+    <ClInclude Include="src\PIXL\Platform\Windows\WinWindow.h" />
     <ClInclude Include="src\PIXL\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\PIXL\Application.cpp" />
+    <ClCompile Include="src\PIXL\EventSystem.cpp" />
     <ClCompile Include="src\PIXL\Logger.cpp" />
     <ClCompile Include="src\pixlpch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\PIXL\PrecisionClock.cpp" />
-    <ClCompile Include="src\PIXL\WinApplication.cpp" />
+    <ClCompile Include="src\PIXL\Platform\Windows\WinWindow.cpp" />
     <ClCompile Include="src\PIXL\Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

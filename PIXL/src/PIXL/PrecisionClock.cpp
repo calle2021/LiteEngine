@@ -16,11 +16,8 @@ namespace PIXL {
 	{
 		LARGE_INTEGER currTick;
 		QueryPerformanceCounter(&currTick);
-
 		double deltaTime = (currTick.QuadPart - lastTick.QuadPart) * secPerTick;
-
 		lastTick = currTick;
-
 		return deltaTime;
 	}
 }

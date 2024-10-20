@@ -1,14 +1,23 @@
 #pragma once
-#include "Utility.h"
+#include "PIXL/Utility.h"
 
 namespace PIXL {
-	class Window
+	struct WindowProps
 	{
-	public:
-		static void Init(WinArgs args);
-		static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	private:
-		static HWND hwnd;
+		const wchar_t* title;
+		unsigned int width;
+		unsigned int height;
+		WindowProps(const wchar_t* t = L"PIXL Window",
+			unsigned int w = 1280,
+			unsigned int h = 720)
+			: title(t), width(w), height(h)
+		{
+		}
 	};
-
+	class Window {
+	public:
+		virtual ~Window() = default;
+		//virtual void OnUpdate() = 0;
+		static std::unique_ptr<Window> Create(WinArgs args, const WindowProps& props = WindowProps());
+	};
 }
