@@ -1,5 +1,5 @@
 #pragma once
-#include "PIXLSample.h"
+#include "GameApp.h"
 #include "Utility.h"
 #include "Window.h"
 
@@ -7,7 +7,7 @@ namespace PIXL {
 	class Application
 	{
 	public:
-		static int Run(PIXL::PIXLSample* sample, WinArgs args);
+		static int Run(PIXL::GameApp game, WinArgs args);
 	private:
 		static std::unique_ptr<Window> m_window;
 	};

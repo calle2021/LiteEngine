@@ -5,7 +5,12 @@
 namespace PIXL {
 	std::unique_ptr<Window> Application::m_window;
 
-	int Application::Run(PIXL::PIXLSample* sample, WinArgs winargs) {
+	int Application::Run(PIXL::GameApp game, WinArgs winargs) {
+
+#ifdef _DEBUG
+		CONSOLE();
+		Logger::Init();
+#endif
 		PIXL_CORE_INFO("Welcome to PIXL!");
 
 		m_window = std::unique_ptr<Window>(Window::Create(winargs));
@@ -21,5 +26,4 @@ namespace PIXL {
 		}
 		return static_cast<int>(msg.wParam);
 	}
-
 }

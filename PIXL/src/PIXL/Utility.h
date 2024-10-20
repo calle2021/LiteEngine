@@ -9,8 +9,6 @@ namespace PIXL {
     struct WinArgs
     {
         HINSTANCE hins;
-        HINSTANCE pins;
-        LPWSTR cmd;
         int showcmd;
     };
 

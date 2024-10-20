@@ -24,7 +24,7 @@
     <ClInclude Include="src\PIXL\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\PIXL\PIXLSample.h">
+    <ClInclude Include="src\PIXL\GameApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\PIXL\Utility.h">
@@ -43,6 +43,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\PIXL\Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PIXL\Core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
