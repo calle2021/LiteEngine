@@ -7,5 +7,5 @@ public:
     }
 };
 
-CREATE_APPLICATION(Game);
+LAUNCH(Game);
 
