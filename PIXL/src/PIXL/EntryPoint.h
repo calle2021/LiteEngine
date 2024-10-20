@@ -12,6 +12,6 @@
     int main(int argc, char *argv[]) \
     { \
         PIXL::Application::Init();
-        return PIXL::Application::Run(game(), {hins, showcmd}); \
+        return PIXL::Application::Run(game()); \
     }
 #endif
