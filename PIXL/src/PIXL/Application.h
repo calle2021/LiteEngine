@@ -7,8 +7,10 @@ namespace PIXL {
 	class Application
 	{
 	public:
-		static int Run(PIXL::GameApp game, WinArgs args);
+		static void Init();
+		static void Init(WinArgs winargs); // Init for windows
+		static int Run(PIXL::GameApp game);
 	private:
-		static std::unique_ptr<Window> m_window;
+	    static std::unique_ptr<Window> m_window;
 	};
 }

@@ -90,7 +90,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\PIXL\Core.h" />
+    <ClInclude Include="src\PIXL\EntryPoint.h" />
     <ClInclude Include="src\PIXL\EventSystem.h" />
     <ClInclude Include="src\PIXL\Logger.h" />
     <ClInclude Include="src\PIXL.h" />

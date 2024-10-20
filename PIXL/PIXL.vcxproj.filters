@@ -45,7 +45,7 @@
     <ClInclude Include="src\PIXL\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\PIXL\Core.h">
+    <ClInclude Include="src\PIXL\EntryPoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

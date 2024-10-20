@@ -19,7 +19,7 @@ namespace PIXL {
         FILE* fp;
         freopen_s(&fp, "CONOUT$", "w", stdout);
     }
-    #define CONSOLE() AllocateConsole()
+    #define ALLOCATE_CONSOLE() AllocateConsole()
 #endif
 #endif
 }

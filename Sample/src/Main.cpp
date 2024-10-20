@@ -6,8 +6,6 @@ public:
     {
     }
 };
-#ifdef _WIN32
+
 CREATE_APPLICATION(Game);
-#else
-#error "Only support Windows"
-#endif
+

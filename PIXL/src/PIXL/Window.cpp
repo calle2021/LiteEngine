@@ -10,7 +10,7 @@ namespace PIXL {
 #ifdef _WIN32
 		return std::make_unique<Window>(WinWindow(winargs, props));
 #else
-		PIXL_CORE_WARN("Unkown platform.");
+		PIXL_CORE_ERROR("Unkown platform.");
 		return nullptr;
 #endif
 	}
