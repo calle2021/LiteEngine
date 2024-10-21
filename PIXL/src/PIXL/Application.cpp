@@ -14,8 +14,8 @@ namespace PIXL {
 
 #ifdef _DEBUG
 		ALLOCATE_CONSOLE();
-		Logger::Init();
 #endif
+		Logger::Init();
 		PIXL_CORE_INFO("Welcome to PIXL!");
 		m_window = std::unique_ptr<Window>(Window::Create(winargs));
 		PrecisionClock::Init();
@@ -23,15 +23,29 @@ namespace PIXL {
 
 	int PIXL::Application::Run(PIXL::GameApp game) 
 	{
-		MSG msg = {};
-		while (msg.message != WM_QUIT) {
-			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-			double dt = PrecisionClock::GetDeltaTime();
+
+		while (true) {
+			if (ProcessEvents())
+				break;
+			double dt = PIXL::PrecisionClock::GetDeltaTime();
+			PIXL_CORE_INFO(dt);
 		}
-		return static_cast<int>(msg.wParam);
+		// Shutdown
+		return 0;
+	}
+
+	bool Application::ProcessEvents()
+	{
+		MSG msg = {};
+		bool quit = false;
+		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+			if (msg.message == WM_QUIT)
+				quit = true;
+		}
+		return quit;
 	}
 
 }
