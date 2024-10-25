@@ -8,9 +8,7 @@ namespace PIXL {
 	{
 	public:
 		static void Init();
-		static void Init(WinArgs winargs); // Init for windows
-		static int Run(PIXL::GameApp game);
-		static bool ProcessEvents();
+		static int Run(GameApp game);
 	private:
 	    static std::unique_ptr<Window> m_window;
 	};

@@ -5,10 +5,10 @@
 #include "PIXL/Platform/Windows/WinWindow.h"
 #endif
 namespace PIXL {
-	std::unique_ptr<Window> Window::Create(WinArgs winargs, const WindowProps& props)
+	std::unique_ptr<Window> Window::Create(const WindowProps& props)
 	{
 #ifdef _WIN32
-		return std::make_unique<Window>(WinWindow(winargs, props));
+		return std::unique_ptr<Window>(new WinWindow(props));
 #else
 		PIXL_CORE_ERROR("Unkown platform.");
 		return nullptr;

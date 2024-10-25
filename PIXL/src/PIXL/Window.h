@@ -17,7 +17,7 @@ namespace PIXL {
 	class Window {
 	public:
 		virtual ~Window() = default;
-		//virtual void OnUpdate() = 0;
-		static std::unique_ptr<Window> Create(WinArgs args, const WindowProps& props = WindowProps());
+		virtual bool Update() = 0;
+		static std::unique_ptr<Window> Create(const WindowProps& props = WindowProps());
 	};
 }
