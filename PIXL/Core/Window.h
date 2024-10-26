@@ -1,5 +1,5 @@
 #pragma once
-#include "GameSystem/Utility.h"
+#include "Core/Utility.h"
 
 namespace GameSystem {
 	struct WindowProps

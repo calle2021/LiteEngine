@@ -10,4 +10,4 @@
 #include <stdexcept>
 
 /*Internal*/
-#include "GameSystem/Logger.h"
+#include "Core/Logger.h"

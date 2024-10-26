@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "Application.h"
-#include "GameSystem/PrecisionClock.h"
+#include "Core/Application.h"
+#include "Core/PrecisionClock.h"
 
 namespace GameSystem {
 	std::unique_ptr<Window> Application::m_window;

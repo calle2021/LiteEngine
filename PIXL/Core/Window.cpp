@@ -2,7 +2,7 @@
 #include "Window.h"
 
 #ifdef _WIN32
-#include "GameSystem/Platform/Windows/WinWindow.h"
+#include "Core/Platform/Windows/WinWindow.h"
 #endif
 namespace GameSystem {
 	std::unique_ptr<Window> Window::Create(const WindowProps& props)

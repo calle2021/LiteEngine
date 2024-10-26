@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "WinWindow.h"
-#include "GameSystem/EntryPoint.h"
 
 namespace GameSystem {
 

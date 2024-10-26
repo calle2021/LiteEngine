@@ -15,54 +15,54 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\GameSystem.h">
+    <ClInclude Include="GameSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\pch.h">
+    <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\GameSystem\Application.h">
+    <ClInclude Include="Core\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\GameSystem\GameApp.h">
+    <ClInclude Include="Core\GameApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\GameSystem\Utility.h">
+    <ClInclude Include="Core\Utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\GameSystem\Logger.h">
+    <ClInclude Include="Core\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\GameSystem\Platform\Windows\WinWindow.h">
+    <ClInclude Include="Core\Platform\Windows\WinWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\GameSystem\PrecisionClock.h">
+    <ClInclude Include="Core\PrecisionClock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\GameSystem\Window.h">
+    <ClInclude Include="Core\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\GameSystem\EntryPoint.h">
+    <ClInclude Include="Core\EntryPoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\pch.cpp">
+    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\GameSystem\Logger.cpp">
+    <ClCompile Include="Core\Logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\GameSystem\Platform\Windows\WinWindow.cpp">
+    <ClCompile Include="Core\Platform\Windows\WinWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\GameSystem\PrecisionClock.cpp">
+    <ClCompile Include="Core\PrecisionClock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\GameSystem\Application.cpp">
+    <ClCompile Include="Core\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\GameSystem\Window.cpp">
+    <ClCompile Include="Core\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
