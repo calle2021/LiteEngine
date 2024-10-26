@@ -1,6 +1,6 @@
-#include "PIXL.h"
+#include "GameSystem.h"
 
-class Game : public PIXL::GameApp {
+class Game : public GameSystem::GameApp {
 public:
     Game() 
     {

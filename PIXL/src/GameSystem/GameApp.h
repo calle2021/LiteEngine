@@ -1,6 +1,6 @@
 #pragma once
 
-namespace PIXL {
+namespace GameSystem {
 	class GameApp
 	{
 	public:

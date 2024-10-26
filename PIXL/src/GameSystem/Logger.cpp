@@ -1,12 +1,12 @@
-#include "pixlpch.h"
+#include "pch.h"
 #include "Logger.h"
 
 
-namespace PIXL {
+namespace GameSystem {
 	std::shared_ptr<spdlog::logger> Logger::s_CoreLogger;
 	std::shared_ptr<spdlog::logger> Logger::s_ClientLogger;
 
-	void PIXL::Logger::Init()
+	void GameSystem::Logger::Init()
 	{
 		s_CoreLogger = spdlog::stdout_color_mt("PIXL_CORE");
 		s_CoreLogger->set_level(spdlog::level::trace);

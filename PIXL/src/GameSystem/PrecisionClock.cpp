@@ -1,7 +1,7 @@
-#include "pixlpch.h"
+#include "pch.h"
 #include "PrecisionClock.h"
 
-namespace PIXL {
+namespace GameSystem {
 	double PrecisionClock::secPerTick;
 	LARGE_INTEGER PrecisionClock::freq;
 	LARGE_INTEGER PrecisionClock::lastTick;

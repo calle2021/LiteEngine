@@ -3,7 +3,7 @@
 #include "Utility.h"
 #include "Window.h"
 
-namespace PIXL {
+namespace GameSystem {
 	class Application
 	{
 	public:

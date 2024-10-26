@@ -1,7 +1,7 @@
 #pragma once
-#include "PIXL/Window.h"
+#include "GameSystem/Window.h"
 
-namespace PIXL {
+namespace GameSystem {
 	class WinWindow : public Window
 	{
 	public:

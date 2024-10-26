@@ -1,10 +1,10 @@
-#include "pixlpch.h"
+#include "pch.h"
 #include "Window.h"
 
 #ifdef _WIN32
-#include "PIXL/Platform/Windows/WinWindow.h"
+#include "GameSystem/Platform/Windows/WinWindow.h"
 #endif
-namespace PIXL {
+namespace GameSystem {
 	std::unique_ptr<Window> Window::Create(const WindowProps& props)
 	{
 #ifdef _WIN32

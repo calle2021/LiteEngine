@@ -1,8 +1,8 @@
-#include "pixlpch.h"
+#include "pch.h"
 #include "WinWindow.h"
-#include "PIXL/EntryPoint.h"
+#include "GameSystem/EntryPoint.h"
 
-namespace PIXL {
+namespace GameSystem {
 
     WinWindow::WinWindow(const WindowProps& props) : hwnd(nullptr)
     {

@@ -1,7 +1,7 @@
 #pragma once
-#include "PIXL/Utility.h"
+#include "GameSystem/Utility.h"
 
-namespace PIXL {
+namespace GameSystem {
 	struct WindowProps
 	{
 		const wchar_t* title;
