@@ -1,1 +1,1 @@
-# Game Suite
+# Exilize Game Suite
