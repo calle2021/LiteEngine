@@ -1,2 +1,2 @@
-# Game
-A c++ game engine
+# Exilize Ventures
+Game suite for exilize ventures
