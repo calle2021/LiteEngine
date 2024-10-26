@@ -5,7 +5,7 @@ namespace GameSystem {
 	std::shared_ptr<spdlog::logger> Logger::s_CoreLogger;
 	std::shared_ptr<spdlog::logger> Logger::s_ClientLogger;
 
-	void GameSystem::Logger::Init()
+	void Logger::Init()
 	{
 		s_CoreLogger = spdlog::stdout_color_mt("CORE");
 		s_CoreLogger->set_level(spdlog::level::trace);

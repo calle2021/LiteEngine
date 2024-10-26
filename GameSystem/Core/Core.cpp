@@ -1,29 +1,28 @@
 #include "pch.h"
-#include "Core/Application.h"
+#include "Core/Core.h"
 #include "Core/PrecisionClock.h"
 
 namespace GameSystem {
-	std::unique_ptr<Window> Application::m_window;
+	std::unique_ptr<Window> Core::m_window;
 
-	void GameSystem::Application::Init()
+	void Core::Init()
 	{
-#ifdef _DEBUG
 		ALLOCATE_CONSOLE();
-#endif
 		Logger::Init();
-		CORE_INFO("GameSystem Initialized");
 		m_window = std::unique_ptr<Window>(Window::Create());
 		PrecisionClock::Init();
+
+		CORE_INFO("GameSystem Initialized");
 	}
 
-	int GameSystem::Application::Run(GameSystem::GameApp game)
+	int Core::Run(GameSystem::GameApp game)
 	{
 		Init();
 
 		while (true) {
 			if (!m_window->Update())
 				break;
-			double dt = GameSystem::PrecisionClock::GetDeltaTime();
+			double dt = PrecisionClock::GetDeltaTime();
 		}
 		// Shutdown
 		return 0;

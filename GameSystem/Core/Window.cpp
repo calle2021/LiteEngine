@@ -10,7 +10,7 @@ namespace GameSystem {
 #ifdef _WIN32
 		return std::unique_ptr<Window>(new WinWindow(props));
 #else
-		PIXL_CORE_ERROR("Unkown platform.");
+		CORE_ERROR("Unsupported platform");
 		return nullptr;
 #endif
 	}

@@ -4,7 +4,7 @@
 #include "Window.h"
 
 namespace GameSystem {
-	class Application
+	class Core
 	{
 	public:
 		static void Init();

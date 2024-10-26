@@ -15,7 +15,7 @@ namespace GameSystem {
         wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
         wc.hCursor = LoadCursor(NULL, IDC_ARROW);
         wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-        wc.lpszClassName = L"PIXLWindow";
+        wc.lpszClassName = L"MainWindow";
         wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
         RegisterClassExW(&wc);

@@ -98,12 +98,12 @@
     <ClInclude Include="Core\GameApp.h" />
     <ClInclude Include="Core\PrecisionClock.h" />
     <ClInclude Include="Core\Utility.h" />
-    <ClInclude Include="Core\Application.h" />
+    <ClInclude Include="Core\Core.h" />
     <ClInclude Include="Core\Platform\Windows\WinWindow.h" />
     <ClInclude Include="Core\Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Core\Application.cpp" />
+    <ClCompile Include="Core\Core.cpp" />
     <ClCompile Include="Core\Logger.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
