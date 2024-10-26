@@ -11,7 +11,7 @@ namespace GameSystem {
 		ALLOCATE_CONSOLE();
 #endif
 		Logger::Init();
-		CORE_INFO("Welcome to PIXL!");
+		CORE_INFO("GameSystem Initialized");
 		m_window = std::unique_ptr<Window>(Window::Create());
 		PrecisionClock::Init();
 	}
