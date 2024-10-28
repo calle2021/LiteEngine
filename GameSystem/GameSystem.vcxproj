@@ -92,7 +92,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Core\EntryPoint.h" />
+    <ClInclude Include="EventSystem\Event.h" />
     <ClInclude Include="Core\Logger.h" />
+    <ClInclude Include="EventSystem\MouseEvent.h" />
     <ClInclude Include="GameSystem.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Core\GameApp.h" />
