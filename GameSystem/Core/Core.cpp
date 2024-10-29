@@ -2,6 +2,9 @@
 #include "Core/Core.h"
 #include "Core/PrecisionClock.h"
 
+#include "EventSystem/Event.h"
+#include "EventSystem/MouseEvent.h"
+
 namespace GameSystem {
 	std::unique_ptr<Window> Core::m_window;
 
@@ -18,6 +21,9 @@ namespace GameSystem {
 	int Core::Run(GameSystem::GameApp game)
 	{
 		Init();
+		
+		MouseEvent event(1, 2);
+		std::cout << event << std::endl;
 
 		while (true) {
 			if (!m_window->Update())
