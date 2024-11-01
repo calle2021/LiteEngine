@@ -2,15 +2,15 @@
 #include "Event.h"
 
 namespace GameSystem {
-    class MouseEvent : public Event {
+    class MouseClickedEvent : public Event {
     public:
-        MouseEvent(int x, int y) : x(x), y(y) {}
+        MouseClickedEvent(int t, int x, int y) :type(t), x(x), y(y) {}
         int GetType() const override { return type; };
 
         std::string ToString() const override
         {
             std::stringstream ss;
-            ss << "MouseEvent: " << x << ", " << y;
+            ss << "MouseClickedEvent: " << type << ", " << x << ", " << y;
             return ss.str();
         }
     protected:

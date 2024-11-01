@@ -58,14 +58,14 @@ namespace GameSystem {
         {
         case WM_LBUTTONDOWN:
         {
-            int x = LOWORD(lparam);
-            int y = HIWORD(lparam);
+            MouseClickedEvent e(WM_LBUTTONDOWN, static_cast<unsigned int> (LOWORD(lparam)), static_cast<unsigned int>(HIWORD(lparam)));
+            CORE_INFO(e.ToString());
             return 0;
         }
         case WM_RBUTTONDOWN:
         {
-            int x = LOWORD(lparam);
-            int y = HIWORD(lparam);
+            MouseClickedEvent e(WM_RBUTTONDOWN, static_cast<unsigned int> (LOWORD(lparam)), static_cast<unsigned int>(HIWORD(lparam)));
+            CORE_INFO(e.ToString());
             return 0;
         }
         case WM_DESTROY:

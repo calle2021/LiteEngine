@@ -21,9 +21,6 @@ namespace GameSystem {
 	int Core::Run(GameSystem::GameApp game)
 	{
 		Init();
-		
-		MouseEvent event(1, 2);
-		std::cout << event << std::endl;
 
 		while (true) {
 			if (!m_window->Update())

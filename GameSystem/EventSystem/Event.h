@@ -11,7 +11,7 @@ namespace GameSystem {
 		virtual ~Event() = default;
         bool handled = false;
         virtual int GetType() const = 0;
-        virtual std::string ToString() const { return "Default"; }
+        virtual std::string ToString() const = 0;
 	};
 
     class Dispatcher
@@ -28,10 +28,4 @@ namespace GameSystem {
     private:
         Event& m_event;
     };
-
-    inline std::ostream& operator<<(std::ostream& os, const Event& e)
-    {
-        return os << e.ToString();
-    }
-
 }
