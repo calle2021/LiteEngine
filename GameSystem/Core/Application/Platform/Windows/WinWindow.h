@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/Window.h"
+#include "Core/Application/Window.h"
 
 namespace GameSystem {
 	class WinWindow : public Window

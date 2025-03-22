@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Core/PrecisionClock.h"
+#include "PrecisionClock.h"
 
 namespace GameSystem {
 	double PrecisionClock::secPerTick;

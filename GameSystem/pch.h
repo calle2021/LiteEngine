@@ -10,4 +10,4 @@
 #include <stdexcept>
 
 /*Internal*/
-#include "Core/Logger.h"
+#include "Core/Application/Logger.h"

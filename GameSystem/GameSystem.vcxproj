@@ -91,29 +91,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Core\EntryPoint.h" />
-    <ClInclude Include="EventSystem\Event.h" />
-    <ClInclude Include="Core\Logger.h" />
-    <ClInclude Include="EventSystem\MouseEvent.h" />
+    <ClInclude Include="Core\Application\EntryPoint.h" />
+    <ClInclude Include="Core\Application\Logger.h" />
     <ClInclude Include="GameSystem.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Core\GameApp.h" />
-    <ClInclude Include="Core\PrecisionClock.h" />
-    <ClInclude Include="Core\Utility.h" />
-    <ClInclude Include="Core\Core.h" />
-    <ClInclude Include="Core\Platform\Windows\WinWindow.h" />
-    <ClInclude Include="Core\Window.h" />
+    <ClInclude Include="Core\Application\GameApp.h" />
+    <ClInclude Include="Core\Application\PrecisionClock.h" />
+    <ClInclude Include="Core\Application\Utility.h" />
+    <ClInclude Include="Core\Application\CoreApplication.h" />
+    <ClInclude Include="Core\Application\Platform\Windows\WinWindow.h" />
+    <ClInclude Include="Core\Application\Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Core\Core.cpp" />
-    <ClCompile Include="Core\Logger.cpp" />
+    <ClCompile Include="Core\Application\CoreApplication.cpp" />
+    <ClCompile Include="Core\Application\Logger.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Core\PrecisionClock.cpp" />
-    <ClCompile Include="Core\Platform\Windows\WinWindow.cpp" />
-    <ClCompile Include="Core\Window.cpp" />
+    <ClCompile Include="Core\Application\PrecisionClock.cpp" />
+    <ClCompile Include="Core\Application\Platform\Windows\WinWindow.cpp" />
+    <ClCompile Include="Core\Application\Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

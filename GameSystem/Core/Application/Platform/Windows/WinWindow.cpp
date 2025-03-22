@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "WinWindow.h"
-#include "EventSystem/MouseEvent.h"
 
 namespace GameSystem {
 
@@ -56,18 +55,6 @@ namespace GameSystem {
     {
         switch (msg)
         {
-        case WM_LBUTTONDOWN:
-        {
-            MouseClickedEvent e(WM_LBUTTONDOWN, static_cast<unsigned int> (LOWORD(lparam)), static_cast<unsigned int>(HIWORD(lparam)));
-            CORE_INFO(e.ToString());
-            return 0;
-        }
-        case WM_RBUTTONDOWN:
-        {
-            MouseClickedEvent e(WM_RBUTTONDOWN, static_cast<unsigned int> (LOWORD(lparam)), static_cast<unsigned int>(HIWORD(lparam)));
-            CORE_INFO(e.ToString());
-            return 0;
-        }
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;

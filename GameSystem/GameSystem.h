@@ -1,4 +1,4 @@
 #pragma once
-#include "Core/EntryPoint.h"
-#include "Core/GameApp.h"
-#include "Core/Core.h"
+#include "Core/Application/EntryPoint.h"
+#include "Core/Application/GameApp.h"
+#include "Core/Application/CoreApplication.h"

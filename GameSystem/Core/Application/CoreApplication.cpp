@@ -1,9 +1,6 @@
 #include "pch.h"
-#include "Core/Core.h"
-#include "Core/PrecisionClock.h"
-
-#include "EventSystem/Event.h"
-#include "EventSystem/MouseEvent.h"
+#include "Core/Application/CoreApplication.h"
+#include "Core/Application/PrecisionClock.h"
 
 namespace GameSystem {
 	std::unique_ptr<Window> Core::m_window;
