@@ -1,6 +1,6 @@
 #pragma once
 #include "GameApp.h"
-#include "Utility.h"
+#include "Core/Utils/Utility.h"
 #include "Window.h"
 
 namespace GameSystem {

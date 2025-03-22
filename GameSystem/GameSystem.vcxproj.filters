@@ -27,7 +27,7 @@
     <ClInclude Include="Core\Application\GameApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Application\Utility.h">
+    <ClInclude Include="Core\Utils\Utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Application\Logger.h">

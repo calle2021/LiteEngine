@@ -97,7 +97,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Core\Application\GameApp.h" />
     <ClInclude Include="Core\Application\PrecisionClock.h" />
-    <ClInclude Include="Core\Application\Utility.h" />
+    <ClInclude Include="Core\Utils\Utility.h" />
     <ClInclude Include="Core\Application\CoreApplication.h" />
     <ClInclude Include="Core\Application\Platform\Windows\WinWindow.h" />
     <ClInclude Include="Core\Application\Window.h" />
