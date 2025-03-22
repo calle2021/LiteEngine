@@ -66,4 +66,13 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Core\Scene\.gitkeep" />
+    <None Include="Core\Resources\.gitkeep" />
+    <None Include="Core\Renderer\.gitkeep" />
+    <None Include="Core\Physics\.gitkeep" />
+    <None Include="Core\Networking\.gitkeep" />
+    <None Include="Core\Input\.gitkeep" />
+    <None Include="Core\Audio\.gitkeep" />
+  </ItemGroup>
 </Project>

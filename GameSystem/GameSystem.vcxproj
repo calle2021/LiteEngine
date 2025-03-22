@@ -113,6 +113,15 @@
     <ClCompile Include="Core\Application\Platform\Windows\WinWindow.cpp" />
     <ClCompile Include="Core\Application\Window.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Core\Audio\.gitkeep" />
+    <None Include="Core\Input\.gitkeep" />
+    <None Include="Core\Networking\.gitkeep" />
+    <None Include="Core\Physics\.gitkeep" />
+    <None Include="Core\Renderer\.gitkeep" />
+    <None Include="Core\Resources\.gitkeep" />
+    <None Include="Core\Scene\.gitkeep" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
