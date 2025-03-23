@@ -93,25 +93,29 @@
   <ItemGroup>
     <ClInclude Include="Core\Application\EntryPoint.h" />
     <ClInclude Include="Core\Application\Logger.h" />
+    <ClInclude Include="Core\Input\InputSystem.h" />
+    <ClInclude Include="Core\Input\WinInput.h" />
     <ClInclude Include="GameSystem.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Core\Application\GameApp.h" />
     <ClInclude Include="Core\Application\PrecisionClock.h" />
     <ClInclude Include="Core\Utils\Utility.h" />
     <ClInclude Include="Core\Application\CoreApplication.h" />
-    <ClInclude Include="Core\Application\Platform\Windows\WinWindow.h" />
-    <ClInclude Include="Core\Application\Window.h" />
+    <ClInclude Include="Core\Application\Window\WinWindow.h" />
+    <ClInclude Include="Core\Application\Window\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Application\CoreApplication.cpp" />
     <ClCompile Include="Core\Application\Logger.cpp" />
+    <ClCompile Include="Core\Input\InputSystem.cpp" />
+    <ClCompile Include="Core\Input\WinInput.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Core\Application\PrecisionClock.cpp" />
-    <ClCompile Include="Core\Application\Platform\Windows\WinWindow.cpp" />
-    <ClCompile Include="Core\Application\Window.cpp" />
+    <ClCompile Include="Core\Application\Window\WinWindow.cpp" />
+    <ClCompile Include="Core\Application\Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Core\Audio\.gitkeep" />

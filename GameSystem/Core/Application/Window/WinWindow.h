@@ -1,12 +1,12 @@
 #pragma once
-#include "Core/Application/Window.h"
+#include "Core/Application/Window/Window.h"
 
 namespace GameSystem {
 	class WinWindow : public Window
 	{
 	public:
 		WinWindow(const WindowProps& props);
-		bool Update();
+		bool Update() override;
 		static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 	private:
 		HWND hwnd;

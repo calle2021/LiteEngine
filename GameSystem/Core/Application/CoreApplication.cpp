@@ -3,19 +3,21 @@
 #include "Core/Application/PrecisionClock.h"
 
 namespace GameSystem {
-	std::unique_ptr<Window> Core::m_window;
+	std::unique_ptr<Window> CoreApplication::m_window;
+	std::unique_ptr<InputSystem> CoreApplication::m_input_system;
 
-	void Core::Init()
+	void CoreApplication::Init()
 	{
 		ALLOCATE_CONSOLE();
 		Logger::Init();
 		m_window = std::unique_ptr<Window>(Window::Create());
+		m_input_system = std::unique_ptr<InputSystem>(InputSystem::CreateInputSystem());
 		PrecisionClock::Init();
 
 		CORE_INFO("GameSystem Initialized");
 	}
 
-	int Core::Run(GameSystem::GameApp game)
+	int CoreApplication::Run(GameSystem::GameApp game)
 	{
 		Init();
 
@@ -27,5 +29,4 @@ namespace GameSystem {
 		// Shutdown
 		return 0;
 	}
-
 }

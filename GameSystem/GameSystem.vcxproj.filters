@@ -33,16 +33,22 @@
     <ClInclude Include="Core\Application\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Application\Platform\Windows\WinWindow.h">
+    <ClInclude Include="Core\Application\Window\WinWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Application\PrecisionClock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Application\Window.h">
+    <ClInclude Include="Core\Application\Window\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Application\EntryPoint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Input\InputSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Input\WinInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,7 +59,7 @@
     <ClCompile Include="Core\Application\Logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Application\Platform\Windows\WinWindow.cpp">
+    <ClCompile Include="Core\Application\Window\WinWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Application\PrecisionClock.cpp">
@@ -62,7 +68,13 @@
     <ClCompile Include="Core\Application\CoreApplication.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Application\Window.cpp">
+    <ClCompile Include="Core\Application\Window\Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Input\WinInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Input\InputSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
