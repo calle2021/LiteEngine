@@ -1,11 +1,9 @@
 #pragma once
 
-namespace GameSystem {
-	class GameApp
-	{
-	public:
-		GameApp()
-		{
-		};
-	};
-}
+class GameApp
+{
+public:
+	virtual ~GameApp() = default;
+	virtual void Update() = 0;
+	virtual void Init() = 0;
+};

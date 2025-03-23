@@ -3,28 +3,30 @@
 #include "Core/Application/PrecisionClock.h"
 
 namespace GameSystem {
-	std::unique_ptr<Window> CoreApplication::m_window;
-	std::unique_ptr<InputSystem> CoreApplication::m_input_system;
-
-	void CoreApplication::Init()
+	CoreApplication::CoreApplication(GameApp* game_app) :
+		m_game(game_app)
 	{
 		ALLOCATE_CONSOLE();
 		Logger::Init();
-		m_window = std::unique_ptr<Window>(Window::Create());
-		m_input_system = std::unique_ptr<InputSystem>(InputSystem::CreateInputSystem());
 		PrecisionClock::Init();
-
-		CORE_INFO("GameSystem Initialized");
+		m_window = Window::Create();
+		m_input_system = InputSystem::CreateInputSystem();
+		CORE_INFO("GameSystem initialized");
 	}
 
-	int CoreApplication::Run(GameSystem::GameApp game)
+	CoreApplication::~CoreApplication()
 	{
-		Init();
+	}
 
+	int CoreApplication::Run()
+	{
 		while (true) {
-			if (!m_window->Update())
+			if (!m_window->Update()) {
 				break;
+			}
 			double dt = PrecisionClock::GetDeltaTime();
+			m_input_system->ProcessInput();
+			m_game->Update();
 		}
 		// Shutdown
 		return 0;

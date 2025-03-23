@@ -5,7 +5,7 @@ namespace GameSystem {
 	class WinWindow : public Window
 	{
 	public:
-		WinWindow(const WindowProps& props);
+		WinWindow(WindowProps props);
 		bool Update() override;
 		static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 	private:

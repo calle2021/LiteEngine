@@ -3,7 +3,7 @@
 
 namespace GameSystem {
 
-    WinWindow::WinWindow(const WindowProps& props) : hwnd(nullptr)
+    WinWindow::WinWindow(WindowProps props) : hwnd(nullptr)
     {
         WNDCLASSEXW wc = { 0 };
         wc.cbSize = sizeof(WNDCLASSEXW);

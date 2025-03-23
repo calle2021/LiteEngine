@@ -8,10 +8,12 @@ namespace GameSystem {
 	class CoreApplication
 	{
 	public:
-		static void Init();
-		static int Run(GameApp game);
+		CoreApplication(GameApp* game_app);
+		~CoreApplication();
+		int Run();
 	private:
-	    static std::unique_ptr<Window> m_window;
-		static std::unique_ptr<InputSystem> m_input_system;
+		GameApp* m_game;
+	    std::unique_ptr<Window> m_window;
+		std::unique_ptr<InputSystem> m_input_system;
 	};
 }

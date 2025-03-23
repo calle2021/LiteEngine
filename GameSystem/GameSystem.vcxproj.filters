@@ -42,9 +42,6 @@
     <ClInclude Include="Core\Application\Window\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Application\EntryPoint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Input\InputSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>

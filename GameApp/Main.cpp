@@ -1,11 +1,9 @@
 #include "GameSystem.h"
+#include "Game.h"
 
-class Game : public GameSystem::GameApp {
-public:
-    Game() 
-    {
-    }
-};
-
-LAUNCH(Game);
-
+int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int )
+{
+    Game game;
+    GameSystem::CoreApplication core_app(&game);
+    return core_app.Run();
+}

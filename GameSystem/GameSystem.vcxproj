@@ -91,7 +91,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Core\Application\EntryPoint.h" />
     <ClInclude Include="Core\Application\Logger.h" />
     <ClInclude Include="Core\Input\InputSystem.h" />
     <ClInclude Include="Core\Input\WinInput.h" />
