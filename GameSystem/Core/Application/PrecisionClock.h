@@ -4,11 +4,12 @@ namespace GameSystem {
 	class PrecisionClock
 	{
 	public:
-		static void Init();
-		static double GetDeltaTime();
+		PrecisionClock();
+		~PrecisionClock();
+		double GetDeltaTime();
 	private:
-		static double secPerTick;
-		static LARGE_INTEGER freq;
-		static LARGE_INTEGER lastTick;
+		double secPerTick;
+		LARGE_INTEGER freq;
+		LARGE_INTEGER lastTick;
 	};
 }

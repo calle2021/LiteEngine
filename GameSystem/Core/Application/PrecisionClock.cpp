@@ -2,16 +2,17 @@
 #include "PrecisionClock.h"
 
 namespace GameSystem {
-	double PrecisionClock::secPerTick;
-	LARGE_INTEGER PrecisionClock::freq;
-	LARGE_INTEGER PrecisionClock::lastTick;
-
-	void PrecisionClock::Init()
+	PrecisionClock::PrecisionClock()
 	{
 		QueryPerformanceFrequency(&freq);
 		secPerTick = 1.0 / static_cast<double>(freq.QuadPart);
 		QueryPerformanceCounter(&lastTick);
 	}
+
+	PrecisionClock::~PrecisionClock()
+	{
+	}
+
 	double PrecisionClock::GetDeltaTime()
 	{
 		LARGE_INTEGER currTick;
