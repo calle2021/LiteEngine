@@ -1,4 +1,4 @@
 #pragma once
 #include "Core/Application/GameApp.h"
-#include "Core/Application/CoreApplication.h"
-#include "Core/Application/Logger.h"
+#include "Core/Application/Application.h"
+#include "Core/Utils/Logger.h"

@@ -2,7 +2,7 @@
 #include "InputSystem.h"
 #include "Core/Input/WinInput.h"
 
-std::unique_ptr<InputSystem> InputSystem::CreateInputSystem()
+std::unique_ptr<InputSystem> InputSystem::Create()
 {
-	return std::unique_ptr<InputSystem>(new WinInput());
+	return std::make_unique<WinInput>();
 }

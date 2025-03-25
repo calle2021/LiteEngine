@@ -1,23 +1,23 @@
 #include "pch.h"
-#include "Core/Application/CoreApplication.h"
+#include "Core/Application/Application.h"
 
 namespace GameSystem {
-	CoreApplication::CoreApplication(GameApp* game_app) 
+	Application::Application(GameApp* game_app)
 		: m_game(game_app)
-		, m_precision_clock(std::make_unique<PrecisionClock>())
 	{
 		ALLOCATE_CONSOLE();
 		Logger::Init();
+		m_precision_clock = Clock::Create();
 		m_window = Window::Create();
-		m_input_system = InputSystem::CreateInputSystem();
+		m_input_system = InputSystem::Create();
 		CORE_INFO("GameSystem initialized");
 	}
 
-	CoreApplication::~CoreApplication()
+	Application::~Application()
 	{
 	}
 
-	int CoreApplication::Run()
+	int Application::Run()
 	{
 		while (true) {
 			if (!m_window->Update()) {
