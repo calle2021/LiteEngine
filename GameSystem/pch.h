@@ -10,6 +10,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <memory>
+#include <map>
 
 /*Internal*/
 #include "Core/Utils/Logger.h"

@@ -4,5 +4,5 @@
 
 std::unique_ptr<Window> Window::Create(WindowProps props)
 {
-	return std::make_unique<WinWindow>(props);
+	return std::make_unique<GameSystem::WinWindow>(props);
 }

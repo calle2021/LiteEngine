@@ -25,7 +25,7 @@ namespace GameSystem {
 			}
 			double dt = m_precision_clock->GetDeltaTime();
 			m_input_system->ProcessInput();
-			m_game->Update();
+			m_game->Update();			
 		}
 		// Shutdown
 		return 0;
