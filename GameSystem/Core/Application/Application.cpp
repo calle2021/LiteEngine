@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Core/Utils/Utility.h"
 #include "Core/Application/Application.h"
 
 namespace GameSystem {

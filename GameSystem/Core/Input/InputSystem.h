@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "Core/Application/Window/Window.h"
 
 namespace GameSystem {

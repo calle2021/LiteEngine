@@ -1,6 +1,7 @@
 #pragma once
+#include <memory>
+
 #include "GameApp.h"
-#include "Core/Utils/Utility.h"
 #include "Core/Application/Window/Window.h"
 #include "Core/Input/InputSystem.h"
 #include "Core/Application/Clock/Clock.h"
