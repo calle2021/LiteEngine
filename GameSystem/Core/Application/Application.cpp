@@ -1,12 +1,10 @@
 #include "pch.h"
-#include "Core/Utils/Utility.h"
 #include "Core/Application/Application.h"
 
 namespace GameSystem {
 	Application::Application(GameApp* game_app)
 		: m_game(game_app)
 	{
-		ALLOCATE_CONSOLE();
 		Logger::Init();
 		m_precision_clock = Clock::Create();
 		m_window = Window::Create();
