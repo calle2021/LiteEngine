@@ -1,32 +1,26 @@
 #include "pch.h"
-#include "Core/Application/Application.h"
+#include "Application.h"
+#include "Core/Application/Window/Window.h"
+#include "Core/Input/InputSystem.h"
+#include "Core/Application/Clock/Clock.h"
 
 namespace GameSystem {
-	Application::Application(GameApp* game_app)
-		: m_game(game_app)
+	int Application::Launch(std::unique_ptr<GameApp> game)
 	{
 		Logger::Init();
-		m_precision_clock = Clock::Create();
-		m_window = Window::Create();
-		m_input_system = InputSystem::Create();
-		CORE_INFO("GameSystem initialized");
-	}
 
-	Application::~Application()
-	{
-	}
+		std::unique_ptr<Window> window = Window::Create();
+		std::unique_ptr<InputSystem> input_system = InputSystem::Create();
+   		std::unique_ptr<Clock> clock = Clock::Create();
 
-	int Application::Run()
-	{
 		while (true) {
-			if (!m_window->Update()) {
+			if (!window->Update()) {
 				break;
 			}
-			double dt = m_precision_clock->GetDeltaTime();
-			m_input_system->ProcessInput();
-			m_game->Update();			
+			double dt = clock->GetDeltaTime();
+			input_system->ProcessInput();
+			game->Update();			
 		}
-		// Shutdown
 		return 0;
 	}
 }
