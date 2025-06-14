@@ -1,8 +1,4 @@
 #pragma once
-/*Windows*/
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 /*C++ stuff*/
 #include <stdio.h>

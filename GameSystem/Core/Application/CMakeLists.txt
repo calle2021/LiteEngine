@@ -3,6 +3,3 @@ target_sources(GameSystem PRIVATE
     Application.h
     GameApp.h
 )
-
-add_subdirectory(Clock)
-add_subdirectory(Window)
