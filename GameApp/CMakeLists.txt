@@ -1,10 +1,10 @@
 add_executable(GameApp
-    Main.cpp
+    main.cpp
 )
 
 target_sources(GameSystem PRIVATE
-    Game.cpp
-    Game.h
+    game.cpp
+    game.h
 )
 
 target_link_libraries(GameApp PRIVATE GameSystem)

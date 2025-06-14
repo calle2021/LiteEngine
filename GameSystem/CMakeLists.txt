@@ -8,14 +8,14 @@ endif()
 
 target_include_directories(GameSystem PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core
+    ${CMAKE_CURRENT_SOURCE_DIR}/core
 )
 
 target_precompile_headers(GameSystem PRIVATE pch.h)
 
-add_subdirectory(Core)
-add_subdirectory(External/spdlog)
-add_subdirectory(External/glfw)
+add_subdirectory(core)
+add_subdirectory(external/spdlog)
+add_subdirectory(external/glfw)
 
 target_link_libraries(GameSystem PUBLIC glfw)
 target_link_libraries(GameSystem PUBLIC spdlog::spdlog_header_only)

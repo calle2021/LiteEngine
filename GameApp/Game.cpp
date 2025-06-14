@@ -8,10 +8,10 @@ Game::~Game()
 {
 }
 
-void Game::Init()
+void Game::init()
 {
 }
 
-void Game::Update()
+void Game::update()
 {
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-/*C++ stuff*/
 #include <stdio.h>
 #include <iostream>
 #include <sstream>
@@ -8,5 +7,4 @@
 #include <memory>
 #include <map>
 
-/*Internal*/
-#include "Core/Utils/Logger.h"
+#include "core/logging/logger.h"
