@@ -5,6 +5,10 @@
 #include "Core/Input/InputSystem.h"
 #include "pch.h"
 
+#if !(defined(WINDOWS_SUBSYSTEM) || defined(LINUX_SUBSYSTEM))
+#error "Unsupported platform."
+#endif
+
 namespace GameSystem {
 int Application::Launch(std::unique_ptr<GameApp> game) {
     Logger::Init();

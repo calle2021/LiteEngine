@@ -1,10 +1,10 @@
 #include "pch.h"
-#include "WinWindow.h"
+#include "WindowsWindow.h"
 
 namespace GameSystem {
-    HWND WinWindow::hwnd = nullptr;
+    HWND WindowsWindow::hwnd = nullptr;
 
-    WinWindow::WinWindow(WindowProps props)
+    WindowsWindow::WindowsWindow(WindowProps props)
     {
         WNDCLASSEXW wc = { 0 };
         wc.cbSize = sizeof(WNDCLASSEXW);
@@ -38,7 +38,7 @@ namespace GameSystem {
         ShowWindow(hwnd, SW_SHOW);
     }
 
-    bool WinWindow::Update()
+    bool WindowsWindow::Update()
     {
         MSG msg = {};
         bool proceed = true;
@@ -52,7 +52,7 @@ namespace GameSystem {
         return proceed;
     }
 
-    LRESULT CALLBACK WinWindow::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+    LRESULT CALLBACK WindowsWindow::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
         switch (msg)
         {
