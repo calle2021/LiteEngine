@@ -1,6 +1,6 @@
 [submodule "GameSystem/External/spdlog"]
-	path = GameSystem/external/spdlog
+	path = game-system/external/spdlog
 	url = https://github.com/gabime/spdlog
 [submodule "GameSystem/External/glfw"]
-	path = GameSystem/external/glfw
+	path = game-system/external/glfw
 	url = https://github.com/glfw/glfw
