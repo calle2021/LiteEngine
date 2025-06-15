@@ -4,5 +4,5 @@ project(MyWorkspace LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory(GameSystem)
-add_subdirectory(GameApp)
+add_subdirectory(game-system)
+add_subdirectory(game-app)

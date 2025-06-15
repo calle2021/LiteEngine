@@ -1,7 +1,3 @@
-target_sources(GameSystem PRIVATE
-    game-system.cpp
-    game-system.h
-    game-app.h
-)
-
-add_subdirectory(logging)
+add_subdirectory(app)
+add_subdirectory(log)
+add_subdirectory(window)

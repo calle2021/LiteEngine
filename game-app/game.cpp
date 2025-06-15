@@ -1,4 +1,4 @@
-#include "Game.h"
+#include "game.h"
 
 Game::Game()
 {
@@ -8,10 +8,10 @@ Game::~Game()
 {
 }
 
-void Game::init()
+void Game::Init()
 {
 }
 
-void Game::update()
+void Game::Update()
 {
 }

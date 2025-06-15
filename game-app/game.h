@@ -1,11 +1,11 @@
 #pragma once
-#include "GameSystem.h"
+#include "game-system.h"
 
 class Game : public GameApp 
 {
 public:
 	Game();
 	~Game();
-	void init() override;
-	void update() override;
+	void Init() override;
+	void Update() override;
 };

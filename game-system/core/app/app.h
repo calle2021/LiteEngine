@@ -4,9 +4,9 @@
 
 namespace GameSystem
 {
-class GameSystem
+class Application
 {
   public:
-    static int launch(std::unique_ptr<GameApp> game);
+    static int Launch(std::unique_ptr<GameApp> game);
 };
 } // namespace GameSystem

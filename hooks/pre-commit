@@ -1,0 +1,9 @@
+echo "🔍 Checking C++ formatting with clang-format..."
+FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(cpp|hpp|c|h)$')
+for file in $FILES; do
+    echo "🔍 Formatting $file..."
+    clang-format -i "$file"
+    git add "$file"
+done
+echo "✅ All files are properly formatted."
+

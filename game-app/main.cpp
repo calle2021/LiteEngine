@@ -1,8 +1,8 @@
-#include "gamesystem.h"
+#include "game-system.h"
 #include "game.h"
 #include <memory>
 
 int main()
 {
-    return GameSystem::GameSystem::launch(std::make_unique<Game>());
+    return GameSystem::Application::Launch(std::make_unique<Game>());
 }
