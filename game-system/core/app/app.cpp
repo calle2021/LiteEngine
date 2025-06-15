@@ -1,6 +1,6 @@
-#include "pch.h"
-#include "game-system.h"
 #include "core/window/window.h"
+#include "game-system.h"
+#include "pch.h"
 
 #if !(defined(WINDOWS) || defined(LINUX))
 #error "unsupported platform"
@@ -13,11 +13,8 @@ int Application::Launch(std::unique_ptr<GameApp> game)
     Logger::Init();
     Window::Init();
 
-    while (true)
+    while (!Window::Close())
     {
-        if (Window::Close()) {
-            break;
-        }
         Window::Update();
         double dt = Window::GetDeltaTime();
         game->Update();
