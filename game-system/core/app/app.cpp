@@ -1,3 +1,4 @@
+#include "core/vulkan/vulkan-core.h"
 #include "core/window/window.h"
 #include "game-system.h"
 #include "pch.h"
@@ -12,6 +13,7 @@ int Application::Launch(std::unique_ptr<GameApp> game)
 {
     Logger::Init();
     Window::Init();
+    VulkanCore::Init();
 
     while (!Window::Close())
     {
@@ -19,6 +21,8 @@ int Application::Launch(std::unique_ptr<GameApp> game)
         double dt = Window::GetDeltaTime();
         game->Update();
     }
+
+    VulkanCore::Destroy();
     Window::Destroy();
     return 0;
 }

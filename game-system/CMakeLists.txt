@@ -19,3 +19,5 @@ add_subdirectory(external/glfw)
 
 target_link_libraries(GameSystem PUBLIC glfw)
 target_link_libraries(GameSystem PUBLIC spdlog::spdlog_header_only)
+find_package(Vulkan REQUIRED)
+target_link_libraries(GameSystem PRIVATE Vulkan::Vulkan)
