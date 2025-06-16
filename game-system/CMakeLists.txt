@@ -17,7 +17,17 @@ add_subdirectory(core)
 add_subdirectory(external/spdlog)
 add_subdirectory(external/glfw)
 
-target_link_libraries(GameSystem PUBLIC glfw)
+include(FetchContent)
+
+target_link_libraries(GameSystem PRIVATE glfw)
 target_link_libraries(GameSystem PUBLIC spdlog::spdlog_header_only)
 find_package(Vulkan REQUIRED)
 target_link_libraries(GameSystem PRIVATE Vulkan::Vulkan)
+
+FetchContent_Declare(
+	glm
+	GIT_REPOSITORY	https://github.com/g-truc/glm.git
+	GIT_TAG 	2d4c4b4dd31fde06cfffad7915c2b3006402322f
+)
+FetchContent_MakeAvailable(glm)
+target_link_libraries(GameSystem PRIVATE glm::glm)
