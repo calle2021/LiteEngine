@@ -14,20 +14,33 @@ target_include_directories(GameSystem PUBLIC
 target_precompile_headers(GameSystem PRIVATE pch.h)
 
 add_subdirectory(core)
-add_subdirectory(external/spdlog)
-add_subdirectory(external/glfw)
 
-include(FetchContent)
-
-target_link_libraries(GameSystem PRIVATE glfw)
-target_link_libraries(GameSystem PUBLIC spdlog::spdlog_header_only)
 find_package(Vulkan REQUIRED)
 target_link_libraries(GameSystem PRIVATE Vulkan::Vulkan)
+
+include(FetchContent)
+FetchContent_Declare(
+	spdlog
+	GIT_REPOSITORY	git@github.com:gabime/spdlog.git
+    GIT_TAG v1.x
+)
+FetchContent_MakeAvailable(spdlog)
+target_link_libraries(GameSystem PUBLIC spdlog::spdlog)
+
+
+FetchContent_Declare(
+	glfw
+	GIT_REPOSITORY	git@github.com:glfw/glfw.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(glfw)
+target_link_libraries(GameSystem PRIVATE glfw)
+
 
 FetchContent_Declare(
 	glm
 	GIT_REPOSITORY	https://github.com/g-truc/glm.git
-	GIT_TAG 	2d4c4b4dd31fde06cfffad7915c2b3006402322f
+    GIT_TAG master
 )
 FetchContent_MakeAvailable(glm)
 target_link_libraries(GameSystem PRIVATE glm::glm)
