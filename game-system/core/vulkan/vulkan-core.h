@@ -10,9 +10,6 @@ class VulkanCore
     static void Destroy();
 
   private:
-    static bool CheckValidationLayers();
-
-  private:
     static VkInstance vk_instance;
 };
 } // namespace GameSystem
