@@ -4,7 +4,11 @@
 
 namespace GameSystem
 {
+
 VkInstance VulkanCore::vk_instance;
+VkPhysicalDevice VulkanCore::physical_device;
+VkDevice VulkanCore::vk_device;
+VkQueue VulkanCore::vk_graphics_q;
 
 void VulkanCore::Init()
 {
@@ -31,7 +35,7 @@ void VulkanCore::Init()
         throw std::runtime_error("Failed to create vk instance");
     }
 
-    VkPhysicalDevice physical_device = VK_NULL_HANDLE;
+    physical_device = VK_NULL_HANDLE;
     uint32_t device_x = 0;
     vkEnumeratePhysicalDevices(vk_instance, &device_x, nullptr);
     if (!device_x)
@@ -57,11 +61,36 @@ void VulkanCore::Init()
     {
         throw std::runtime_error("Failed to find a vulkan suitable device");
     }
+
+    QueueFamilyIndices pd_indices = VulkanUtils::FindQueueFamilies(physical_device);
+
+    VkDeviceQueueCreateInfo q_create_info = {};
+    q_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    q_create_info.queueFamilyIndex = pd_indices.graphics_family.value();
+    q_create_info.queueCount = 1;
+    float q_prio = 1.0f;
+    q_create_info.pQueuePriorities = &q_prio;
+
+    VkPhysicalDeviceFeatures d_features = {};
+    VkDeviceCreateInfo d_create_info = {};
+    d_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    d_create_info.pQueueCreateInfos = &q_create_info;
+    d_create_info.queueCreateInfoCount = 1;
+    d_create_info.pEnabledFeatures = &d_features;
+    d_create_info.enabledExtensionCount = 0;
+
+    if (vkCreateDevice(physical_device, &d_create_info, nullptr, &vk_device) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create vk device");
+    }
+
+    vkGetDeviceQueue(vk_device, pd_indices.graphics_family.value(), 0, &vk_graphics_q);
 }
 
 void VulkanCore::Destroy()
 {
     VulkanUtils::Destroy();
+    vkDestroyDevice(vk_device, nullptr);
     vkDestroyInstance(vk_instance, nullptr);
 }
 
