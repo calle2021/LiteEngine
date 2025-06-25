@@ -11,8 +11,10 @@ class VulkanCore
 
   private:
     static VkInstance vk_instance;
-    static VkPhysicalDevice physical_device;
+    static VkPhysicalDevice vk_physical_device;
     static VkDevice vk_device;
-    static VkQueue vk_graphics_q;
+    static VkQueue vk_graphics_queue;
+    static VkSurfaceKHR vk_surface;
+    static VkQueue vk_present_queue;
 };
 } // namespace GameSystem

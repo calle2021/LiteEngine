@@ -62,14 +62,13 @@ bool VulkanUtils::CheckValidationLayers()
     return true;
 }
 
-bool VulkanUtils::IsDeviceSuitable(VkPhysicalDevice device)
+bool VulkanUtils::IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
-    QueueFamilyIndices indices = FindQueueFamilies(device);
-
+    QueueFamilyIndices indices = FindQueueFamilies(device, surface);
     return indices.IsComplete();
 }
 
-QueueFamilyIndices VulkanUtils::FindQueueFamilies(VkPhysicalDevice device)
+QueueFamilyIndices VulkanUtils::FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
     QueueFamilyIndices indices;
 
@@ -85,6 +84,12 @@ QueueFamilyIndices VulkanUtils::FindQueueFamilies(VkPhysicalDevice device)
         if (q_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
             indices.graphics_family = i;
+        }
+        VkBool32 present_support = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &present_support);
+        if (present_support)
+        {
+            indices.present_family = i;
         }
         if (indices.IsComplete())
         {

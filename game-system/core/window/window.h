@@ -11,6 +11,10 @@ class Window
     static void Destroy();
     static bool Close();
     static double GetDeltaTime();
+    static GLFWwindow *GetWindowHandle()
+    {
+        return window;
+    };
 
   private:
     static GLFWwindow *window;

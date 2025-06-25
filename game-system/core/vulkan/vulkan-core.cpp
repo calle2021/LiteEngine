@@ -1,14 +1,18 @@
 #include "vulkan-core.h"
+#include "core/window/window.h"
 #include "pch.h"
 #include "vulkan-utils.h"
+#include <set>
 
 namespace GameSystem
 {
 
 VkInstance VulkanCore::vk_instance;
-VkPhysicalDevice VulkanCore::physical_device;
+VkPhysicalDevice VulkanCore::vk_physical_device;
 VkDevice VulkanCore::vk_device;
-VkQueue VulkanCore::vk_graphics_q;
+VkQueue VulkanCore::vk_graphics_queue;
+VkSurfaceKHR VulkanCore::vk_surface;
+VkQueue VulkanCore::vk_present_queue;
 
 void VulkanCore::Init()
 {
@@ -35,7 +39,12 @@ void VulkanCore::Init()
         throw std::runtime_error("Failed to create vk instance");
     }
 
-    physical_device = VK_NULL_HANDLE;
+    if (glfwCreateWindowSurface(vk_instance, Window::GetWindowHandle(), nullptr, &vk_surface) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create window surface");
+    }
+
+    vk_physical_device = VK_NULL_HANDLE;
     uint32_t device_x = 0;
     vkEnumeratePhysicalDevices(vk_instance, &device_x, nullptr);
     if (!device_x)
@@ -48,25 +57,42 @@ void VulkanCore::Init()
 
     // TODO: extend to pick the best device
     // https://docs.vulkan.org/tutorial/latest/03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html
-    for (const auto &d : devices)
+    // and prefer physical devices that supports drawing and presentation
+    // https://docs.vulkan.org/tutorial/latest/03_Drawing_a_triangle/01_Presentation/00_Window_surface.html
+    for (const auto &device : devices)
     {
-        if (VulkanUtils::IsDeviceSuitable(d))
+        if (VulkanUtils::IsDeviceSuitable(device, vk_surface))
         {
-            physical_device = d;
+            vk_physical_device = device;
             break;
         }
     }
 
-    if (physical_device == VK_NULL_HANDLE)
+    if (vk_physical_device == VK_NULL_HANDLE)
     {
         throw std::runtime_error("Failed to find a vulkan suitable device");
     }
 
-    QueueFamilyIndices pd_indices = VulkanUtils::FindQueueFamilies(physical_device);
+    QueueFamilyIndices physical_device_indicies = VulkanUtils::FindQueueFamilies(vk_physical_device, vk_surface);
+
+    std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+    std::set<uint32_t> unique_queue_families = {physical_device_indicies.graphics_family.value(),
+                                                physical_device_indicies.present_family.value()};
+
+    float queuePriority = 1.0f;
+    for (uint32_t queue_family : unique_queue_families)
+    {
+        VkDeviceQueueCreateInfo queue_create_info = {};
+        queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queue_create_info.queueFamilyIndex = queue_family;
+        queue_create_info.queueCount = 1;
+        queue_create_info.pQueuePriorities = &queuePriority;
+        queue_create_infos.push_back(queue_create_info);
+    }
 
     VkDeviceQueueCreateInfo q_create_info = {};
     q_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    q_create_info.queueFamilyIndex = pd_indices.graphics_family.value();
+    q_create_info.queueFamilyIndex = physical_device_indicies.graphics_family.value();
     q_create_info.queueCount = 1;
     float q_prio = 1.0f;
     q_create_info.pQueuePriorities = &q_prio;
@@ -78,19 +104,23 @@ void VulkanCore::Init()
     d_create_info.queueCreateInfoCount = 1;
     d_create_info.pEnabledFeatures = &d_features;
     d_create_info.enabledExtensionCount = 0;
+    d_create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
+    d_create_info.pQueueCreateInfos = queue_create_infos.data();
 
-    if (vkCreateDevice(physical_device, &d_create_info, nullptr, &vk_device) != VK_SUCCESS)
+    if (vkCreateDevice(vk_physical_device, &d_create_info, nullptr, &vk_device) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create vk device");
     }
 
-    vkGetDeviceQueue(vk_device, pd_indices.graphics_family.value(), 0, &vk_graphics_q);
+    vkGetDeviceQueue(vk_device, physical_device_indicies.graphics_family.value(), 0, &vk_graphics_queue);
+    vkGetDeviceQueue(vk_device, physical_device_indicies.present_family.value(), 0, &vk_present_queue);
 }
 
 void VulkanCore::Destroy()
 {
     VulkanUtils::Destroy();
     vkDestroyDevice(vk_device, nullptr);
+    vkDestroySurfaceKHR(vk_instance, vk_surface, nullptr);
     vkDestroyInstance(vk_instance, nullptr);
 }
 
