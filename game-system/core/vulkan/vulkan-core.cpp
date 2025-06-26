@@ -2,7 +2,6 @@
 #include "core/window/window.h"
 #include "pch.h"
 #include "vulkan-utils.h"
-#include <set>
 
 namespace GameSystem
 {
@@ -103,7 +102,8 @@ void VulkanCore::Init()
     d_create_info.pQueueCreateInfos = &q_create_info;
     d_create_info.queueCreateInfoCount = 1;
     d_create_info.pEnabledFeatures = &d_features;
-    d_create_info.enabledExtensionCount = 0;
+    d_create_info.ppEnabledExtensionNames = VulkanUtils::device_extenstions.data();
+    d_create_info.enabledExtensionCount = static_cast<uint32_t>(VulkanUtils::device_extenstions.size());
     d_create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
     d_create_info.pQueueCreateInfos = queue_create_infos.data();
 

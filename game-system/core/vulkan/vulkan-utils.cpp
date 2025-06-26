@@ -14,6 +14,8 @@ const std::vector<const char *> VulkanUtils::validation_layers = {
     "VK_LAYER_KHRONOS_validation",
 };
 
+const std::vector<const char *> VulkanUtils::device_extenstions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
 std::vector<const char *> VulkanUtils::GetRequiredExtenstions()
 {
     uint32_t glfw_extension_count = 0;
@@ -65,7 +67,32 @@ bool VulkanUtils::CheckValidationLayers()
 bool VulkanUtils::IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
     QueueFamilyIndices indices = FindQueueFamilies(device, surface);
-    return indices.IsComplete();
+    bool extensions_supported = CheckDeviceExtensions(device);
+    bool swap_chain_adequate = false;
+    if (extensions_supported)
+    {
+        SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device, surface);
+        swap_chain_adequate = !swapChainSupport.formats.empty() && !swapChainSupport.present_modes.empty();
+    }
+    return indices.IsComplete() && extensions_supported && swap_chain_adequate;
+}
+
+bool VulkanUtils::CheckDeviceExtensions(VkPhysicalDevice device)
+{
+    uint32_t extension_count;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
+
+    std::vector<VkExtensionProperties> available_extension(extension_count);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available_extension.data());
+
+    std::set<std::string> required_extensions(device_extenstions.begin(), device_extenstions.end());
+
+    for (const auto &extension : available_extension)
+    {
+        required_extensions.erase(extension.extensionName);
+    }
+
+    return required_extensions.empty();
 }
 
 QueueFamilyIndices VulkanUtils::FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface)
@@ -99,6 +126,29 @@ QueueFamilyIndices VulkanUtils::FindQueueFamilies(VkPhysicalDevice device, VkSur
     }
 
     return indices;
+}
+
+SwapChainSupportDetails VulkanUtils::QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
+{
+    SwapChainSupportDetails details;
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+    uint32_t format_count;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &format_count, nullptr);
+
+    if (format_count != 0)
+    {
+        details.formats.resize(format_count);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &format_count, details.formats.data());
+    }
+    uint32_t present_mode_count;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &present_mode_count, nullptr);
+
+    if (present_mode_count != 0)
+    {
+        details.present_modes.resize(present_mode_count);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &present_mode_count, details.present_modes.data());
+    }
+    return details;
 }
 
 void VulkanUtils::Destroy()
