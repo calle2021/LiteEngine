@@ -1,4 +1,5 @@
 #include "vulkan-utils.h"
+#include "core/window/window.h"
 #include "pch.h"
 #include <GLFW/glfw3.h>
 
@@ -71,8 +72,8 @@ bool VulkanUtils::IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface
     bool swap_chain_adequate = false;
     if (extensions_supported)
     {
-        SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device, surface);
-        swap_chain_adequate = !swapChainSupport.formats.empty() && !swapChainSupport.present_modes.empty();
+        SwapChainSupportDetails swap_chain_support = QuerySwapChainSupport(device, surface);
+        swap_chain_adequate = !swap_chain_support.formats.empty() && !swap_chain_support.present_modes.empty();
     }
     return indices.IsComplete() && extensions_supported && swap_chain_adequate;
 }
@@ -149,6 +150,54 @@ SwapChainSupportDetails VulkanUtils::QuerySwapChainSupport(VkPhysicalDevice devi
         vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &present_mode_count, details.present_modes.data());
     }
     return details;
+}
+
+// chose sRGB if avaliable
+VkSurfaceFormatKHR VulkanUtils::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
+{
+    for (const auto &availableFormat : availableFormats)
+    {
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+            availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+        {
+            return availableFormat;
+        }
+    }
+    return availableFormats[0];
+}
+
+VkPresentModeKHR VulkanUtils::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
+{
+    for (const auto &availablePresentMode : availablePresentModes)
+    {
+        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+        {
+            return availablePresentMode;
+        }
+    }
+    return VK_PRESENT_MODE_FIFO_KHR;
+}
+
+VkExtent2D VulkanUtils::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
+{
+    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+    {
+        return capabilities.currentExtent;
+    }
+    else
+    {
+        int width, height;
+        glfwGetFramebufferSize(Window::GetWindowHandle(), &width, &height);
+
+        VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+
+        actualExtent.width =
+            std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+        actualExtent.height =
+            std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+        return actualExtent;
+    }
 }
 
 void VulkanUtils::Destroy()

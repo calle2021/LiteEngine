@@ -16,5 +16,10 @@ class VulkanCore
     static VkQueue vk_graphics_queue;
     static VkSurfaceKHR vk_surface;
     static VkQueue vk_present_queue;
+    static VkSwapchainKHR vk_swap_chain;
+    static std::vector<VkImage> swapChainImages;
+    static VkFormat swapChainImageFormat;
+    static VkExtent2D swapChainExtent;
+    static std::vector<VkImageView> swapChainImageViews;
 };
 } // namespace GameSystem
