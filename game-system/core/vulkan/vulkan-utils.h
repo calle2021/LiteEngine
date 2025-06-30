@@ -35,7 +35,7 @@ class VulkanUtils
     static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
     static VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
     static VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
-
+    static std::vector<char> readFile(const std::string &filename);
     static void Destroy();
 
   public:

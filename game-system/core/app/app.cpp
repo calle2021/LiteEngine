@@ -1,11 +1,7 @@
+#include "Include/game-system.h"
 #include "core/vulkan/vulkan-core.h"
 #include "core/window/window.h"
-#include "game-system.h"
 #include "pch.h"
-
-#if !(defined(WINDOWS) || defined(LINUX))
-#error "unsupported platform"
-#endif
 
 namespace GameSystem
 {

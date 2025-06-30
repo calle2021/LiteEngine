@@ -1,4 +1,4 @@
-target_sources(GameSystem PRIVATE
+target_sources(ENGINE PRIVATE
     app.cpp
     app.h
 )

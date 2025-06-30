@@ -1,4 +1,5 @@
 #include "vulkan-core.h"
+#include "GraphicsPipeline.h"
 #include "core/window/window.h"
 #include "pch.h"
 #include "vulkan-utils.h"
@@ -195,6 +196,8 @@ void VulkanCore::Init()
             throw std::runtime_error("failed to create image views!");
         }
     }
+    GraphicsPipeline m_gpipe;
+    m_gpipe.LoadShaders();
 }
 
 void VulkanCore::Destroy()

@@ -1,22 +1,18 @@
-add_library(GameSystem STATIC)
+add_library(ENGINE STATIC)
 
-if(WIN32)
-target_compile_definitions(GameSystem PRIVATE WINDOWS)
-elseif(UNIX)
-target_compile_definitions(GameSystem PRIVATE LINUX)
-endif()
-
-target_include_directories(GameSystem PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/core
+target_include_directories(ENGINE 
+	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Include
 )
 
-target_precompile_headers(GameSystem PRIVATE pch.h)
+target_precompile_headers(ENGINE PRIVATE pch.h)
 
 add_subdirectory(core)
+add_subdirectory(assets)
+add_subdirectory(Include)
 
 find_package(Vulkan REQUIRED)
-target_link_libraries(GameSystem PRIVATE Vulkan::Vulkan)
+target_link_libraries(ENGINE PRIVATE Vulkan::Vulkan)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -25,7 +21,7 @@ FetchContent_Declare(
     GIT_TAG v1.x
 )
 FetchContent_MakeAvailable(spdlog)
-target_link_libraries(GameSystem PUBLIC spdlog::spdlog)
+target_link_libraries(ENGINE PUBLIC spdlog::spdlog)
 
 
 FetchContent_Declare(
@@ -34,7 +30,7 @@ FetchContent_Declare(
     GIT_TAG master
 )
 FetchContent_MakeAvailable(glfw)
-target_link_libraries(GameSystem PRIVATE glfw)
+target_link_libraries(ENGINE PRIVATE glfw)
 
 
 FetchContent_Declare(
@@ -43,4 +39,4 @@ FetchContent_Declare(
     GIT_TAG master
 )
 FetchContent_MakeAvailable(glm)
-target_link_libraries(GameSystem PRIVATE glm::glm)
+target_link_libraries(ENGINE PRIVATE glm::glm)
