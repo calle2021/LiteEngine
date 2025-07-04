@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdio.h>
+
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -7,6 +9,3 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
-#include <stdio.h>
-
-#include "core/log/logger.h"

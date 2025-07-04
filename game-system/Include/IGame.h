@@ -6,4 +6,5 @@ class GameApp
     virtual ~GameApp() = default;
     virtual void Update() = 0;
     virtual void Init() = 0;
+    virtual void Destroy() = 0;
 };

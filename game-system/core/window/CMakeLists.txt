@@ -1,4 +1,4 @@
 target_sources(ENGINE PRIVATE
-    window.cpp
-    window.h
+    GLFWindow.cpp
+    GLFWindow.h
 )

@@ -1,23 +1,21 @@
-#include "window.h"
+#include "GLFWindow.h"
+
 #include "pch.h"
 
-namespace GameSystem
-{
-GLFWwindow *Window::window;
 void Window::Init()
 {
     if (!glfwInit())
         throw std::runtime_error("Failed to initialize glfw");
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    window = glfwCreateWindow(1280, 720, "GameSystem", nullptr, nullptr);
-    if (!window)
+    m_GLFWWindow = glfwCreateWindow(1280, 720, "GameSystem", nullptr, nullptr);
+    if (!m_GLFWWindow)
         throw std::runtime_error("Failed to create glfw window");
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(m_GLFWWindow);
 }
 
 bool Window::Close()
 {
-    return glfwWindowShouldClose(window);
+    return glfwWindowShouldClose(m_GLFWWindow);
 }
 
 void Window::Update()
@@ -25,14 +23,13 @@ void Window::Update()
     glfwPollEvents();
 }
 
-void Window::Destroy()
-{
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
-
 double Window::GetDeltaTime()
 {
     return glfwGetTime();
 }
-} // namespace GameSystem
+
+void Window::Destroy()
+{
+    glfwDestroyWindow(m_GLFWWindow);
+    glfwTerminate();
+}

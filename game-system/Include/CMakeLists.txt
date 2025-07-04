@@ -1,4 +1,4 @@
 target_sources(ENGINE PRIVATE
-    game-app.h
+    IGame.h
     game-system.h
 )
