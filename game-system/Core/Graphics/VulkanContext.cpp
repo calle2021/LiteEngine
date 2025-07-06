@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-VulkanContext::VulkanContext() : c_SwapChain(this), c_Base(this), c_DeviceManager(this)
+VulkanContext::VulkanContext() : c_SwapChain(this), c_Base(this), c_DeviceManager(this), m_GraphicsPipeline(this)
 {
 }
 
@@ -19,6 +19,7 @@ void VulkanContext::Init(Window *window)
     c_DeviceManager.CreateLogicalDevice();
     c_SwapChain.CreateSwapchain();
     c_SwapChain.CreateImageViews();
+    m_GraphicsPipeline.CreateGraphicsPipeline();
 }
 
 void VulkanContext::CreateInstance()

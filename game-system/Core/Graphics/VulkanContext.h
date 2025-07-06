@@ -1,5 +1,5 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 #include "Core/Window/GLFWindow.h"
 #include "VulkanBase.h"

@@ -1,8 +1,7 @@
 #include "VulkanBase.h"
-
+#include <fstream>
 #include <GLFW/glfw3.h>
-#include <vulkan/vulkan.h>
-
+#include <vulkan/vulkan.hpp>
 #include "pch.h"
 
 #ifdef NDEBUG
@@ -27,4 +26,19 @@ std::vector<const char *> VulkanBase::GetRequiredExtenstions()
     }
 
     return Extensions;
+}
+
+std::vector<char> VulkanBase::ReadFile(const std::string& filename) {
+    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file");
+    }
+
+    std::vector<char> buffer(file.tellg());
+    file.seekg(0, std::ios::beg);
+    file.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
+    file.close();
+    std::cout << "Loaded file " << filename << std::endl;
+    return buffer;
 }

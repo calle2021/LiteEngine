@@ -1,15 +1,20 @@
 #pragma once
-#include <vulkan/vulkan.h>
-
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp> 
 #include <vector>
+
+class VulkanContext;
 
 class VulkanPipeline
 {
   public:
-    VulkanPipeline();
+    VulkanPipeline(VulkanContext* context);
     ~VulkanPipeline();
-    void LoadShaders();
-
-  private:
+    void CreateGraphicsPipeline();
     VkShaderModule CreateShaderModule(const std::vector<char> &code);
+  private:  
+    std::vector<char> VertexShaderCode;
+    std::vector<char> FragmentShaderCode;
+  private:
+    VulkanContext *p_Context;
 };
