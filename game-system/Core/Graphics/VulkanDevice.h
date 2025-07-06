@@ -41,7 +41,7 @@ class VulkanDevice
     bool IsDeviceSuitable(VkPhysicalDevice device);
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
-    bool VulkanDevice::CheckDeviceExtensions(VkPhysicalDevice device);
+    bool CheckDeviceExtensions(VkPhysicalDevice device);
 
   private:
     const std::vector<const char *> DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
