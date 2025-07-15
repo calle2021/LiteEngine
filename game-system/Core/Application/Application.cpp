@@ -16,8 +16,6 @@ int Application::Launch(std::unique_ptr<GameApp> game)
         double dt = m_Window.GetDeltaTime();
         game->Update();
     }
-
-    m_Context.Destroy();
     m_Window.Destroy();
     return 0;
 }
