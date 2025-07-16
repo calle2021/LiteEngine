@@ -10,11 +10,15 @@ class VulkanPipeline
   public:
     VulkanPipeline(VulkanContext* context);
     ~VulkanPipeline();
+  public:
+    void CreateRenderPass();
     void CreateGraphicsPipeline();
-    VkShaderModule CreateShaderModule(const std::vector<char> &code);
-  private:  
-    std::vector<char> VertexShaderCode;
-    std::vector<char> FragmentShaderCode;
+    void Destroy();
   private:
+    VkShaderModule CreateShaderModule(const std::vector<char> &code);
+  private:
+    VkRenderPass m_RenderPass;
+    VkPipelineLayout m_PipelineLayout;
+    VkPipeline m_GraphicsPipeline;
     VulkanContext *p_Context;
 };

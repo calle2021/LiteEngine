@@ -19,6 +19,7 @@ void VulkanContext::Init(Window *window)
     c_DeviceManager.CreateLogicalDevice();
     c_SwapChain.CreateSwapchain();
     c_SwapChain.CreateImageViews();
+    m_GraphicsPipeline.CreateRenderPass();
     m_GraphicsPipeline.CreateGraphicsPipeline();
 }
 
@@ -56,6 +57,7 @@ void VulkanContext::CreateSurface()
 
 void VulkanContext::Destroy()
 {
+    m_GraphicsPipeline.Destroy();
     c_SwapChain.Destroy();
     vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
     vkDestroyDevice(m_Device, nullptr);

@@ -13,7 +13,8 @@ class VulkanSwapChain
     void CreateSwapchain();
     void CreateImageViews();
     void Destroy();
-
+  public:
+    VkFormat GetImageFormat() { return m_ImageFormat; };
   private:
     SwapChainSupportDetails QuerySupport();
     VkSurfaceFormatKHR ChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &foramts);
