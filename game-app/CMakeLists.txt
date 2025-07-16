@@ -1,6 +1,6 @@
 set(GAME "Game")
 add_executable(GAME
-    main.cpp
+    Main.cpp
 )
 
 target_sources(GAME PRIVATE
