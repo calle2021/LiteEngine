@@ -12,18 +12,19 @@ class VulkanContext
   public:
     VulkanContext();
     ~VulkanContext();
-
   public:
-    void Init(Window *window);
+    void Init(GLFWindow *window);
   public:
     vk::raii::Instance& GetInstance() { return m_Instance; };
   private:
     void CreateInstance();
+    void SetupDebugMessenger();
   public:
-    Window* m_Window;
+    GLFWindow* m_Window;
   private:
     vk::raii::Context m_Context;
-    vk::raii::Instance m_Instance;
+    vk::raii::Instance m_Instance = nullptr;
+    vk::raii::DebugUtilsMessengerEXT m_DebugMessenger = nullptr;
   private:
     VulkanDevice m_Device;
 };

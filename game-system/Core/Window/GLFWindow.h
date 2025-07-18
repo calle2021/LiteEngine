@@ -1,7 +1,7 @@
 #pragma once
 #include <GLFW/glfw3.h>
 
-class Window
+class GLFWindow
 {
   public:
     void Init();
@@ -9,11 +9,7 @@ class Window
     void Destroy();
     bool Close();
     double GetDeltaTime();
-    GLFWwindow *GetWindowHandle()
-    {
-        return m_GLFWWindow;
-    };
-
+    GLFWwindow *GetWindowHandle() { return m_GLFWWindow; };
   private:
     GLFWwindow *m_GLFWWindow;
 };
