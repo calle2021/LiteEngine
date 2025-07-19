@@ -21,6 +21,9 @@ VulkanDevice::~VulkanDevice() {}
 
 void VulkanDevice::PickPhysicalDevice()
 {
+    //auto devices = r_Context.GetInstance().enumeratePhysicalDevices();
+    //std::cout << devices.size() << std::endl;
+    
 }
 
 void VulkanDevice::CreateLogicalDevice() 
