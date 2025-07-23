@@ -19,6 +19,15 @@ target_compile_definitions(ENGINE
 )
 
 include(FetchContent)
+
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.x
+)
+FetchContent_MakeAvailable(spdlog)
+target_link_libraries(ENGINE PRIVATE spdlog::spdlog_header_only)
+
 FetchContent_Declare(
 	glfw
 	GIT_REPOSITORY	git@github.com:glfw/glfw.git

@@ -10,9 +10,6 @@ class VulkanDevice;
 class VulkanContext
 {
   public:
-    VulkanContext();
-    ~VulkanContext();
-  public:
     void Init(GLFWindow *window);
   public:
     vk::raii::Instance& GetInstance() { return m_Instance; };

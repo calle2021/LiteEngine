@@ -11,20 +11,12 @@ constexpr bool enable_validation_layers = false;
 constexpr bool enable_validation_layers = true;
 #endif
 
-VulkanContext::VulkanContext()
-    : m_Device(*this) {}
-
-VulkanContext::~VulkanContext()
-{
-}
-
 void VulkanContext::Init(GLFWindow *window)
 {
     m_Window = window;
     CreateInstance();
     SetupDebugMessenger();
-    m_Device.CreateSurface();
-    m_Device.PickPhysicalDevice();
+    m_Device.PickPhysicalDevice(&m_Instance);
     m_Device.CreateLogicalDevice();
 }
 

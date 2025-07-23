@@ -6,17 +6,9 @@ class VulkanContext;
 class VulkanDevice
 {
 public:
-    VulkanDevice(VulkanContext& context);
-    ~VulkanDevice();
-public:
-    void PickPhysicalDevice();
+    void PickPhysicalDevice(vk::raii::Instance* instance);
     void CreateLogicalDevice();
     void CreateSurface();
 private:
-    vk::raii::PhysicalDevice m_PhysicalDevice;
-    vk::raii::Device m_Device;
-    vk::raii::Queue m_GraphicsQueue;
-    vk::raii::SurfaceKHR m_Surface;
-private:
-    VulkanContext& r_Context;
+    vk::raii::PhysicalDevice m_PhysicalDevice = nullptr;
 };
