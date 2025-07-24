@@ -11,4 +11,6 @@ public:
     void CreateSurface();
 private:
     vk::raii::PhysicalDevice m_PhysicalDevice = nullptr;
+    vk::raii::Device m_Device = nullptr;
+    vk::raii::Queue m_GraphicsQueue = nullptr;
 };
