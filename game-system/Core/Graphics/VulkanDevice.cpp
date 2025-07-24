@@ -41,15 +41,16 @@ void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR* surface)
     for(size_t i = 0; i < queueFamilyProperties.size(); i++) {
         bool graphics_support = (queueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) == static_cast<vk::QueueFlags>(0);
         bool preset_support = m_PhysicalDevice.getSurfaceSupportKHR(i , *surface );
+        uint32_t idx =  static_cast<uint32_t>(i);
         if (graphics_support && preset_support) {
-            graphicsIndex = static_cast<uint32_t>(i);
-            presentIndex = static_cast<uint32_t>(i);
+            graphicsIndex = idx;
+            presentIndex = idx;
             break;
         }
         if (!graphicsIndex.has_value() && graphics_support)
-            graphicsIndex = static_cast<uint32_t>(i);
+            graphicsIndex = idx;
         if (!presentIndex.has_value() && preset_support)
-            presentIndex = static_cast<uint32_t>(i);
+            presentIndex = idx;
     }
 
     if (graphicsIndex.has_value() && presentIndex.has_value()) {
