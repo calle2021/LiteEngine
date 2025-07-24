@@ -1,5 +1,6 @@
 #include "VulkanContext.h"
 #include "pch.h"
+#include "Core/Logging/Logger.h"
 
 const std::vector validationLayers = {
     "VK_LAYER_KHRONOS_validation"
@@ -16,8 +17,9 @@ void VulkanContext::Init(GLFWindow *window)
     m_Window = window;
     CreateInstance();
     SetupDebugMessenger();
+    CreateSurface();
     m_Device.PickPhysicalDevice(&m_Instance);
-    m_Device.CreateLogicalDevice();
+    m_Device.CreateLogicalDevice(&m_Surface);
 }
 
 void VulkanContext::CreateInstance()
@@ -50,7 +52,7 @@ void VulkanContext::CreateInstance()
         .ppEnabledExtensionNames = requiredExtensions.data(),
     };
     m_Instance = vk::raii::Instance(m_Context, CreateInfo);
-    std::cout << "Created instance" << std::endl;
+    CORE_LOG_INFO("Instance created.");
 }
 
 static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT severity, vk::DebugUtilsMessageTypeFlagsEXT type, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void*) {
@@ -71,4 +73,16 @@ void VulkanContext::SetupDebugMessenger()
         .pfnUserCallback = &debugCallback
     };
     m_DebugMessenger = m_Instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
+    CORE_LOG_INFO("Setup debug messenger.");
+}
+
+void VulkanContext::CreateSurface()
+{
+    VkSurfaceKHR surface;
+    if (glfwCreateWindowSurface(*m_Instance, m_Window->GetWindowHandle(), nullptr, &surface) != 0) {
+        CORE_LOG_ERROR("Failed to create window surface.");
+        throw std::runtime_error("Failed to create window surface.");
+    }
+    m_Surface = vk::raii::SurfaceKHR(m_Instance, surface);
+    CORE_LOG_INFO("Window surface created.");
 }

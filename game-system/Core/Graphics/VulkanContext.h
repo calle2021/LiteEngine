@@ -16,12 +16,14 @@ class VulkanContext
   private:
     void CreateInstance();
     void SetupDebugMessenger();
+    void CreateSurface();
   public:
     GLFWindow* m_Window;
   private:
     vk::raii::Context m_Context;
     vk::raii::Instance m_Instance = nullptr;
     vk::raii::DebugUtilsMessengerEXT m_DebugMessenger = nullptr;
+    vk::raii::SurfaceKHR m_Surface = nullptr;
   private:
     VulkanDevice m_Device;
 };

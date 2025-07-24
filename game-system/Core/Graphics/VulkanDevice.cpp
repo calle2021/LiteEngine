@@ -32,19 +32,30 @@ void VulkanDevice::PickPhysicalDevice(vk::raii::Instance* instance)
     }
 }
 
-void VulkanDevice::CreateLogicalDevice() 
+void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR* surface) 
 {
     std::vector<vk::QueueFamilyProperties> queueFamilyProperties = m_PhysicalDevice.getQueueFamilyProperties();
     std::optional<uint32_t> graphicsIndex;
+    std::optional<uint32_t> presentIndex;
+
     for(size_t i = 0; i < queueFamilyProperties.size(); i++) {
-        if (queueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) {
+        bool graphics_support = (queueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) == static_cast<vk::QueueFlags>(0);
+        bool preset_support = m_PhysicalDevice.getSurfaceSupportKHR(i , *surface );
+        if (graphics_support && preset_support) {
             graphicsIndex = static_cast<uint32_t>(i);
+            presentIndex = static_cast<uint32_t>(i);
+            break;
         }
+        if (!graphicsIndex.has_value() && graphics_support)
+            graphicsIndex = static_cast<uint32_t>(i);
+        if (!presentIndex.has_value() && preset_support)
+            presentIndex = static_cast<uint32_t>(i);
     }
-    if (graphicsIndex.has_value()) {
-        CORE_LOG_INFO("Found queue family with graphics support.");
+
+    if (graphicsIndex.has_value() && presentIndex.has_value()) {
+        CORE_LOG_INFO("Found queue family with graphics ({}) and present ({}) support.", graphicsIndex.value(), presentIndex.value());
     } else {
-        throw std::runtime_error("Failed to find queue family with graphics support.");
+        throw std::runtime_error("Failed to find queue family with graphics and present support.");
     }
 
     vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain = 
@@ -68,7 +79,8 @@ void VulkanDevice::CreateLogicalDevice()
     CORE_LOG_INFO("Device created.");
     m_GraphicsQueue = vk::raii::Queue(m_Device, graphicsIndex.value(), 0);
     CORE_LOG_INFO("Graphics queue created.");
-
+    m_PresentQueue = vk::raii::Queue(m_Device, presentIndex.value(), 0 );
+    CORE_LOG_INFO("Present queue created.");
 }
 
 void VulkanDevice::CreateSurface()

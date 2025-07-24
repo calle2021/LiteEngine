@@ -7,10 +7,11 @@ class VulkanDevice
 {
 public:
     void PickPhysicalDevice(vk::raii::Instance* instance);
-    void CreateLogicalDevice();
+    void CreateLogicalDevice(vk::raii::SurfaceKHR* surface);
     void CreateSurface();
 private:
     vk::raii::PhysicalDevice m_PhysicalDevice = nullptr;
     vk::raii::Device m_Device = nullptr;
     vk::raii::Queue m_GraphicsQueue = nullptr;
+    vk::raii::Queue m_PresentQueue = nullptr;
 };
