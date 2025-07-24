@@ -1,39 +1,27 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
-
+#include <memory>
+#include <vulkan/vulkan_raii.hpp>
+#include <vulkan/vk_platform.h>
 #include "Core/Window/GLFWindow.h"
-#include "VulkanBase.h"
 #include "VulkanDevice.h"
-#include "VulkanPipeline.h"
-#include "VulkanSwapChain.h"
+
+class VulkanDevice;
 
 class VulkanContext
 {
   public:
-    VulkanContext();
-    ~VulkanContext();
-
+    void Init(GLFWindow *window);
   public:
-    void Init(Window *window);
-    void Destroy();
-
-  public:
-    VkInstance m_Instance;
-    VkPhysicalDevice m_PhysicalDevice;
-    VkDevice m_Device;
-    VkQueue m_GraphicsQueue;
-    VkSurfaceKHR m_Surface;
-    VkQueue m_PresentQueue;
-    VkSwapchainKHR m_SwapChain;
-
-  public:
-    Window *p_Window;
-    VulkanBase c_Base;
-    VulkanDevice c_DeviceManager;
-    VulkanSwapChain c_SwapChain;
-    VulkanPipeline m_GraphicsPipeline;
-
+    vk::raii::Instance& GetInstance() { return m_Instance; };
   private:
     void CreateInstance();
-    void CreateSurface();
+    void SetupDebugMessenger();
+  public:
+    GLFWindow* m_Window;
+  private:
+    vk::raii::Context m_Context;
+    vk::raii::Instance m_Instance = nullptr;
+    vk::raii::DebugUtilsMessengerEXT m_DebugMessenger = nullptr;
+  private:
+    VulkanDevice m_Device;
 };

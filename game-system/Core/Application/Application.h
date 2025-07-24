@@ -1,6 +1,5 @@
 #pragma once
 #include <memory>
-
 #include "Core/Graphics/VulkanContext.h"
 #include "Core/Window/GLFWindow.h"
 #include "IGame.h"
@@ -9,11 +8,10 @@ namespace GameSystem
 {
 class Application
 {
-  public:
+public:
     int Launch(std::unique_ptr<GameApp> game);
-
-  private:
-    Window m_Window;
-    VulkanContext m_Context;
+private:
+    GLFWindow m_Window;
+    VulkanContext m_VulkanContext;
 };
-} // namespace GameSystem
+}
