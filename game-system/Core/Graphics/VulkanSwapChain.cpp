@@ -22,6 +22,24 @@ void VulkanSwapChain::CreateSwapchain(std::pair<uint32_t, uint32_t> resolution, 
     m_Images = m_Swapchain.getImages();
 }
 
+void VulkanSwapChain::CreateImageViews(vk::raii::Device& device)
+{
+    m_ImageViews.clear();
+
+    vk::ImageViewCreateInfo imageViewCreateInfo {
+        .viewType = vk::ImageViewType::e2D,
+        .format = m_ImageFormat,
+        .subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
+    };
+    CORE_LOG_INFO("Found {} image(s)", m_Images.size());
+    for ( auto image : m_Images )
+    {
+        imageViewCreateInfo.image = image;
+        m_ImageViews.emplace_back(device, imageViewCreateInfo);
+    }
+    CORE_LOG_INFO("Image views created.");
+}
+
 vk::Format VulkanSwapChain::ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
 {
     CORE_LOG_INFO("Found {} surface format(s)", availableFormats.size());

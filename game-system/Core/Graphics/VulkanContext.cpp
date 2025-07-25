@@ -20,6 +20,7 @@ void VulkanContext::Init(GLFWindow *window)
     m_Device.PickPhysicalDevice(&m_Instance);
     m_Device.CreateLogicalDevice(&m_Surface);
     m_Swapchain.CreateSwapchain(window->GetPixelResolution(), m_Device.GetDevice(), m_Device.GetPhysicalDevice(), m_Surface);
+    m_Swapchain.CreateImageViews(m_Device.GetDevice());
 }
 
 void VulkanContext::CreateInstance()
