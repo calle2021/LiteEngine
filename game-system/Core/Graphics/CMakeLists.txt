@@ -3,4 +3,6 @@ target_sources(ENGINE PRIVATE
     VulkanContext.h
     VulkanDevice.cpp
     VulkanDevice.h
+    VulkanSwapChain.cpp
+    VulkanSwapChain.h
 )

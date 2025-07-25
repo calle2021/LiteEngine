@@ -2,7 +2,7 @@
 #include "pch.h"
 #include "Core/Logging/Logger.h"
 
-namespace GameSystem 
+namespace GameSystem
 {
 int Application::Launch(std::unique_ptr<GameApp> game)
 {

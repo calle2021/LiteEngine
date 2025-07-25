@@ -14,22 +14,22 @@ constexpr bool enable_validation_layers = true;
 
 void VulkanContext::Init(GLFWindow *window)
 {
-    m_Window = window;
     CreateInstance();
     SetupDebugMessenger();
-    CreateSurface();
+    CreateSurface(window);
     m_Device.PickPhysicalDevice(&m_Instance);
     m_Device.CreateLogicalDevice(&m_Surface);
+    m_Swapchain.CreateSwapchain(window->GetPixelResolution(), m_Device.GetDevice(), m_Device.GetPhysicalDevice(), m_Surface);
 }
 
 void VulkanContext::CreateInstance()
 {
-    constexpr vk::ApplicationInfo AppInfo { 
+    constexpr vk::ApplicationInfo AppInfo {
         .pApplicationName = "Sample",
         .applicationVersion = VK_MAKE_VERSION( 1, 0, 0 ),
         .pEngineName = "Engine",
         .engineVersion = VK_MAKE_VERSION( 1, 0, 0 ),
-        .apiVersion = vk::ApiVersion14 
+        .apiVersion = vk::ApiVersion14
     };
 
     std::vector<char const*> requiredLayers;
@@ -76,10 +76,10 @@ void VulkanContext::SetupDebugMessenger()
     CORE_LOG_INFO("Setup debug messenger.");
 }
 
-void VulkanContext::CreateSurface()
+void VulkanContext::CreateSurface(GLFWindow* window)
 {
     VkSurfaceKHR surface;
-    if (glfwCreateWindowSurface(*m_Instance, m_Window->GetWindowHandle(), nullptr, &surface) != 0) {
+    if (glfwCreateWindowSurface(*m_Instance, window->GetWindowHandle(), nullptr, &surface) != 0) {
         CORE_LOG_ERROR("Failed to create window surface.");
         throw std::runtime_error("Failed to create window surface.");
     }

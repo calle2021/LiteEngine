@@ -32,7 +32,7 @@ void VulkanDevice::PickPhysicalDevice(vk::raii::Instance* instance)
     }
 }
 
-void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR* surface) 
+void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR* surface)
 {
     std::vector<vk::QueueFamilyProperties> queueFamilyProperties = m_PhysicalDevice.getQueueFamilyProperties();
     std::optional<uint32_t> graphicsIndex;
@@ -59,7 +59,7 @@ void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR* surface)
         throw std::runtime_error("Failed to find queue family with graphics and present support.");
     }
 
-    vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain = 
+    vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain =
     {
         {},
         {.dynamicRendering = true },
@@ -68,7 +68,7 @@ void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR* surface)
 
     float queuePriority = 0.0f;
     vk::DeviceQueueCreateInfo deviceQueueCreateInfo{ .queueFamilyIndex = graphicsIndex.value(), .queueCount = 1, .pQueuePriorities = &queuePriority };
-    vk::DeviceCreateInfo deviceCreateInfo { 
+    vk::DeviceCreateInfo deviceCreateInfo {
         .pNext = &featureChain.get<vk::PhysicalDeviceFeatures2>(),
         .queueCreateInfoCount = 1,
         .pQueueCreateInfos = &deviceQueueCreateInfo,

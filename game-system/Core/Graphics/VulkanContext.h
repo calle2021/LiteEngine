@@ -4,6 +4,7 @@
 #include <vulkan/vk_platform.h>
 #include "Core/Window/GLFWindow.h"
 #include "VulkanDevice.h"
+#include "VulkanSwapChain.h"
 
 class VulkanDevice;
 
@@ -16,9 +17,7 @@ class VulkanContext
   private:
     void CreateInstance();
     void SetupDebugMessenger();
-    void CreateSurface();
-  public:
-    GLFWindow* m_Window;
+    void CreateSurface(GLFWindow* window);
   private:
     vk::raii::Context m_Context;
     vk::raii::Instance m_Instance = nullptr;
@@ -26,4 +25,5 @@ class VulkanContext
     vk::raii::SurfaceKHR m_Surface = nullptr;
   private:
     VulkanDevice m_Device;
+    VulkanSwapChain m_Swapchain;
 };
