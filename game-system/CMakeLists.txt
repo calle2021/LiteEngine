@@ -1,6 +1,6 @@
 add_library(ENGINE STATIC)
 
-target_include_directories(ENGINE 
+target_include_directories(ENGINE
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Include
 )
@@ -10,6 +10,10 @@ target_precompile_headers(ENGINE PRIVATE pch.h)
 add_subdirectory(Core)
 add_subdirectory(Assets)
 add_subdirectory(Include)
+
+set_target_properties(ENGINE PROPERTIES
+    ENGINE_ASSETS_DIR "${CMAKE_CURRENT_BINARY_DIR}/Assets"
+)
 
 find_package (Vulkan REQUIRED)
 target_include_directories(ENGINE PRIVATE "${Vulkan_INCLUDE_DIR}")
