@@ -1,8 +1,6 @@
 #pragma once
 #include <vulkan/vulkan_raii.hpp>
 
-class VulkanContext;
-
 class VulkanDevice
 {
 public:

@@ -5,4 +5,6 @@ target_sources(ENGINE PRIVATE
     VulkanDevice.h
     VulkanSwapChain.cpp
     VulkanSwapChain.h
+    VulkanGraphicsPipeline.cpp
+    VulkanGraphicsPipeline.h
 )

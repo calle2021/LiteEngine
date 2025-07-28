@@ -5,6 +5,7 @@
 #include "Core/Window/GLFWindow.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
+#include "VulkanGraphicsPipeline.h"
 
 class VulkanDevice;
 
@@ -26,4 +27,5 @@ class VulkanContext
   private:
     VulkanDevice m_Device;
     VulkanSwapChain m_Swapchain;
+    VulkanGraphicsPipeline m_GraphicsPipeline;
 };

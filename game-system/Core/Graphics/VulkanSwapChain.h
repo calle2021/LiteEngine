@@ -8,6 +8,8 @@ class VulkanSwapChain
 public:
     void CreateSwapchain(std::pair<uint32_t, uint32_t> resolution, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::SurfaceKHR& surface);
     void CreateImageViews(vk::raii::Device& device);
+public:
+    const vk::Format* GetImageFormatPtr() const { return &m_ImageFormat; }
 private:
     vk::Format ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
