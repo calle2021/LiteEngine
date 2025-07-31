@@ -14,8 +14,6 @@ public:
         vk::raii::Pipeline& graphicsPipeline
     );
 private:
-    vk::raii::CommandPool m_CommandPool = nullptr;
-    vk::raii::CommandBuffer m_CommandBuffer = nullptr;
     void TransitionImageLayout(
         std::vector<vk::Image>& swapChainImages,
         uint32_t imageIndex,
@@ -26,4 +24,7 @@ private:
         vk::PipelineStageFlags2 srcStageMask,
         vk::PipelineStageFlags2 dstStageMask
     );
+private:
+    vk::raii::CommandPool m_CommandPool = nullptr;
+    vk::raii::CommandBuffer m_CommandBuffer = nullptr;
 };

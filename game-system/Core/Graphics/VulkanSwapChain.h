@@ -9,7 +9,7 @@ public:
     void CreateSwapchain(std::pair<uint32_t, uint32_t> resolution, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::SurfaceKHR& surface);
     void CreateImageViews(vk::raii::Device& device);
 public:
-    const vk::Format* GetImageFormatPtr() const { return &m_ImageFormat; }
+    const vk::Format& GetImageFormat() const { return m_ImageFormat; }
     const std::vector<vk::Image>& GetImages() const { return m_Images; }
     const std::vector<vk::raii::ImageView>& GetImageViews() const { return m_ImageViews; }
     const vk::Extent2D& GetExtent() const { return m_Extent; }

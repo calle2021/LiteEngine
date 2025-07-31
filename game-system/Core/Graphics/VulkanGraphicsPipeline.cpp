@@ -3,7 +3,7 @@
 #include "Core/Logging/Logger.h"
 
 
-void VulkanGraphicsPipeline::CreateGraphicsPipeline(vk::raii::Device& device, const vk::Format* format)
+void VulkanGraphicsPipeline::CreateGraphicsPipeline(vk::raii::Device& device, const vk::Format& format)
 {
     vk::raii::ShaderModule shaderModule = CreateShaderModule(ReadFile("Assets/Shaders/slang.spv"), device);
     vk::PipelineShaderStageCreateInfo vertShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eVertex, .module = shaderModule,  .pName = "vertMain" };
@@ -38,7 +38,7 @@ void VulkanGraphicsPipeline::CreateGraphicsPipeline(vk::raii::Device& device, co
     m_PipelineLayout = vk::raii::PipelineLayout( device, pipelineLayoutInfo );
     CORE_LOG_INFO("Pipeline layout created.");
 
-    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo{ .colorAttachmentCount = 1, .pColorAttachmentFormats = format };
+    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo{ .colorAttachmentCount = 1, .pColorAttachmentFormats = &format };
     vk::GraphicsPipelineCreateInfo pipelineInfo {
         .pNext = &pipelineRenderingCreateInfo,
         .stageCount = 2,
