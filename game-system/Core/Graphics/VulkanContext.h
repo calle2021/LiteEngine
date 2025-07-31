@@ -6,6 +6,7 @@
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
 #include "VulkanGraphicsPipeline.h"
+#include "VulkanRenderer.h"
 
 class VulkanDevice;
 
@@ -28,4 +29,5 @@ class VulkanContext
     VulkanDevice m_Device;
     VulkanSwapChain m_Swapchain;
     VulkanGraphicsPipeline m_GraphicsPipeline;
+    VulkanRenderer m_Renderer;
 };

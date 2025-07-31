@@ -22,6 +22,8 @@ void VulkanContext::Init(GLFWindow *window)
     m_Swapchain.CreateSwapchain(window->GetPixelResolution(), m_Device.GetDevice(), m_Device.GetPhysicalDevice(), m_Surface);
     m_Swapchain.CreateImageViews(m_Device.GetDevice());
     m_GraphicsPipeline.CreateGraphicsPipeline(m_Device.GetDevice(), m_Swapchain.GetImageFormatPtr());
+    m_Renderer.CreateCommandPool(m_Device.GetDevice(), m_Device.GetGraphicsIndex());
+    m_Renderer.CreateCommandBuffer(m_Device.GetDevice());
 }
 
 void VulkanContext::CreateInstance()

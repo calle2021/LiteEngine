@@ -10,6 +10,9 @@ public:
     void CreateImageViews(vk::raii::Device& device);
 public:
     const vk::Format* GetImageFormatPtr() const { return &m_ImageFormat; }
+    const std::vector<vk::Image>& GetImages() const { return m_Images; }
+    const std::vector<vk::raii::ImageView>& GetImageViews() const { return m_ImageViews; }
+    const vk::Extent2D& GetExtent() const { return m_Extent; }
 private:
     vk::Format ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);

@@ -7,4 +7,6 @@ target_sources(ENGINE PRIVATE
     VulkanSwapChain.h
     VulkanGraphicsPipeline.cpp
     VulkanGraphicsPipeline.h
+    VulkanRenderer.cpp
+    VulkanRenderer.h
 )
