@@ -13,6 +13,7 @@ public:
         vk::Extent2D& swapChainExtent,
         vk::raii::Pipeline& graphicsPipeline
     );
+    void CreateSyncObjects(vk::raii::Device& device);
 private:
     void TransitionImageLayout(
         std::vector<vk::Image>& swapChainImages,
@@ -27,4 +28,8 @@ private:
 private:
     vk::raii::CommandPool m_CommandPool = nullptr;
     vk::raii::CommandBuffer m_CommandBuffer = nullptr;
+private: // Synchronization objects
+    vk::raii::Semaphore presentCompleteSemaphore = nullptr;
+    vk::raii::Semaphore renderFinishedSemaphore = nullptr;
+    vk::raii::Fence drawFence = nullptr;
 };

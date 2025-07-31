@@ -22,6 +22,14 @@ void VulkanRenderer::CreateCommandBuffer(vk::raii::Device& device)
     CORE_LOG_INFO("Commandbuffer created.");
 }
 
+void VulkanRenderer::CreateSyncObjects(vk::raii::Device& device)
+{
+    presentCompleteSemaphore =vk::raii::Semaphore(device, vk::SemaphoreCreateInfo());
+    renderFinishedSemaphore = vk::raii::Semaphore(device, vk::SemaphoreCreateInfo());
+    drawFence = vk::raii::Fence(device, {.flags = vk::FenceCreateFlagBits::eSignaled});
+    CORE_LOG_INFO("Sync objects created.");
+}
+
 void VulkanRenderer::RecordCommandBuffer(
     std::vector<vk::Image>& swapChainImages,
     std::vector<vk::raii::ImageView>& swapChainImageViews,
