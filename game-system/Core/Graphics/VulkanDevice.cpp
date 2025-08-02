@@ -37,7 +37,7 @@ void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR* surface)
     std::vector<vk::QueueFamilyProperties> queueFamilyProperties = m_PhysicalDevice.getQueueFamilyProperties();
 
     for(size_t i = 0; i < queueFamilyProperties.size(); i++) {
-        bool graphics_support = (queueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) == static_cast<vk::QueueFlags>(0);
+        bool graphics_support = (queueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) != vk::QueueFlags{};
         bool preset_support = m_PhysicalDevice.getSurfaceSupportKHR(i , *surface );
         uint32_t idx =  static_cast<uint32_t>(i);
         if (graphics_support && preset_support) {
@@ -57,11 +57,10 @@ void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR* surface)
         throw std::runtime_error("Failed to find queue family with graphics and present support.");
     }
 
-    vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain =
-    {
-        {},
-        {.dynamicRendering = true },
-        {.extendedDynamicState = true }
+    vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain = {
+        {},                                                     // vk::PhysicalDeviceFeatures2
+        {.synchronization2 = true, .dynamicRendering = true },  // vk::PhysicalDeviceVulkan13Features
+        {.extendedDynamicState = true }                         // vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
     };
 
     float queuePriority = 0.0f;

@@ -27,6 +27,8 @@ void GLFWindow::Init()
     m_PixelResolution = std::make_pair(pixel_width, pixel_height);
     CORE_LOG_INFO("GLFW window created ({}x{} {}x{}).",
         m_Resolution.first, m_Resolution.second, m_PixelResolution.first, m_PixelResolution.second);
+
+    time = glfwGetTime();
 }
 
 bool GLFWindow::Close()
@@ -41,7 +43,10 @@ void GLFWindow::Update()
 
 double GLFWindow::GetDeltaTime()
 {
-    return glfwGetTime();
+    double curr = glfwGetTime();
+    double deltaTime = curr - time;
+    time = curr;
+    return deltaTime;
 }
 
 void GLFWindow::Destroy()

@@ -14,8 +14,10 @@ int Application::Launch(std::unique_ptr<GameApp> game)
     {
         m_Window.Update();
         double dt = m_Window.GetDeltaTime();
+        m_VulkanContext.Update();
         game->Update();
     }
+    m_VulkanContext.WaitIdle();
     m_Window.Destroy();
     return 0;
 }

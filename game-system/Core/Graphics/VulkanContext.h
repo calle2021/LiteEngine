@@ -13,7 +13,10 @@ class VulkanDevice;
 class VulkanContext
 {
   public:
+    VulkanContext();
     void Init(GLFWindow *window);
+    void Update();
+    void WaitIdle();
   public:
     vk::raii::Instance& GetInstance() { return m_Instance; };
   private:

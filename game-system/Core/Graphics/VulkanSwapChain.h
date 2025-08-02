@@ -3,8 +3,11 @@
 #include <vulkan/vulkan_raii.hpp>
 #include "Core/Window/GLFWindow.h"
 
+class VulkanRenderer;
+
 class VulkanSwapChain
 {
+friend class VulkanRenderer;
 public:
     void CreateSwapchain(std::pair<uint32_t, uint32_t> resolution, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::SurfaceKHR& surface);
     void CreateImageViews(vk::raii::Device& device);
@@ -13,6 +16,8 @@ public:
     const std::vector<vk::Image>& GetImages() const { return m_Images; }
     const std::vector<vk::raii::ImageView>& GetImageViews() const { return m_ImageViews; }
     const vk::Extent2D& GetExtent() const { return m_Extent; }
+    const vk::raii::SwapchainKHR& GetSwapChain() const { return m_Swapchain; }
+
 private:
     vk::Format ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);

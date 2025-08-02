@@ -17,4 +17,5 @@ private:
 private:
     std::pair<uint32_t, uint32_t> m_Resolution;
     std::pair<uint32_t, uint32_t> m_PixelResolution;
+    double time;
 };

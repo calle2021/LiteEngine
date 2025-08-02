@@ -1,9 +1,11 @@
 
 #pragma once
 #include <vulkan/vulkan_raii.hpp>
+class VulkanRenderer;
 
 class VulkanGraphicsPipeline
 {
+friend class VulkanRenderer;
 public:
     void CreateGraphicsPipeline(vk::raii::Device& device, const vk::Format& format);
     const vk::raii::Pipeline& GetGraphicsPipeline() const { return m_GraphicsPipeline; }

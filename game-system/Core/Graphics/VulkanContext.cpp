@@ -12,6 +12,12 @@ constexpr bool enable_validation_layers = false;
 constexpr bool enable_validation_layers = true;
 #endif
 
+VulkanContext::VulkanContext()
+: m_Device()
+, m_Swapchain()
+, m_GraphicsPipeline()
+, m_Renderer(m_Swapchain, m_Device, m_GraphicsPipeline) {}
+
 void VulkanContext::Init(GLFWindow *window)
 {
     CreateInstance();
@@ -22,9 +28,19 @@ void VulkanContext::Init(GLFWindow *window)
     m_Swapchain.CreateSwapchain(window->GetPixelResolution(), m_Device.GetDevice(), m_Device.GetPhysicalDevice(), m_Surface);
     m_Swapchain.CreateImageViews(m_Device.GetDevice());
     m_GraphicsPipeline.CreateGraphicsPipeline(m_Device.GetDevice(), m_Swapchain.GetImageFormat());
-    m_Renderer.CreateCommandPool(m_Device.GetDevice(), m_Device.GetGraphicsIndex());
-    m_Renderer.CreateCommandBuffer(m_Device.GetDevice());
-    m_Renderer.CreateSyncObjects(m_Device.GetDevice());
+    m_Renderer.CreateCommandPool();
+    m_Renderer.CreateCommandBuffer();
+    m_Renderer.CreateSyncObjects();
+}
+
+void VulkanContext::Update()
+{
+    m_Renderer.DrawFrame();
+}
+
+void VulkanContext::WaitIdle()
+{
+    m_Device.GetDevice().waitIdle();
 }
 
 void VulkanContext::CreateInstance()
