@@ -13,34 +13,34 @@ constexpr bool enable_validation_layers = true;
 #endif
 
 VulkanContext::VulkanContext()
-: m_Device()
-, m_Swapchain()
-, m_GraphicsPipeline()
-, m_Renderer(m_Swapchain, m_Device, m_GraphicsPipeline) {}
+: m_VulkanDevice()
+, m_VulkanSwapChain(m_VulkanDevice)
+, m_VulkanGraphicsPipeline(m_VulkanSwapChain, m_VulkanDevice)
+, m_VulkanRenderer(m_VulkanSwapChain, m_VulkanDevice, m_VulkanGraphicsPipeline) {}
 
 void VulkanContext::Init(GLFWindow *window)
 {
     CreateInstance();
     SetupDebugMessenger();
     CreateSurface(window);
-    m_Device.PickPhysicalDevice(&m_Instance);
-    m_Device.CreateLogicalDevice(&m_Surface);
-    m_Swapchain.CreateSwapchain(window->GetPixelResolution(), m_Device.GetDevice(), m_Device.GetPhysicalDevice(), m_Surface);
-    m_Swapchain.CreateImageViews(m_Device.GetDevice());
-    m_GraphicsPipeline.CreateGraphicsPipeline(m_Device.GetDevice(), m_Swapchain.GetImageFormat());
-    m_Renderer.CreateCommandPool();
-    m_Renderer.CreateCommandBuffer();
-    m_Renderer.CreateSyncObjects();
+    m_VulkanDevice.PickPhysicalDevice(&m_Instance);
+    m_VulkanDevice.CreateLogicalDevice(&m_Surface);
+    m_VulkanSwapChain.CreateSwapchain(window->GetPixelResolution(), m_Surface);
+    m_VulkanSwapChain.CreateImageViews();
+    m_VulkanGraphicsPipeline.CreateGraphicsPipeline();
+    m_VulkanRenderer.CreateCommandPool();
+    m_VulkanRenderer.CreateCommandBuffer();
+    m_VulkanRenderer.CreateSyncObjects();
 }
 
 void VulkanContext::Update()
 {
-    m_Renderer.DrawFrame();
+    m_VulkanRenderer.DrawFrame();
 }
 
 void VulkanContext::WaitIdle()
 {
-    m_Device.GetDevice().waitIdle();
+    m_VulkanDevice.m_Device.waitIdle();
 }
 
 void VulkanContext::CreateInstance()

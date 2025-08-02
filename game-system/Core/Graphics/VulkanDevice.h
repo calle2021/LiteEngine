@@ -3,21 +3,21 @@
 #include <optional>
 #include <cstdint>
 
+class VulkanSwapChain;
+class VulkanGraphicsPipeline;
 class VulkanRenderer;
+class VulkanContext;
 
 class VulkanDevice
 {
+friend class VulkanSwapChain;
+friend class VulkanGraphicsPipeline;
 friend class VulkanRenderer;
+friend class VulkanContext;
 public:
     void PickPhysicalDevice(vk::raii::Instance* instance);
     void CreateLogicalDevice(vk::raii::SurfaceKHR* surface);
     void CreateSurface();
-public:
-    vk::raii::PhysicalDevice& GetPhysicalDevice() { return m_PhysicalDevice; };
-    vk::raii::Device& GetDevice() { return m_Device; };
-    uint32_t GetGraphicsIndex() { return m_GraphicsIndex.value(); };
-    vk::raii::Queue& GetGraphicsQueue() { return m_GraphicsQueue; };
-    vk::raii::Queue& GetPresentQueue() { return m_PresentQueue; };
 private:
     vk::raii::PhysicalDevice m_PhysicalDevice = nullptr;
     vk::raii::Device m_Device = nullptr;

@@ -29,8 +29,8 @@ class VulkanContext
     vk::raii::DebugUtilsMessengerEXT m_DebugMessenger = nullptr;
     vk::raii::SurfaceKHR m_Surface = nullptr;
   private:
-    VulkanDevice m_Device;
-    VulkanSwapChain m_Swapchain;
-    VulkanGraphicsPipeline m_GraphicsPipeline;
-    VulkanRenderer m_Renderer;
+    VulkanDevice m_VulkanDevice;
+    VulkanSwapChain m_VulkanSwapChain;
+    VulkanGraphicsPipeline m_VulkanGraphicsPipeline;
+    VulkanRenderer m_VulkanRenderer;
 };

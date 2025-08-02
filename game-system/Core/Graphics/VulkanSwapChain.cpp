@@ -1,10 +1,14 @@
 #include "VulkanSwapChain.h"
 #include "Core/Logging/Logger.h"
 
-void VulkanSwapChain::CreateSwapchain(std::pair<uint32_t, uint32_t> resolution, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::SurfaceKHR& surface)
+VulkanSwapChain::VulkanSwapChain(VulkanDevice& device)
+: m_VulkanDevice(device) {}
+
+
+void VulkanSwapChain::CreateSwapchain(std::pair<uint32_t, uint32_t> resolution, vk::raii::SurfaceKHR& surface)
 {
-    auto surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
-    m_ImageFormat = ChooseSwapchainSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(surface));
+    auto surfaceCapabilities = m_VulkanDevice.m_PhysicalDevice.getSurfaceCapabilitiesKHR(surface);
+    m_ImageFormat = ChooseSwapchainSurfaceFormat(m_VulkanDevice.m_PhysicalDevice.getSurfaceFormatsKHR(surface));
     m_Extent = ChooseSwapExtent(resolution, surfaceCapabilities);
     auto minImageCount = std::max( 3u, surfaceCapabilities.minImageCount );
     minImageCount = ( surfaceCapabilities.maxImageCount > 0 && minImageCount > surfaceCapabilities.maxImageCount ) ? surfaceCapabilities.maxImageCount : minImageCount;
@@ -14,15 +18,15 @@ void VulkanSwapChain::CreateSwapchain(std::pair<uint32_t, uint32_t> resolution, 
         .imageExtent = m_Extent, .imageArrayLayers =1,
         .imageUsage = vk::ImageUsageFlagBits::eColorAttachment, .imageSharingMode = vk::SharingMode::eExclusive,
         .preTransform = surfaceCapabilities.currentTransform, .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        .presentMode = ChooseSwapPresentMode(physicalDevice.getSurfacePresentModesKHR(surface)),
+        .presentMode = ChooseSwapPresentMode(m_VulkanDevice.m_PhysicalDevice.getSurfacePresentModesKHR(surface)),
         .clipped = true };
 
-    m_Swapchain = vk::raii::SwapchainKHR(device, swapChainCreateInfo);
+    m_Swapchain = vk::raii::SwapchainKHR(m_VulkanDevice.m_Device, swapChainCreateInfo);
     CORE_LOG_INFO("Swap chain created.");
     m_Images = m_Swapchain.getImages();
 }
 
-void VulkanSwapChain::CreateImageViews(vk::raii::Device& device)
+void VulkanSwapChain::CreateImageViews()
 {
     m_ImageViews.clear();
 
@@ -35,7 +39,7 @@ void VulkanSwapChain::CreateImageViews(vk::raii::Device& device)
     for ( auto image : m_Images )
     {
         imageViewCreateInfo.image = image;
-        m_ImageViews.emplace_back(device, imageViewCreateInfo);
+        m_ImageViews.emplace_back(m_VulkanDevice.m_Device, imageViewCreateInfo);
     }
     CORE_LOG_INFO("Image views created.");
 }
