@@ -29,7 +29,7 @@ void VulkanContext::Init(GLFWindow *window)
     m_VulkanSwapChain.CreateImageViews();
     m_VulkanGraphicsPipeline.CreateGraphicsPipeline();
     m_VulkanRenderer.CreateCommandPool();
-    m_VulkanRenderer.CreateCommandBuffer();
+    m_VulkanRenderer.CreateCommandBuffers();
     m_VulkanRenderer.CreateSyncObjects();
 }
 

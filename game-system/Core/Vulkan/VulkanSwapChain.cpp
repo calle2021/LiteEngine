@@ -4,7 +4,6 @@
 VulkanSwapChain::VulkanSwapChain(VulkanDevice& device)
 : m_VulkanDevice(device) {}
 
-
 void VulkanSwapChain::CreateSwapchain(std::pair<uint32_t, uint32_t> resolution, vk::raii::SurfaceKHR& surface)
 {
     auto surfaceCapabilities = m_VulkanDevice.m_PhysicalDevice.getSurfaceCapabilitiesKHR(surface);
@@ -13,17 +12,23 @@ void VulkanSwapChain::CreateSwapchain(std::pair<uint32_t, uint32_t> resolution, 
     auto minImageCount = std::max( 3u, surfaceCapabilities.minImageCount );
     minImageCount = ( surfaceCapabilities.maxImageCount > 0 && minImageCount > surfaceCapabilities.maxImageCount ) ? surfaceCapabilities.maxImageCount : minImageCount;
     vk::SwapchainCreateInfoKHR swapChainCreateInfo{
-        .surface = surface, .minImageCount = minImageCount,
-        .imageFormat = m_ImageFormat, .imageColorSpace = vk::ColorSpaceKHR::eSrgbNonlinear,
-        .imageExtent = m_Extent, .imageArrayLayers =1,
-        .imageUsage = vk::ImageUsageFlagBits::eColorAttachment, .imageSharingMode = vk::SharingMode::eExclusive,
-        .preTransform = surfaceCapabilities.currentTransform, .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
+        .surface = surface,
+        .minImageCount = minImageCount,
+        .imageFormat = m_ImageFormat,
+        .imageColorSpace = vk::ColorSpaceKHR::eSrgbNonlinear,
+        .imageExtent = m_Extent,
+        .imageArrayLayers =1,
+        .imageUsage = vk::ImageUsageFlagBits::eColorAttachment,
+        .imageSharingMode = vk::SharingMode::eExclusive,
+        .preTransform = surfaceCapabilities.currentTransform,
+        .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
         .presentMode = ChooseSwapPresentMode(m_VulkanDevice.m_PhysicalDevice.getSurfacePresentModesKHR(surface)),
         .clipped = true };
 
-    m_Swapchain = vk::raii::SwapchainKHR(m_VulkanDevice.m_Device, swapChainCreateInfo);
+    m_SwapChain = vk::raii::SwapchainKHR(m_VulkanDevice.m_Device, swapChainCreateInfo);
     CORE_LOG_INFO("Swap chain created.");
-    m_Images = m_Swapchain.getImages();
+    m_Images = m_SwapChain.getImages();
+    CORE_LOG_INFO("Using {} images.", m_Images.size());
 }
 
 void VulkanSwapChain::CreateImageViews()

@@ -21,8 +21,6 @@ public:
 private:
     vk::raii::PhysicalDevice m_PhysicalDevice = nullptr;
     vk::raii::Device m_Device = nullptr;
-    vk::raii::Queue m_GraphicsQueue = nullptr;
-    vk::raii::Queue m_PresentQueue = nullptr;
-    std::optional<uint32_t> m_GraphicsIndex;
-    std::optional<uint32_t> m_PresentIndex;
+    vk::raii::Queue m_Queue = nullptr;
+    std::optional<uint32_t> m_QueueIndex;
 };

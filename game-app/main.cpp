@@ -8,7 +8,7 @@
 int main()
 {
     try {
-        GameSystem::Application().Launch(std::make_unique<Game>());
+        LiteEngine::Application().Launch(std::make_unique<Game>());
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;

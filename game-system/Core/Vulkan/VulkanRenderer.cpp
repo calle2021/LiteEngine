@@ -1,6 +1,7 @@
 #include "VulkanRenderer.h"
 #include "Core/Logging/Logger.h"
 
+constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 VulkanRenderer::VulkanRenderer(VulkanSwapChain& swapChain, VulkanDevice& device,
                                VulkanGraphicsPipeline& graphicsPipeline)
@@ -11,71 +12,94 @@ VulkanRenderer::VulkanRenderer(VulkanSwapChain& swapChain, VulkanDevice& device,
 
 void VulkanRenderer::DrawFrame()
 {
-    m_VulkanDevice.m_PresentQueue.waitIdle();
+    while ( vk::Result::eTimeout == m_VulkanDevice.m_Device.waitForFences(*m_Fences[m_CurrentFrame], vk::True, UINT64_MAX ) )
+        ;
+    auto [result, imageIndex] = m_VulkanSwapChain.m_SwapChain.acquireNextImage(UINT64_MAX, *m_PresentSemaphores[m_SemophoreIndex], nullptr);
 
-    auto [result, imageIndex] = m_VulkanSwapChain.m_Swapchain.acquireNextImage( UINT64_MAX, *presentCompleteSemaphore, nullptr );
+    m_VulkanDevice.m_Device.resetFences(*m_Fences[m_CurrentFrame]);
+    m_CommandBuffers[m_CurrentFrame].reset();
     RecordCommandBuffer(imageIndex);
 
-    m_VulkanDevice.m_Device.resetFences(*drawFence);
-    vk::PipelineStageFlags waitDestinationStageMask( vk::PipelineStageFlagBits::eColorAttachmentOutput );
-    const vk::SubmitInfo submitInfo{ .waitSemaphoreCount = 1, .pWaitSemaphores = &*presentCompleteSemaphore,
-                        .pWaitDstStageMask = &waitDestinationStageMask, .commandBufferCount = 1, .pCommandBuffers = &*m_CommandBuffer,
-                        .signalSemaphoreCount = 1, .pSignalSemaphores = &*renderFinishedSemaphore };
-    m_VulkanDevice.m_GraphicsQueue.submit(submitInfo, *drawFence);
-    while ( vk::Result::eTimeout == m_VulkanDevice.m_Device.waitForFences( *drawFence, vk::True, UINT64_MAX ) )
-        ;
+    vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+    const vk::SubmitInfo submitInfo {
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &*m_PresentSemaphores[m_SemophoreIndex],
+        .pWaitDstStageMask = &waitDestinationStageMask,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &*m_CommandBuffers[m_CurrentFrame],
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores = &*m_RenderSemaphores[imageIndex]
+    };
+    m_VulkanDevice.m_Queue.submit(submitInfo, m_Fences[m_CurrentFrame]);
 
     const vk::PresentInfoKHR presentInfoKHR {
         .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &*renderFinishedSemaphore,
+        .pWaitSemaphores = &*m_RenderSemaphores[imageIndex],
         .swapchainCount = 1,
-        .pSwapchains = &*m_VulkanSwapChain.m_Swapchain,
+        .pSwapchains = &*m_VulkanSwapChain.m_SwapChain,
         .pImageIndices = &imageIndex
     };
-
-    result = m_VulkanDevice.m_PresentQueue.presentKHR(presentInfoKHR);
+    result = m_VulkanDevice.m_Queue.presentKHR(presentInfoKHR);
     switch (result)
     {
-        case vk::Result::eSuccess: break;
-        case vk::Result::eSuboptimalKHR: std::cout << "vk::Queue::presentKHR returned vk::Result::eSuboptimalKHR !\n"; break;
+        case vk::Result::eSuccess:
+        break;
+        case vk::Result::eSuboptimalKHR:
+        CORE_LOG_WARN("PresentKHR returned eSuboptimalKHR.");
+        break;
         default:
         CORE_LOG_ERROR("PresentKHR returned unexpected result.");
-        break;  // an unexpected result is returned!
+        break;
     }
+    m_SemophoreIndex = (m_SemophoreIndex + 1) % m_PresentSemaphores.size();
+    m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void VulkanRenderer::CreateCommandPool()
 {
     vk::CommandPoolCreateInfo poolInfo {
         .flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-        .queueFamilyIndex = m_VulkanDevice.m_GraphicsIndex.value()
+        .queueFamilyIndex = m_VulkanDevice.m_QueueIndex.value()
     };
     m_CommandPool = vk::raii::CommandPool(m_VulkanDevice.m_Device, poolInfo);
     CORE_LOG_INFO("Commandpool created with graphics index {}.", poolInfo.queueFamilyIndex);
 }
 
-void VulkanRenderer::CreateCommandBuffer()
+void VulkanRenderer::CreateCommandBuffers()
 {
     vk::CommandBufferAllocateInfo allocInfo {
         .commandPool = m_CommandPool,
         .level = vk::CommandBufferLevel::ePrimary,
-        .commandBufferCount = 1
+        .commandBufferCount = MAX_FRAMES_IN_FLIGHT,
     };
-    m_CommandBuffer = std::move(vk::raii::CommandBuffers(m_VulkanDevice.m_Device, allocInfo).front());
+    m_CommandBuffers = vk::raii::CommandBuffers(m_VulkanDevice.m_Device, allocInfo);
     CORE_LOG_INFO("Commandbuffer created.");
 }
 
 void VulkanRenderer::CreateSyncObjects()
 {
-    presentCompleteSemaphore =vk::raii::Semaphore(m_VulkanDevice.m_Device, vk::SemaphoreCreateInfo());
-    renderFinishedSemaphore = vk::raii::Semaphore(m_VulkanDevice.m_Device, vk::SemaphoreCreateInfo());
-    drawFence = vk::raii::Fence(m_VulkanDevice.m_Device, {.flags = vk::FenceCreateFlagBits::eSignaled});
+    m_PresentSemaphores.clear();
+    m_RenderSemaphores.clear();
+    m_Fences.clear();
+
+    for (size_t i = 0; i < m_VulkanSwapChain.m_Images.size(); i++)
+    {
+        m_PresentSemaphores.emplace_back(m_VulkanDevice.m_Device, vk::SemaphoreCreateInfo());
+        m_RenderSemaphores.emplace_back(m_VulkanDevice.m_Device, vk::SemaphoreCreateInfo());
+    }
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        m_Fences.emplace_back(m_VulkanDevice.m_Device, vk::FenceCreateInfo { .flags = vk::FenceCreateFlagBits::eSignaled });
+    }
+
+    CORE_LOG_INFO("Using {} frames in flight and {} semophores.", MAX_FRAMES_IN_FLIGHT,  m_VulkanSwapChain.m_Images.size());
     CORE_LOG_INFO("Sync objects created.");
 }
 
 void VulkanRenderer::RecordCommandBuffer(uint32_t imageIndex)
 {
-    m_CommandBuffer.begin({});
+    m_CommandBuffers[m_CurrentFrame].begin({});
     TransitionImageLayout(
         m_VulkanSwapChain.m_Images,
         imageIndex,
@@ -102,12 +126,12 @@ void VulkanRenderer::RecordCommandBuffer(uint32_t imageIndex)
         .pColorAttachments = &attachmentInfo
     };
 
-    m_CommandBuffer.beginRendering(renderingInfo);
-    m_CommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *m_GraphicsPipeline.m_GraphicsPipeline);
-    m_CommandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(m_VulkanSwapChain.m_Extent.width), static_cast<float>(m_VulkanSwapChain.m_Extent.height), 0.0f, 1.0f));
-    m_CommandBuffer.setScissor( 0, vk::Rect2D( vk::Offset2D( 0, 0 ), m_VulkanSwapChain.m_Extent ) );
-    m_CommandBuffer.draw(3, 1, 0, 0);
-    m_CommandBuffer.endRendering();
+    m_CommandBuffers[m_CurrentFrame].beginRendering(renderingInfo);
+    m_CommandBuffers[m_CurrentFrame].bindPipeline(vk::PipelineBindPoint::eGraphics, *m_GraphicsPipeline.m_GraphicsPipeline);
+    m_CommandBuffers[m_CurrentFrame].setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(m_VulkanSwapChain.m_Extent.width), static_cast<float>(m_VulkanSwapChain.m_Extent.height), 0.0f, 1.0f));
+    m_CommandBuffers[m_CurrentFrame].setScissor( 0, vk::Rect2D( vk::Offset2D( 0, 0 ), m_VulkanSwapChain.m_Extent ) );
+    m_CommandBuffers[m_CurrentFrame].draw(3, 1, 0, 0);
+    m_CommandBuffers[m_CurrentFrame].endRendering();
 
     TransitionImageLayout(
         m_VulkanSwapChain.m_Images,
@@ -119,7 +143,7 @@ void VulkanRenderer::RecordCommandBuffer(uint32_t imageIndex)
         vk::PipelineStageFlagBits2::eColorAttachmentOutput,
         vk::PipelineStageFlagBits2::eBottomOfPipe
     );
-    m_CommandBuffer.end();
+    m_CommandBuffers[m_CurrentFrame].end();
 }
 
 void VulkanRenderer::TransitionImageLayout(
@@ -155,5 +179,5 @@ void VulkanRenderer::TransitionImageLayout(
         .imageMemoryBarrierCount = 1,
         .pImageMemoryBarriers = &barrier
     };
-    m_CommandBuffer.pipelineBarrier2(dependencyInfo);
+    m_CommandBuffers[m_CurrentFrame].pipelineBarrier2(dependencyInfo);
 }

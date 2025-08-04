@@ -20,7 +20,7 @@ private:
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
     vk::Extent2D ChooseSwapExtent(std::pair<uint32_t, uint32_t> resolution, const vk::SurfaceCapabilitiesKHR& capabilities);
 private:
-    vk::raii::SwapchainKHR m_Swapchain = nullptr;
+    vk::raii::SwapchainKHR m_SwapChain = nullptr;
     std::vector<vk::Image> m_Images;
     vk::Format m_ImageFormat = vk::Format::eUndefined;
     vk::Extent2D m_Extent;

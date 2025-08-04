@@ -1,10 +1,10 @@
 #pragma once
 #include <memory>
-#include "Core/Graphics/VulkanContext.h"
+#include "Core/Vulkan/VulkanContext.h"
 #include "Core/Window/GLFWindow.h"
 #include "IGame.h"
 
-namespace GameSystem
+namespace LiteEngine
 {
 class Application
 {

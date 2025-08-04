@@ -7,10 +7,14 @@
 class VulkanRenderer
 {
 public:
-    VulkanRenderer(VulkanSwapChain& swapChain, VulkanDevice& device, VulkanGraphicsPipeline& graphicsPipeline);
+    VulkanRenderer(
+        VulkanSwapChain& swapChain,
+        VulkanDevice& device,
+        VulkanGraphicsPipeline& graphicsPipeline
+    );
     void DrawFrame();
     void CreateCommandPool();
-    void CreateCommandBuffer();
+    void CreateCommandBuffers();
     void RecordCommandBuffer(uint32_t imageIndex);
     void CreateSyncObjects();
 private:
@@ -26,13 +30,16 @@ private:
     );
 private:
     vk::raii::CommandPool m_CommandPool = nullptr;
-    vk::raii::CommandBuffer m_CommandBuffer = nullptr;
+    std::vector<vk::raii::CommandBuffer> m_CommandBuffers;
 private: // Synchronization objects
-    vk::raii::Semaphore presentCompleteSemaphore = nullptr;
-    vk::raii::Semaphore renderFinishedSemaphore = nullptr;
-    vk::raii::Fence drawFence = nullptr;
+    std::vector<vk::raii::Semaphore> m_PresentSemaphores;
+    std::vector<vk::raii::Semaphore> m_RenderSemaphores;
+    std::vector<vk::raii::Fence> m_Fences;
 private: // References
     VulkanSwapChain& m_VulkanSwapChain;
     VulkanDevice& m_VulkanDevice;
     VulkanGraphicsPipeline& m_GraphicsPipeline;
+private:
+    uint32_t m_CurrentFrame = 0;
+    uint32_t m_SemophoreIndex = 0;
 };
