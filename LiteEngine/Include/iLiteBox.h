@@ -1,9 +1,9 @@
 #pragma once
 
-class GameApp
+class iLiteBox
 {
   public:
-    virtual ~GameApp() = default;
+    virtual ~iLiteBox() = default;
     virtual void Update() = 0;
     virtual void Init() = 0;
     virtual void Destroy() = 0;

@@ -1,6 +1,6 @@
 #include "VulkanContext.h"
-#include "pch.h"
 #include "Core/Logging/Logger.h"
+#include <iostream>
 
 const std::vector validationLayers = {
     "VK_LAYER_KHRONOS_validation"

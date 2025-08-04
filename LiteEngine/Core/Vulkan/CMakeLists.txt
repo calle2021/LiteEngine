@@ -1,4 +1,4 @@
-target_sources(ENGINE PRIVATE
+target_sources(LiteEngine PRIVATE
     VulkanContext.cpp
     VulkanContext.h
     VulkanDevice.cpp

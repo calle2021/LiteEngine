@@ -20,4 +20,4 @@ function (add_slang_shader_target TARGET)
 endfunction()
 
 add_slang_shader_target(SHADERS SOURCES ${SHADER_SLANG_SOURCES})
-add_dependencies(ENGINE SHADERS)
+add_dependencies(LiteEngine SHADERS)

@@ -1,6 +1,6 @@
 #include "GLFWindow.h"
 #include "Core/Logging/Logger.h"
-#include "pch.h"
+
 
 constexpr uint32_t WIDTH = 1280;
 constexpr uint32_t HEIGHT = 720;

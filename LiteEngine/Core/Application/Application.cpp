@@ -1,10 +1,9 @@
-#include "Include/game-system.h"
-#include "pch.h"
+#include "Include/LiteEngine.h"
 #include "Core/Logging/Logger.h"
 
 namespace LiteEngine
 {
-int Application::Launch(std::unique_ptr<GameApp> game)
+int Application::Launch(std::unique_ptr<iLiteBox> app)
 {
     Logger::Init();
     m_Window.Init();
@@ -15,7 +14,7 @@ int Application::Launch(std::unique_ptr<GameApp> game)
         m_Window.Update();
         double dt = m_Window.GetDeltaTime();
         m_VulkanContext.Update();
-        game->Update();
+        app->Update();
     }
     m_VulkanContext.WaitIdle();
     m_Window.Destroy();

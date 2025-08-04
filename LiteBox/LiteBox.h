@@ -1,11 +1,9 @@
 #pragma once
-#include "game-system.h"
+#include "LiteEngine.h"
 
-class Game : public GameApp
+class LiteBox : public iLiteBox
 {
   public:
-    Game();
-    ~Game();
     void Init() override;
     void Update() override;
     void Destroy() override;
