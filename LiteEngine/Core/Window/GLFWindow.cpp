@@ -12,28 +12,39 @@ void GLFWindow::Init()
         throw std::runtime_error("Failed to initialize glfw.");
     }
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    m_GLFWWindow = glfwCreateWindow(WIDTH, HEIGHT, "GameSystem", nullptr, nullptr);
+    m_GLFWindow = glfwCreateWindow(WIDTH, HEIGHT, "GameSystem", nullptr, nullptr);
 
-    if (!m_GLFWWindow) {
+    if (!m_GLFWindow) {
         CORE_LOG_ERROR("Failed to create glfw window.");
         throw std::runtime_error("Failed to create glfw window.");
     }
 
-    glfwMakeContextCurrent(m_GLFWWindow);
+    CORE_LOG_INFO("GLFW window created.");
 
-    m_Resolution = std::make_pair(WIDTH, HEIGHT);
-    int pixel_width, pixel_height;
-    glfwGetFramebufferSize(m_GLFWWindow, &pixel_width, &pixel_height);
-    m_PixelResolution = std::make_pair(pixel_width, pixel_height);
-    CORE_LOG_INFO("GLFW window created ({}x{} {}x{}).",
-        m_Resolution.first, m_Resolution.second, m_PixelResolution.first, m_PixelResolution.second);
-
+    glfwMakeContextCurrent(m_GLFWindow);
+    SetResolution();
     time = glfwGetTime();
+    glfwSetWindowUserPointer(m_GLFWindow, this);
+    glfwSetFramebufferSizeCallback(m_GLFWindow, FrameBufferResizeCallback);
+}
+
+void GLFWindow::FrameBufferResizeCallback(GLFWwindow* window, int width, int height) {
+    auto container = reinterpret_cast<GLFWindow*>(glfwGetWindowUserPointer(window));
+    container->m_FrameBufferResized = true;
+    container->SetResolution();
+}
+
+void GLFWindow::SetResolution()
+{
+    int width, height;
+    glfwGetFramebufferSize(m_GLFWindow, &width, &height);
+    m_Resolution = std::make_pair(width, height);
+    CORE_LOG_INFO("Window resolution ({}x{}).", m_Resolution.first, m_Resolution.second);
 }
 
 bool GLFWindow::Close()
 {
-    return glfwWindowShouldClose(m_GLFWWindow);
+    return glfwWindowShouldClose(m_GLFWindow);
 }
 
 void GLFWindow::Update()
@@ -51,6 +62,6 @@ double GLFWindow::GetDeltaTime()
 
 void GLFWindow::Destroy()
 {
-    glfwDestroyWindow(m_GLFWWindow);
+    glfwDestroyWindow(m_GLFWindow);
     glfwTerminate();
 }

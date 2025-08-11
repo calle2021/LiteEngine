@@ -8,7 +8,8 @@
 int main()
 {
     try {
-        LiteEngine::Application().Launch(std::make_unique<LiteBox>());
+        LiteBox liteBox;
+        LiteEngine::Application().Launch(liteBox);
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;

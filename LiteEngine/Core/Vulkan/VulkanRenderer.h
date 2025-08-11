@@ -3,6 +3,7 @@
 #include "VulkanSwapChain.h"
 #include "VulkanDevice.h"
 #include "VulkanGraphicsPipeline.h"
+#include "Core/Window/GLFWindow.h"
 
 class VulkanRenderer
 {
@@ -10,7 +11,8 @@ public:
     VulkanRenderer(
         VulkanSwapChain& swapChain,
         VulkanDevice& device,
-        VulkanGraphicsPipeline& graphicsPipeline
+        VulkanGraphicsPipeline& graphicsPipeline,
+        GLFWindow& window
     );
     void DrawFrame();
     void CreateCommandPool();
@@ -19,7 +21,6 @@ public:
     void CreateSyncObjects();
 private:
     void TransitionImageLayout(
-        std::vector<vk::Image>& swapChainImages,
         uint32_t imageIndex,
         vk::ImageLayout oldLayout,
         vk::ImageLayout newLayout,
@@ -39,6 +40,7 @@ private: // References
     VulkanSwapChain& m_VulkanSwapChain;
     VulkanDevice& m_VulkanDevice;
     VulkanGraphicsPipeline& m_GraphicsPipeline;
+    GLFWindow& m_Window;
 private:
     uint32_t m_CurrentFrame = 0;
     uint32_t m_SemophoreIndex = 0;

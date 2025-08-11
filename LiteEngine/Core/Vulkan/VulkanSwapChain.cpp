@@ -1,18 +1,20 @@
 #include "VulkanSwapChain.h"
 #include "Core/Logging/Logger.h"
 
-VulkanSwapChain::VulkanSwapChain(VulkanDevice& device)
-: m_VulkanDevice(device) {}
+VulkanSwapChain::VulkanSwapChain(VulkanDevice& device, vk::raii::SurfaceKHR& surface, GLFWindow& window)
+    : m_VulkanDevice(device)
+    , m_Surface(surface)
+    , m_Window(window) {}
 
-void VulkanSwapChain::CreateSwapchain(std::pair<uint32_t, uint32_t> resolution, vk::raii::SurfaceKHR& surface)
+void VulkanSwapChain::CreateSwapChain()
 {
-    auto surfaceCapabilities = m_VulkanDevice.m_PhysicalDevice.getSurfaceCapabilitiesKHR(surface);
-    m_ImageFormat = ChooseSwapchainSurfaceFormat(m_VulkanDevice.m_PhysicalDevice.getSurfaceFormatsKHR(surface));
-    m_Extent = ChooseSwapExtent(resolution, surfaceCapabilities);
+    auto surfaceCapabilities = m_VulkanDevice.m_PhysicalDevice.getSurfaceCapabilitiesKHR(m_Surface);
+    m_ImageFormat = ChooseSwapchainSurfaceFormat(m_VulkanDevice.m_PhysicalDevice.getSurfaceFormatsKHR(m_Surface));
+    m_Extent = ChooseSwapExtent(surfaceCapabilities);
     auto minImageCount = std::max( 3u, surfaceCapabilities.minImageCount );
     minImageCount = ( surfaceCapabilities.maxImageCount > 0 && minImageCount > surfaceCapabilities.maxImageCount ) ? surfaceCapabilities.maxImageCount : minImageCount;
     vk::SwapchainCreateInfoKHR swapChainCreateInfo{
-        .surface = surface,
+        .surface = m_Surface,
         .minImageCount = minImageCount,
         .imageFormat = m_ImageFormat,
         .imageColorSpace = vk::ColorSpaceKHR::eSrgbNonlinear,
@@ -22,13 +24,13 @@ void VulkanSwapChain::CreateSwapchain(std::pair<uint32_t, uint32_t> resolution, 
         .imageSharingMode = vk::SharingMode::eExclusive,
         .preTransform = surfaceCapabilities.currentTransform,
         .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        .presentMode = ChooseSwapPresentMode(m_VulkanDevice.m_PhysicalDevice.getSurfacePresentModesKHR(surface)),
+        .presentMode = ChooseSwapPresentMode(m_VulkanDevice.m_PhysicalDevice.getSurfacePresentModesKHR(m_Surface)),
         .clipped = true };
 
     m_SwapChain = vk::raii::SwapchainKHR(m_VulkanDevice.m_Device, swapChainCreateInfo);
-    CORE_LOG_INFO("Swap chain created.");
+    CORE_LOG_INFO("Swap chain created");
     m_Images = m_SwapChain.getImages();
-    CORE_LOG_INFO("Using {} images.", m_Images.size());
+    CORE_LOG_INFO("Using {} images", m_Images.size());
 }
 
 void VulkanSwapChain::CreateImageViews()
@@ -46,7 +48,25 @@ void VulkanSwapChain::CreateImageViews()
         imageViewCreateInfo.image = image;
         m_ImageViews.emplace_back(m_VulkanDevice.m_Device, imageViewCreateInfo);
     }
-    CORE_LOG_INFO("Image views created.");
+    CORE_LOG_INFO("Image views created");
+}
+
+void VulkanSwapChain::RecreateSwapChain()
+{
+    CORE_LOG_INFO("Recreating swap chain");
+
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(m_Window.GetWindowHandle(), &width, &height);
+    while (width == 0 || height == 0) {
+        glfwGetFramebufferSize(m_Window.GetWindowHandle(), &width, &height);
+        glfwWaitEvents();
+    }
+
+    m_VulkanDevice.m_Device.waitIdle();
+    m_ImageViews.clear();
+    m_SwapChain = nullptr;
+    CreateSwapChain();
+    CreateImageViews();
 }
 
 vk::Format VulkanSwapChain::ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
@@ -78,8 +98,9 @@ vk::PresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(const std::vector<vk::
     return vk::PresentModeKHR::eFifo;
 }
 
-vk::Extent2D VulkanSwapChain::ChooseSwapExtent(std::pair<uint32_t, uint32_t> resolution, const vk::SurfaceCapabilitiesKHR& capabilities)
+vk::Extent2D VulkanSwapChain::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
 {
+    auto resolution = m_Window.GetResolution();
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         CORE_LOG_INFO("Using current extent ({}x{})", capabilities.currentExtent.width, capabilities.currentExtent.height);
         return capabilities.currentExtent;

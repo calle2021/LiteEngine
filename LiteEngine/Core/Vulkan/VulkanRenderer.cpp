@@ -4,17 +4,31 @@
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 VulkanRenderer::VulkanRenderer(VulkanSwapChain& swapChain, VulkanDevice& device,
-                               VulkanGraphicsPipeline& graphicsPipeline)
+                               VulkanGraphicsPipeline& graphicsPipeline, GLFWindow& window)
     : m_VulkanSwapChain(swapChain)
     , m_VulkanDevice(device)
     , m_GraphicsPipeline(graphicsPipeline)
-    {}
+    , m_Window(window) {}
 
 void VulkanRenderer::DrawFrame()
 {
-    while ( vk::Result::eTimeout == m_VulkanDevice.m_Device.waitForFences(*m_Fences[m_CurrentFrame], vk::True, UINT64_MAX ) )
-        ;
+    while (vk::Result::eTimeout == m_VulkanDevice.m_Device.waitForFences(*m_Fences[m_CurrentFrame], vk::True, UINT64_MAX ));
     auto [result, imageIndex] = m_VulkanSwapChain.m_SwapChain.acquireNextImage(UINT64_MAX, *m_PresentSemaphores[m_SemophoreIndex], nullptr);
+
+    result = m_Window.HasResized() ? vk::Result::eErrorOutOfDateKHR : result;
+    switch (result)
+    {
+        case vk::Result::eSuccess: break;
+        case vk::Result::eSuboptimalKHR:
+        case vk::Result::eErrorOutOfDateKHR:
+            m_Window.ResizeHandled();
+            m_VulkanSwapChain.RecreateSwapChain();
+            return;
+        default:
+            CORE_LOG_ERROR("Failed to aquire image.");
+            throw std::runtime_error("Failed to aquire image.");
+            break;
+    }
 
     m_VulkanDevice.m_Device.resetFences(*m_Fences[m_CurrentFrame]);
     m_CommandBuffers[m_CurrentFrame].reset();
@@ -30,7 +44,7 @@ void VulkanRenderer::DrawFrame()
         .signalSemaphoreCount = 1,
         .pSignalSemaphores = &*m_RenderSemaphores[imageIndex]
     };
-    m_VulkanDevice.m_Queue.submit(submitInfo, m_Fences[m_CurrentFrame]);
+    m_VulkanDevice.m_Queue.submit(submitInfo, *m_Fences[m_CurrentFrame]);
 
     const vk::PresentInfoKHR presentInfoKHR {
         .waitSemaphoreCount = 1,
@@ -39,17 +53,23 @@ void VulkanRenderer::DrawFrame()
         .pSwapchains = &*m_VulkanSwapChain.m_SwapChain,
         .pImageIndices = &imageIndex
     };
+
     result = m_VulkanDevice.m_Queue.presentKHR(presentInfoKHR);
+
+    result = m_Window.HasResized() ? vk::Result::eErrorOutOfDateKHR : result;
+
     switch (result)
     {
-        case vk::Result::eSuccess:
-        break;
+        case vk::Result::eSuccess: break;
         case vk::Result::eSuboptimalKHR:
-        CORE_LOG_WARN("PresentKHR returned eSuboptimalKHR.");
-        break;
+        case vk::Result::eErrorOutOfDateKHR:
+            m_Window.ResizeHandled();
+            m_VulkanSwapChain.RecreateSwapChain();
+            break;
         default:
-        CORE_LOG_ERROR("PresentKHR returned unexpected result.");
-        break;
+            CORE_LOG_ERROR("Failed to present image");
+            throw std::runtime_error("Failed to present image");
+            break;
     }
     m_SemophoreIndex = (m_SemophoreIndex + 1) % m_PresentSemaphores.size();
     m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
@@ -62,11 +82,12 @@ void VulkanRenderer::CreateCommandPool()
         .queueFamilyIndex = m_VulkanDevice.m_QueueIndex.value()
     };
     m_CommandPool = vk::raii::CommandPool(m_VulkanDevice.m_Device, poolInfo);
-    CORE_LOG_INFO("Commandpool created with graphics index {}.", poolInfo.queueFamilyIndex);
+    CORE_LOG_INFO("Commandpool created with queue family index {}", poolInfo.queueFamilyIndex);
 }
 
 void VulkanRenderer::CreateCommandBuffers()
 {
+    m_CommandBuffers.clear();
     vk::CommandBufferAllocateInfo allocInfo {
         .commandPool = m_CommandPool,
         .level = vk::CommandBufferLevel::ePrimary,
@@ -101,7 +122,6 @@ void VulkanRenderer::RecordCommandBuffer(uint32_t imageIndex)
 {
     m_CommandBuffers[m_CurrentFrame].begin({});
     TransitionImageLayout(
-        m_VulkanSwapChain.m_Images,
         imageIndex,
         vk::ImageLayout::eUndefined,
         vk::ImageLayout::eColorAttachmentOptimal,
@@ -134,7 +154,6 @@ void VulkanRenderer::RecordCommandBuffer(uint32_t imageIndex)
     m_CommandBuffers[m_CurrentFrame].endRendering();
 
     TransitionImageLayout(
-        m_VulkanSwapChain.m_Images,
         imageIndex,
         vk::ImageLayout::eColorAttachmentOptimal,
         vk::ImageLayout::ePresentSrcKHR,
@@ -147,7 +166,6 @@ void VulkanRenderer::RecordCommandBuffer(uint32_t imageIndex)
 }
 
 void VulkanRenderer::TransitionImageLayout(
-    std::vector<vk::Image>& swapChainImages,
     uint32_t imageIndex,
     vk::ImageLayout oldLayout,
     vk::ImageLayout newLayout,
@@ -165,7 +183,7 @@ void VulkanRenderer::TransitionImageLayout(
         .newLayout = newLayout,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = swapChainImages[imageIndex],
+        .image = m_VulkanSwapChain.m_Images[imageIndex],
         .subresourceRange = {
             .aspectMask = vk::ImageAspectFlagBits::eColor,
             .baseMipLevel = 0,

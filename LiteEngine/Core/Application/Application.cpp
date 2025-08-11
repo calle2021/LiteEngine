@@ -1,23 +1,25 @@
 #include "Include/LiteEngine.h"
 #include "Core/Logging/Logger.h"
+#include "Core/Window/GLFWindow.h"
 
 namespace LiteEngine
 {
-int Application::Launch(std::unique_ptr<iLiteBox> app)
+int Application::Launch(iLiteBox& app)
 {
     Logger::Init();
-    m_Window.Init();
-    m_VulkanContext.Init(&m_Window);
+    GLFWindow window;
+    window.Init();
+    VulkanContext vulkan(window);
+    vulkan.Init();
 
-    while (!m_Window.Close())
+    while (!window.Close())
     {
-        m_Window.Update();
-        double dt = m_Window.GetDeltaTime();
-        m_VulkanContext.Update();
-        app->Update();
+        window.Update();
+        vulkan.Update();
+        app.Update();
     }
-    m_VulkanContext.WaitIdle();
-    m_Window.Destroy();
+    vulkan.WaitIdle();
+    window.Destroy();
     return 0;
 }
 }

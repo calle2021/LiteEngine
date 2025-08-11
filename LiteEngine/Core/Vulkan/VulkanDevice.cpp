@@ -11,9 +11,9 @@ std::vector<const char*> RequiredDeviceExtension  = {
     vk::KHRCreateRenderpass2ExtensionName
 };
 
-void VulkanDevice::PickPhysicalDevice(vk::raii::Instance* instance)
+void VulkanDevice::PickPhysicalDevice(vk::raii::Instance& instance)
 {
-    auto devices = instance->enumeratePhysicalDevices();
+    auto devices = instance.enumeratePhysicalDevices();
     CORE_LOG_INFO("Found {} potential physical devices.", devices.size());
     switch (devices.size())
     {
@@ -32,7 +32,7 @@ void VulkanDevice::PickPhysicalDevice(vk::raii::Instance* instance)
     }
 }
 
-void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR* surface)
+void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR& surface)
 {
     std::vector<vk::QueueFamilyProperties> queueFamilyProperties = m_PhysicalDevice.getQueueFamilyProperties();
 

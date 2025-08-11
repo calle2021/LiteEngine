@@ -13,21 +13,20 @@ class VulkanDevice;
 class VulkanContext
 {
   public:
-    VulkanContext();
-    void Init(GLFWindow *window);
+    VulkanContext(GLFWindow& window);
+    void Init();
     void Update();
     void WaitIdle();
-  public:
-    vk::raii::Instance& GetInstance() { return m_Instance; };
   private:
     void CreateInstance();
     void SetupDebugMessenger();
-    void CreateSurface(GLFWindow* window);
+    void CreateSurface();
   private:
     vk::raii::Context m_Context;
     vk::raii::Instance m_Instance = nullptr;
     vk::raii::DebugUtilsMessengerEXT m_DebugMessenger = nullptr;
     vk::raii::SurfaceKHR m_Surface = nullptr;
+    GLFWindow& m_Window;
   private:
     VulkanDevice m_VulkanDevice;
     VulkanSwapChain m_VulkanSwapChain;

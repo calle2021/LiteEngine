@@ -12,20 +12,21 @@ constexpr bool enable_validation_layers = false;
 constexpr bool enable_validation_layers = true;
 #endif
 
-VulkanContext::VulkanContext()
-: m_VulkanDevice()
-, m_VulkanSwapChain(m_VulkanDevice)
-, m_VulkanGraphicsPipeline(m_VulkanSwapChain, m_VulkanDevice)
-, m_VulkanRenderer(m_VulkanSwapChain, m_VulkanDevice, m_VulkanGraphicsPipeline) {}
+VulkanContext::VulkanContext(GLFWindow& window)
+    : m_Window(window)
+    , m_VulkanDevice()
+    , m_VulkanSwapChain(m_VulkanDevice, m_Surface, window)
+    , m_VulkanGraphicsPipeline(m_VulkanSwapChain, m_VulkanDevice)
+    , m_VulkanRenderer(m_VulkanSwapChain, m_VulkanDevice, m_VulkanGraphicsPipeline, window) {}
 
-void VulkanContext::Init(GLFWindow *window)
+void VulkanContext::Init()
 {
     CreateInstance();
     SetupDebugMessenger();
-    CreateSurface(window);
-    m_VulkanDevice.PickPhysicalDevice(&m_Instance);
-    m_VulkanDevice.CreateLogicalDevice(&m_Surface);
-    m_VulkanSwapChain.CreateSwapchain(window->GetPixelResolution(), m_Surface);
+    CreateSurface();
+    m_VulkanDevice.PickPhysicalDevice(m_Instance);
+    m_VulkanDevice.CreateLogicalDevice(m_Surface);
+    m_VulkanSwapChain.CreateSwapChain();
     m_VulkanSwapChain.CreateImageViews();
     m_VulkanGraphicsPipeline.CreateGraphicsPipeline();
     m_VulkanRenderer.CreateCommandPool();
@@ -97,10 +98,10 @@ void VulkanContext::SetupDebugMessenger()
     CORE_LOG_INFO("Setup debug messenger.");
 }
 
-void VulkanContext::CreateSurface(GLFWindow* window)
+void VulkanContext::CreateSurface()
 {
     VkSurfaceKHR surface;
-    if (glfwCreateWindowSurface(*m_Instance, window->GetWindowHandle(), nullptr, &surface) != 0) {
+    if (glfwCreateWindowSurface(*m_Instance, m_Window.GetWindowHandle(), nullptr, &surface) != 0) {
         CORE_LOG_ERROR("Failed to create window surface.");
         throw std::runtime_error("Failed to create window surface.");
     }

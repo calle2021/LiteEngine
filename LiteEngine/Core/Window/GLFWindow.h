@@ -10,13 +10,16 @@ public:
     void Destroy();
     bool Close();
     double GetDeltaTime();
-    std::pair<uint32_t, uint32_t> GetResolution() { return m_Resolution; };
-    std::pair<uint32_t, uint32_t> GetPixelResolution() { return m_PixelResolution; };
-    GLFWwindow *GetWindowHandle() { return m_GLFWWindow; };
+    std::pair<uint32_t, uint32_t> GetResolution() const { return m_Resolution; };
+    GLFWwindow* GetWindowHandle() const { return m_GLFWindow; };
+    bool HasResized() { return m_FrameBufferResized; };
+    void ResizeHandled() { m_FrameBufferResized = false; };
 private:
-    GLFWwindow *m_GLFWWindow;
+    GLFWwindow* m_GLFWindow;
 private:
+    static void FrameBufferResizeCallback(GLFWwindow* window, int width, int height);
+    void SetResolution();
     std::pair<uint32_t, uint32_t> m_Resolution;
-    std::pair<uint32_t, uint32_t> m_PixelResolution;
     double time;
+    bool m_FrameBufferResized = false;
 };

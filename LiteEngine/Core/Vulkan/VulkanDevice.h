@@ -15,8 +15,8 @@ friend class VulkanGraphicsPipeline;
 friend class VulkanRenderer;
 friend class VulkanContext;
 public:
-    void PickPhysicalDevice(vk::raii::Instance* instance);
-    void CreateLogicalDevice(vk::raii::SurfaceKHR* surface);
+    void PickPhysicalDevice(vk::raii::Instance& instance);
+    void CreateLogicalDevice(vk::raii::SurfaceKHR& surface);
     void CreateSurface();
 private:
     vk::raii::PhysicalDevice m_PhysicalDevice = nullptr;
