@@ -1,20 +1,29 @@
-#include "VulkanGraphicsPipeline.h"
+#include "GraphicsPipeline.h"
 #include <fstream>
 #include "Core/Logging/Logger.h"
+#include "VertexBuffer.h"
 
+namespace LiteVulkan {
+GraphicsPipeline::GraphicsPipeline(SwapChain& swapChain, Device& device)
+    : m_SwapChain(swapChain)
+    , m_Device(device) {}
 
-VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanSwapChain& swapChain, VulkanDevice& device)
-    : m_VulkanSwapChain(swapChain)
-    , m_VulkanDevice(device) {}
-
-void VulkanGraphicsPipeline::CreateGraphicsPipeline()
+void GraphicsPipeline::CreateGraphicsPipeline()
 {
-    vk::raii::ShaderModule shaderModule = CreateShaderModule(ReadFile("Assets/Shaders/slang.spv"), m_VulkanDevice.m_Device);
+    vk::raii::ShaderModule shaderModule = CreateShaderModule(ReadFile("Assets/Shaders/slang.spv"), m_Device.m_Device);
     vk::PipelineShaderStageCreateInfo vertShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eVertex, .module = shaderModule,  .pName = "vertMain" };
     vk::PipelineShaderStageCreateInfo fragShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eFragment, .module = shaderModule, .pName = "fragMain" };
     vk::PipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
-    vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
+    auto bindingDescription = VertexBuffer::Vertex::GetBindingDescription();
+    auto attributeDescriptions = VertexBuffer::Vertex::GetAttributeDescriptions();
+    vk::PipelineVertexInputStateCreateInfo vertexInputInfo {
+        .vertexBindingDescriptionCount =1,
+        .pVertexBindingDescriptions = &bindingDescription,
+        .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
+        .pVertexAttributeDescriptions = attributeDescriptions.data()
+    };
+
     vk::PipelineInputAssemblyStateCreateInfo inputAssembly{  .topology = vk::PrimitiveTopology::eTriangleList };
     vk::PipelineViewportStateCreateInfo viewportState{ .viewportCount = 1, .scissorCount = 1 };
 
@@ -39,10 +48,10 @@ void VulkanGraphicsPipeline::CreateGraphicsPipeline()
 
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo{ .setLayoutCount = 0, .pushConstantRangeCount = 0 };
 
-    m_PipelineLayout = vk::raii::PipelineLayout( m_VulkanDevice.m_Device, pipelineLayoutInfo );
+    m_PipelineLayout = vk::raii::PipelineLayout( m_Device.m_Device, pipelineLayoutInfo );
     CORE_LOG_INFO("Pipeline layout created.");
 
-    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo{ .colorAttachmentCount = 1, .pColorAttachmentFormats = &m_VulkanSwapChain.m_ImageFormat };
+    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo{ .colorAttachmentCount = 1, .pColorAttachmentFormats = &m_SwapChain.m_ImageFormat };
     vk::GraphicsPipelineCreateInfo pipelineInfo {
         .pNext = &pipelineRenderingCreateInfo,
         .stageCount = 2,
@@ -58,19 +67,19 @@ void VulkanGraphicsPipeline::CreateGraphicsPipeline()
         .renderPass = nullptr
     };
 
-    m_GraphicsPipeline = vk::raii::Pipeline(m_VulkanDevice.m_Device, nullptr, pipelineInfo);
+    m_GraphicsPipeline = vk::raii::Pipeline(m_Device.m_Device, nullptr, pipelineInfo);
     CORE_LOG_INFO("Graphics pipeline created.");
 }
 
-[[nodiscard]] vk::raii::ShaderModule VulkanGraphicsPipeline::CreateShaderModule(const std::vector<char>& code,  vk::raii::Device& device) const
+[[nodiscard]] vk::raii::ShaderModule GraphicsPipeline::CreateShaderModule(const std::vector<char>& code,  vk::raii::Device& device) const
 {
     vk::ShaderModuleCreateInfo createInfo{ .codeSize = code.size() * sizeof(char), .pCode = reinterpret_cast<const uint32_t*>(code.data()) };
-    vk::raii::ShaderModule shaderModule{ m_VulkanDevice.m_Device, createInfo };
+    vk::raii::ShaderModule shaderModule{ m_Device.m_Device, createInfo };
     CORE_LOG_INFO("Shadermodule created.");
     return shaderModule;
 }
 
-std::vector<char> VulkanGraphicsPipeline::ReadFile(const std::string& filename) {
+std::vector<char> GraphicsPipeline::ReadFile(const std::string& filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
     if (!file.is_open()) {
         CORE_LOG_ERROR("Failed to open {}", filename);
@@ -82,4 +91,5 @@ std::vector<char> VulkanGraphicsPipeline::ReadFile(const std::string& filename) 
     file.close();
     CORE_LOG_INFO("File {} loaded.", filename);
     return buffer;
+}
 }

@@ -2,18 +2,18 @@
 #include <vector>
 #include <vulkan/vulkan_raii.hpp>
 #include "Core/Window/GLFWindow.h"
-#include "VulkanDevice.h"
+#include "Device.h"
 
-class VulkanGraphicsPipeline;
-class VulkanRenderer;
-
-class VulkanSwapChain
+namespace LiteVulkan {
+class GraphicsPipeline;
+class Renderer;
+class SwapChain
 {
-friend class VulkanGraphicsPipeline;
-friend class VulkanRenderer;
+friend class GraphicsPipeline;
+friend class Renderer;
 public:
-    VulkanSwapChain(
-        VulkanDevice& device,
+    SwapChain(
+        Device& device,
         vk::raii::SurfaceKHR& surface,
         GLFWindow& window
     );
@@ -31,7 +31,8 @@ private:
     vk::Extent2D m_Extent;
     std::vector<vk::raii::ImageView> m_ImageViews;
 private:
-    VulkanDevice& m_VulkanDevice;
+    Device& m_Device;
     vk::raii::SurfaceKHR& m_Surface;
     GLFWindow& m_Window;
 };
+}

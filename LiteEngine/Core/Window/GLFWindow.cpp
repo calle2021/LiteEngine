@@ -22,7 +22,6 @@ void GLFWindow::Init()
     CORE_LOG_INFO("GLFW window created.");
 
     glfwMakeContextCurrent(m_GLFWindow);
-    SetResolution();
     time = glfwGetTime();
     glfwSetWindowUserPointer(m_GLFWindow, this);
     glfwSetFramebufferSizeCallback(m_GLFWindow, FrameBufferResizeCallback);
@@ -31,15 +30,7 @@ void GLFWindow::Init()
 void GLFWindow::FrameBufferResizeCallback(GLFWwindow* window, int width, int height) {
     auto container = reinterpret_cast<GLFWindow*>(glfwGetWindowUserPointer(window));
     container->m_FrameBufferResized = true;
-    container->SetResolution();
-}
-
-void GLFWindow::SetResolution()
-{
-    int width, height;
-    glfwGetFramebufferSize(m_GLFWindow, &width, &height);
-    m_Resolution = std::make_pair(width, height);
-    CORE_LOG_INFO("Window resolution ({}x{}).", m_Resolution.first, m_Resolution.second);
+    container->m_Resolution = std::make_pair(width, height);
 }
 
 bool GLFWindow::Close()

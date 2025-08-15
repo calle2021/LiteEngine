@@ -1,12 +1,14 @@
 target_sources(LiteEngine PRIVATE
-    VulkanContext.cpp
-    VulkanContext.h
-    VulkanDevice.cpp
-    VulkanDevice.h
-    VulkanSwapChain.cpp
-    VulkanSwapChain.h
-    VulkanGraphicsPipeline.cpp
-    VulkanGraphicsPipeline.h
-    VulkanRenderer.cpp
-    VulkanRenderer.h
+    Context.cpp
+    Context.h
+    Device.cpp
+    Device.h
+    SwapChain.cpp
+    SwapChain.h
+    GraphicsPipeline.cpp
+    GraphicsPipeline.h
+    Renderer.cpp
+    Renderer.h
+    VertexBuffer.cpp
+    VertexBuffer.h
 )

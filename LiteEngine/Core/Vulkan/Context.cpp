@@ -1,4 +1,4 @@
-#include "VulkanContext.h"
+#include "Context.h"
 #include "Core/Logging/Logger.h"
 #include <iostream>
 
@@ -11,40 +11,42 @@ constexpr bool enable_validation_layers = false;
 #else
 constexpr bool enable_validation_layers = true;
 #endif
-
-VulkanContext::VulkanContext(GLFWindow& window)
+namespace LiteVulkan {
+Context::Context(GLFWindow& window)
     : m_Window(window)
-    , m_VulkanDevice()
-    , m_VulkanSwapChain(m_VulkanDevice, m_Surface, window)
-    , m_VulkanGraphicsPipeline(m_VulkanSwapChain, m_VulkanDevice)
-    , m_VulkanRenderer(m_VulkanSwapChain, m_VulkanDevice, m_VulkanGraphicsPipeline, window) {}
+    , m_Device()
+    , m_VertexBuffer(m_Device)
+    , m_SwapChain(m_Device, m_Surface, window)
+    , m_GraphicsPipeline(m_SwapChain, m_Device)
+    , m_Renderer(m_VertexBuffer, m_SwapChain, m_Device, m_GraphicsPipeline, window) {}
 
-void VulkanContext::Init()
+void Context::Init()
 {
     CreateInstance();
     SetupDebugMessenger();
     CreateSurface();
-    m_VulkanDevice.PickPhysicalDevice(m_Instance);
-    m_VulkanDevice.CreateLogicalDevice(m_Surface);
-    m_VulkanSwapChain.CreateSwapChain();
-    m_VulkanSwapChain.CreateImageViews();
-    m_VulkanGraphicsPipeline.CreateGraphicsPipeline();
-    m_VulkanRenderer.CreateCommandPool();
-    m_VulkanRenderer.CreateCommandBuffers();
-    m_VulkanRenderer.CreateSyncObjects();
+    m_Device.PickPhysicalDevice(m_Instance);
+    m_Device.CreateLogicalDevice(m_Surface);
+    m_SwapChain.CreateSwapChain();
+    m_SwapChain.CreateImageViews();
+    m_GraphicsPipeline.CreateGraphicsPipeline();
+    m_Renderer.CreateCommandPool();
+    m_VertexBuffer.CreateVertexBuffer();
+    m_Renderer.CreateCommandBuffers();
+    m_Renderer.CreateSyncObjects();
 }
 
-void VulkanContext::Update()
+void Context::Update()
 {
-    m_VulkanRenderer.DrawFrame();
+    m_Renderer.DrawFrame();
 }
 
-void VulkanContext::WaitIdle()
+void Context::WaitIdle()
 {
-    m_VulkanDevice.m_Device.waitIdle();
+    m_Device.m_Device.waitIdle();
 }
 
-void VulkanContext::CreateInstance()
+void Context::CreateInstance()
 {
     constexpr vk::ApplicationInfo AppInfo {
         .pApplicationName = "Sample",
@@ -82,7 +84,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSever
     return vk::False;
 }
 
-void VulkanContext::SetupDebugMessenger()
+void Context::SetupDebugMessenger()
 {
     if (!enable_validation_layers) {
         return;
@@ -98,7 +100,7 @@ void VulkanContext::SetupDebugMessenger()
     CORE_LOG_INFO("Setup debug messenger.");
 }
 
-void VulkanContext::CreateSurface()
+void Context::CreateSurface()
 {
     VkSurfaceKHR surface;
     if (glfwCreateWindowSurface(*m_Instance, m_Window.GetWindowHandle(), nullptr, &surface) != 0) {
@@ -107,4 +109,5 @@ void VulkanContext::CreateSurface()
     }
     m_Surface = vk::raii::SurfaceKHR(m_Instance, surface);
     CORE_LOG_INFO("Window surface created.");
+}
 }

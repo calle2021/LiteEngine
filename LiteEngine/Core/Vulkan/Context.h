@@ -3,17 +3,17 @@
 #include <vulkan/vulkan_raii.hpp>
 #include <vulkan/vk_platform.h>
 #include "Core/Window/GLFWindow.h"
-#include "VulkanDevice.h"
-#include "VulkanSwapChain.h"
-#include "VulkanGraphicsPipeline.h"
-#include "VulkanRenderer.h"
+#include "Device.h"
+#include "SwapChain.h"
+#include "GraphicsPipeline.h"
+#include "Renderer.h"
+#include "VertexBuffer.h"
 
-class VulkanDevice;
-
-class VulkanContext
+namespace LiteVulkan {
+class Context
 {
   public:
-    VulkanContext(GLFWindow& window);
+    Context(GLFWindow& window);
     void Init();
     void Update();
     void WaitIdle();
@@ -28,8 +28,10 @@ class VulkanContext
     vk::raii::SurfaceKHR m_Surface = nullptr;
     GLFWindow& m_Window;
   private:
-    VulkanDevice m_VulkanDevice;
-    VulkanSwapChain m_VulkanSwapChain;
-    VulkanGraphicsPipeline m_VulkanGraphicsPipeline;
-    VulkanRenderer m_VulkanRenderer;
+    Device m_Device;
+    SwapChain m_SwapChain;
+    GraphicsPipeline m_GraphicsPipeline;
+    Renderer m_Renderer;
+    VertexBuffer m_VertexBuffer;
 };
+}

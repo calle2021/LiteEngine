@@ -1,16 +1,16 @@
 
 #pragma once
 #include <vulkan/vulkan_raii.hpp>
-#include "VulkanSwapChain.h"
-#include "VulkanDevice.h"
+#include "SwapChain.h"
+#include "Device.h"
 
-class VulkanRenderer;
-
-class VulkanGraphicsPipeline
+namespace LiteVulkan {
+class Renderer;
+class GraphicsPipeline
 {
-friend class VulkanRenderer;
+friend class Renderer;
 public:
-    VulkanGraphicsPipeline(VulkanSwapChain& swapChain, VulkanDevice& device);
+    GraphicsPipeline(SwapChain& swapChain, Device& device);
     void CreateGraphicsPipeline();
     const vk::raii::Pipeline& GetGraphicsPipeline() const { return m_GraphicsPipeline; }
 private:
@@ -20,6 +20,7 @@ private:
     vk::raii::PipelineLayout m_PipelineLayout = nullptr;
     vk::raii::Pipeline m_GraphicsPipeline = nullptr;
 private:
-    VulkanSwapChain& m_VulkanSwapChain;
-    VulkanDevice& m_VulkanDevice;
+    SwapChain& m_SwapChain;
+    Device& m_Device;
 };
+}

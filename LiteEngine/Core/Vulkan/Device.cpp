@@ -1,5 +1,5 @@
-#include "VulkanDevice.h"
-#include "VulkanContext.h"
+#include "Device.h"
+#include "Context.h"
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include "Core/Logging/Logger.h"
@@ -10,8 +10,8 @@ std::vector<const char*> RequiredDeviceExtension  = {
     vk::KHRSynchronization2ExtensionName,
     vk::KHRCreateRenderpass2ExtensionName
 };
-
-void VulkanDevice::PickPhysicalDevice(vk::raii::Instance& instance)
+namespace LiteVulkan {
+void Device::PickPhysicalDevice(vk::raii::Instance& instance)
 {
     auto devices = instance.enumeratePhysicalDevices();
     CORE_LOG_INFO("Found {} potential physical devices.", devices.size());
@@ -32,7 +32,7 @@ void VulkanDevice::PickPhysicalDevice(vk::raii::Instance& instance)
     }
 }
 
-void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR& surface)
+void Device::CreateLogicalDevice(vk::raii::SurfaceKHR& surface)
 {
     std::vector<vk::QueueFamilyProperties> queueFamilyProperties = m_PhysicalDevice.getQueueFamilyProperties();
 
@@ -72,7 +72,4 @@ void VulkanDevice::CreateLogicalDevice(vk::raii::SurfaceKHR& surface)
     m_Queue = vk::raii::Queue(m_Device, m_QueueIndex.value(), 0);
     CORE_LOG_INFO("Queue created.");
 }
-
-void VulkanDevice::CreateSurface()
-{
 }

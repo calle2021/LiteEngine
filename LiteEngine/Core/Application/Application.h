@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "Core/Vulkan/VulkanContext.h"
+#include "Core/Vulkan/Context.h"
 #include "iLiteBox.h"
 
 namespace LiteEngine

@@ -9,7 +9,7 @@ int Application::Launch(iLiteBox& app)
     Logger::Init();
     GLFWindow window;
     window.Init();
-    VulkanContext vulkan(window);
+    LiteVulkan::Context vulkan(window);
     vulkan.Init();
 
     while (!window.Close())

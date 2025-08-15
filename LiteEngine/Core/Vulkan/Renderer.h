@@ -1,17 +1,20 @@
 #pragma once
 #include <vulkan/vulkan_raii.hpp>
-#include "VulkanSwapChain.h"
-#include "VulkanDevice.h"
-#include "VulkanGraphicsPipeline.h"
+#include "VertexBuffer.h"
+#include "SwapChain.h"
+#include "Device.h"
+#include "GraphicsPipeline.h"
 #include "Core/Window/GLFWindow.h"
 
-class VulkanRenderer
+namespace LiteVulkan {
+class Renderer
 {
 public:
-    VulkanRenderer(
-        VulkanSwapChain& swapChain,
-        VulkanDevice& device,
-        VulkanGraphicsPipeline& graphicsPipeline,
+    Renderer(
+        VertexBuffer& vertexBuffer,
+        SwapChain& swapChain,
+        Device& device,
+        GraphicsPipeline& graphicsPipeline,
         GLFWindow& window
     );
     void DrawFrame();
@@ -37,11 +40,12 @@ private: // Synchronization objects
     std::vector<vk::raii::Semaphore> m_RenderSemaphores;
     std::vector<vk::raii::Fence> m_Fences;
 private: // References
-    VulkanSwapChain& m_VulkanSwapChain;
-    VulkanDevice& m_VulkanDevice;
-    VulkanGraphicsPipeline& m_GraphicsPipeline;
+    VertexBuffer& m_VertexBuffer;
+    SwapChain& m_SwapChain;
+    Device& m_Device;
+    GraphicsPipeline& m_GraphicsPipeline;
     GLFWindow& m_Window;
 private:
     uint32_t m_CurrentFrame = 0;
-    uint32_t m_SemophoreIndex = 0;
 };
+}
