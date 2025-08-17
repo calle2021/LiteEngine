@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan_raii.hpp>
 #include "Device.h"
+#include "Renderer.h"
 #include <array>
 
 namespace LiteVulkan {
@@ -10,7 +11,7 @@ class VertexBuffer
 {
 friend class Renderer;
 public:
-    VertexBuffer(Device& device);
+    VertexBuffer(Device& device, Renderer&);
     void CreateVertexBuffer();
 public:
     struct Vertex
@@ -30,10 +31,12 @@ public:
     };
 private:
     uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
+    void CopyBuffer(vk::raii::Buffer& src, vk::raii::Buffer& dst, vk::DeviceSize size);
 private:
     vk::raii::Buffer m_VertexBuffer = nullptr;
     vk::raii::DeviceMemory m_VertexBufferMemory = nullptr;
 private: // Class references
     Device& m_Device;
+    Renderer& m_Renderer;
 };
 }

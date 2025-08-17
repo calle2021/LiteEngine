@@ -7,8 +7,10 @@
 #include "Core/Window/GLFWindow.h"
 
 namespace LiteVulkan {
+class VertexBuffer;
 class Renderer
 {
+friend class VertexBuffer;
 public:
     Renderer(
         VertexBuffer& vertexBuffer,

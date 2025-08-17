@@ -15,10 +15,10 @@ namespace LiteVulkan {
 Context::Context(GLFWindow& window)
     : m_Window(window)
     , m_Device()
-    , m_VertexBuffer(m_Device)
     , m_SwapChain(m_Device, m_Surface, window)
     , m_GraphicsPipeline(m_SwapChain, m_Device)
-    , m_Renderer(m_VertexBuffer, m_SwapChain, m_Device, m_GraphicsPipeline, window) {}
+    , m_Renderer(m_VertexBuffer, m_SwapChain, m_Device, m_GraphicsPipeline, window)
+    , m_VertexBuffer(m_Device, m_Renderer) {}
 
 void Context::Init()
 {
