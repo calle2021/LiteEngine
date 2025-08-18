@@ -32,6 +32,7 @@ void Context::Init()
     m_GraphicsPipeline.CreateGraphicsPipeline();
     m_Renderer.CreateCommandPool();
     m_VertexBuffer.CreateVertexBuffer();
+    m_VertexBuffer.CreateIndexBuffer();
     m_Renderer.CreateCommandBuffers();
     m_Renderer.CreateSyncObjects();
 }

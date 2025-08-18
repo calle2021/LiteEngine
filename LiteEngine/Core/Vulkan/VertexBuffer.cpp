@@ -7,52 +7,51 @@ const std::vector<VertexBuffer::Vertex> m_Verticies = {
     {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
     {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
 };
-
 VertexBuffer::VertexBuffer(Device& device, Renderer& rend)
     : m_Device(device)
     , m_Renderer(rend) {}
 
+void VertexBuffer::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory) {
+    vk::BufferCreateInfo bufferInfo{ .size = size, .usage = usage, .sharingMode = vk::SharingMode::eExclusive };
+    buffer = vk::raii::Buffer(m_Device.m_Device, bufferInfo);
+    vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
+    vk::MemoryAllocateInfo allocInfo{ .allocationSize =memRequirements.size, .memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties) };
+    bufferMemory = vk::raii::DeviceMemory(m_Device.m_Device, allocInfo);
+    buffer.bindMemory(bufferMemory, 0);
+}
+
 void VertexBuffer::CreateVertexBuffer()
 {
-    vk::BufferCreateInfo stagingInfo{
-        .size = sizeof(m_Verticies[0]) * m_Verticies.size(),
-        .usage = vk::BufferUsageFlagBits::eTransferSrc,
-        .sharingMode = vk::SharingMode::eExclusive
-    };
-    vk::raii::Buffer stagingBuffer(m_Device.m_Device, stagingInfo);
-    vk::MemoryRequirements memRequirementsStaging = stagingBuffer.getMemoryRequirements();
-    vk::MemoryAllocateInfo memoryAllocateInfoStaging{
-        .allocationSize = memRequirementsStaging.size,
-        .memoryTypeIndex = FindMemoryType(
-                                          memRequirementsStaging.memoryTypeBits,
-                                          vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
-                                        ),
-    };
-    vk::raii::DeviceMemory stagingBufferMemory(m_Device.m_Device, memoryAllocateInfoStaging);
+    vk::DeviceSize bufferSize = sizeof(m_Verticies[0]) * m_Verticies.size();
+    vk::raii::Buffer stagingBuffer({});
+    vk::raii::DeviceMemory stagingBufferMemory({});
+    CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
-    stagingBuffer.bindMemory(stagingBufferMemory, 0);
-    void* dataStaging = stagingBufferMemory.mapMemory(0, stagingInfo.size);
-    memcpy(dataStaging, m_Verticies.data(), stagingInfo.size);
+    void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
+    memcpy(dataStaging, m_Verticies.data(), bufferSize);
     stagingBufferMemory.unmapMemory();
 
-    vk::BufferCreateInfo bufferInfo {
-        .size = sizeof(m_Verticies[0]) * m_Verticies.size(),
-        .usage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
-        .sharingMode = vk::SharingMode::eExclusive
-    };
-    m_VertexBuffer = vk::raii::Buffer(m_Device.m_Device, bufferInfo);
-    vk::MemoryRequirements memRequirements = m_VertexBuffer.getMemoryRequirements();
-    vk::MemoryAllocateInfo memoryAllocateInfo {
-        .allocationSize = memRequirements.size,
-        .memoryTypeIndex = FindMemoryType(
-            memRequirements.memoryTypeBits,
-            vk::MemoryPropertyFlagBits::eDeviceLocal
-        ),
-    };
-    m_VertexBufferMemory = vk::raii::DeviceMemory(m_Device.m_Device, memoryAllocateInfo);
-    m_VertexBuffer.bindMemory( *m_VertexBufferMemory, 0 );
-    CopyBuffer(stagingBuffer, m_VertexBuffer, stagingInfo.size);
+    CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, m_VertexBuffer, m_VertexBufferMemory);
+
+    CopyBuffer(stagingBuffer, m_VertexBuffer, bufferSize);
     CORE_LOG_INFO("Create VertexBuffer");
+}
+
+void VertexBuffer::CreateIndexBuffer()
+{
+     vk::DeviceSize bufferSize = sizeof(m_Indices[0]) * m_Indices.size();
+
+    vk::raii::Buffer stagingBuffer({});
+    vk::raii::DeviceMemory stagingBufferMemory({});
+    CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+
+    void* data = stagingBufferMemory.mapMemory(0, bufferSize);
+    memcpy(data, m_Indices.data(), (size_t) bufferSize);
+    stagingBufferMemory.unmapMemory();
+
+    CreateBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal, m_IndexBuffer, m_IndexBufferMemory);
+
+    CopyBuffer(stagingBuffer, m_IndexBuffer, bufferSize);
 }
 
 void VertexBuffer::CopyBuffer(vk::raii::Buffer& src, vk::raii::Buffer& dst, vk::DeviceSize size) {

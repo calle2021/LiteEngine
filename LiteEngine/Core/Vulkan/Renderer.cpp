@@ -155,7 +155,8 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex)
     m_CommandBuffers[m_CurrentFrame].setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(m_SwapChain.m_Extent.width), static_cast<float>(m_SwapChain.m_Extent.height), 0.0f, 1.0f));
     m_CommandBuffers[m_CurrentFrame].setScissor(0, vk::Rect2D(vk::Offset2D( 0, 0 ), m_SwapChain.m_Extent));
     m_CommandBuffers[m_CurrentFrame].bindVertexBuffers(0, *m_VertexBuffer.m_VertexBuffer, {0});
-    m_CommandBuffers[m_CurrentFrame].draw(3, 1, 0, 0);
+    m_CommandBuffers[m_CurrentFrame].bindIndexBuffer( *m_VertexBuffer.m_IndexBuffer, 0, vk::IndexTypeValue<decltype(m_VertexBuffer.m_Indices)::value_type>::value );
+    m_CommandBuffers[m_CurrentFrame].drawIndexed(m_VertexBuffer.m_Indices.size(), 1, 0, 0, 0);
     m_CommandBuffers[m_CurrentFrame].endRendering();
 
     TransitionImageLayout(

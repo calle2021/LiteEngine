@@ -13,6 +13,7 @@ friend class Renderer;
 public:
     VertexBuffer(Device& device, Renderer&);
     void CreateVertexBuffer();
+    void CreateIndexBuffer();
 public:
     struct Vertex
     {
@@ -30,11 +31,21 @@ public:
         }
     };
 private:
+    const std::vector<uint16_t> m_Indices = {0, 1, 2, 2, 3, 0};
+private:
+    void CreateBuffer(
+        vk::DeviceSize size,
+        vk::BufferUsageFlags usage,
+        vk::MemoryPropertyFlags properties,
+        vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory
+    );
     uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
     void CopyBuffer(vk::raii::Buffer& src, vk::raii::Buffer& dst, vk::DeviceSize size);
 private:
     vk::raii::Buffer m_VertexBuffer = nullptr;
     vk::raii::DeviceMemory m_VertexBufferMemory = nullptr;
+    vk::raii::Buffer m_IndexBuffer = nullptr;
+    vk::raii::DeviceMemory m_IndexBufferMemory = nullptr;
 private: // Class references
     Device& m_Device;
     Renderer& m_Renderer;
