@@ -5,9 +5,9 @@
 #include "Core/Window/GLFWindow.h"
 #include "Device.h"
 #include "SwapChain.h"
-#include "GraphicsPipeline.h"
+#include "Pipeline.h"
 #include "Renderer.h"
-#include "VertexBuffer.h"
+#include "Buffers.h"
 
 namespace LiteVulkan {
 class Context
@@ -30,8 +30,8 @@ class Context
   private:
     Device m_Device;
     SwapChain m_SwapChain;
-    GraphicsPipeline m_GraphicsPipeline;
+    Pipeline m_Pipeline;
     Renderer m_Renderer;
-    VertexBuffer m_VertexBuffer;
+    Buffers m_Buffers;
 };
 }

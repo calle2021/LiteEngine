@@ -16,9 +16,9 @@ Context::Context(GLFWindow& window)
     : m_Window(window)
     , m_Device()
     , m_SwapChain(m_Device, m_Surface, window)
-    , m_GraphicsPipeline(m_SwapChain, m_Device)
-    , m_Renderer(m_VertexBuffer, m_SwapChain, m_Device, m_GraphicsPipeline, window)
-    , m_VertexBuffer(m_Device, m_Renderer) {}
+    , m_Pipeline(m_SwapChain, m_Device)
+    , m_Renderer(m_Buffers, m_SwapChain, m_Device, m_Pipeline, window)
+    , m_Buffers(m_Device, m_Renderer, m_SwapChain) {}
 
 void Context::Init()
 {
@@ -29,10 +29,14 @@ void Context::Init()
     m_Device.CreateLogicalDevice(m_Surface);
     m_SwapChain.CreateSwapChain();
     m_SwapChain.CreateImageViews();
-    m_GraphicsPipeline.CreateGraphicsPipeline();
+    m_Pipeline.CreateDescriptorLayout();
+    m_Pipeline.CreatePipeline();
     m_Renderer.CreateCommandPool();
-    m_VertexBuffer.CreateVertexBuffer();
-    m_VertexBuffer.CreateIndexBuffer();
+    m_Buffers.CreateVertexBuffer();
+    m_Buffers.CreateIndexBuffer();
+    m_Buffers.CreateUniformBuffers();
+    m_Renderer.CreateDescriptorPool();
+    m_Renderer.CreateDescriptorSets();
     m_Renderer.CreateCommandBuffers();
     m_Renderer.CreateSyncObjects();
 }

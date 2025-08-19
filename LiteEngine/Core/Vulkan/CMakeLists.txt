@@ -5,10 +5,10 @@ target_sources(LiteEngine PRIVATE
     Device.h
     SwapChain.cpp
     SwapChain.h
-    GraphicsPipeline.cpp
-    GraphicsPipeline.h
+    Pipeline.cpp
+    Pipeline.h
     Renderer.cpp
     Renderer.h
-    VertexBuffer.cpp
-    VertexBuffer.h
+    Buffers.cpp
+    Buffers.h
 )

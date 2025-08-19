@@ -1,19 +1,24 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <chrono>
 #include <vulkan/vulkan_raii.hpp>
 #include "Device.h"
 #include "Renderer.h"
+#include "SwapChain.h"
 #include <array>
 
 namespace LiteVulkan {
 class Renderer;
-class VertexBuffer
+class Buffers
 {
 friend class Renderer;
 public:
-    VertexBuffer(Device& device, Renderer&);
+    Buffers(Device& dev, Renderer& rend, SwapChain& swap);
     void CreateVertexBuffer();
     void CreateIndexBuffer();
+    void CreateUniformBuffers();
+    void UpdateUniformBuffer(uint32_t curr);
 public:
     struct Vertex
     {
@@ -30,6 +35,13 @@ public:
             };
         }
     };
+
+    struct UniformBufferObject
+    {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
 private:
     const std::vector<uint16_t> m_Indices = {0, 1, 2, 2, 3, 0};
 private:
@@ -42,12 +54,16 @@ private:
     uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
     void CopyBuffer(vk::raii::Buffer& src, vk::raii::Buffer& dst, vk::DeviceSize size);
 private:
-    vk::raii::Buffer m_VertexBuffer = nullptr;
-    vk::raii::DeviceMemory m_VertexBufferMemory = nullptr;
+    vk::raii::Buffer m_Buffers = nullptr;
+    vk::raii::DeviceMemory m_BuffersMemory = nullptr;
     vk::raii::Buffer m_IndexBuffer = nullptr;
     vk::raii::DeviceMemory m_IndexBufferMemory = nullptr;
+    std::vector<vk::raii::Buffer> m_UniformBuffers;
+    std::vector<vk::raii::DeviceMemory> m_UniformBuffersMemory;
+    std::vector<void*> m_UniformBuffersMapped;
 private: // Class references
-    Device& m_Device;
-    Renderer& m_Renderer;
+    Device& m_DeviceRef;
+    Renderer& m_RendererRef;
+    SwapChain& m_SwapChainRef;
 };
 }

@@ -1,22 +1,22 @@
 #pragma once
 #include <vulkan/vulkan_raii.hpp>
-#include "VertexBuffer.h"
+#include "Buffers.h"
 #include "SwapChain.h"
 #include "Device.h"
-#include "GraphicsPipeline.h"
+#include "Pipeline.h"
 #include "Core/Window/GLFWindow.h"
 
 namespace LiteVulkan {
-class VertexBuffer;
+class Buffers;
 class Renderer
 {
-friend class VertexBuffer;
+friend class Buffers;
 public:
     Renderer(
-        VertexBuffer& vertexBuffer,
-        SwapChain& swapChain,
+        Buffers& buffer,
+        SwapChain& swap,
         Device& device,
-        GraphicsPipeline& graphicsPipeline,
+        Pipeline& Pipeline,
         GLFWindow& window
     );
     void DrawFrame();
@@ -24,6 +24,8 @@ public:
     void CreateCommandBuffers();
     void RecordCommandBuffer(uint32_t imageIndex);
     void CreateSyncObjects();
+    void CreateDescriptorSets();
+    void CreateDescriptorPool();
 private:
     void TransitionImageLayout(
         uint32_t imageIndex,
@@ -37,17 +39,20 @@ private:
 private:
     vk::raii::CommandPool m_CommandPool = nullptr;
     std::vector<vk::raii::CommandBuffer> m_CommandBuffers;
+    vk::raii::DescriptorPool m_DescriptorPool = nullptr;
+    std::vector<vk::raii::DescriptorSet> m_DescriptorSets;
 private: // Synchronization objects
     std::vector<vk::raii::Semaphore> m_PresentSemaphores;
     std::vector<vk::raii::Semaphore> m_RenderSemaphores;
     std::vector<vk::raii::Fence> m_Fences;
 private: // References
-    VertexBuffer& m_VertexBuffer;
+    Buffers& m_Buffers;
     SwapChain& m_SwapChain;
     Device& m_Device;
-    GraphicsPipeline& m_GraphicsPipeline;
+    Pipeline& m_Pipeline;
     GLFWindow& m_Window;
 private:
     uint32_t m_CurrentFrame = 0;
+    const uint32_t MaxFramesInFlight = 2;
 };
 }

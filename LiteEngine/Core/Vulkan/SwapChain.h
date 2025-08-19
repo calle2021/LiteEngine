@@ -5,12 +5,14 @@
 #include "Device.h"
 
 namespace LiteVulkan {
-class GraphicsPipeline;
+class Pipeline;
 class Renderer;
+class Buffers;
 class SwapChain
 {
-friend class GraphicsPipeline;
+friend class Pipeline;
 friend class Renderer;
+friend class Buffers;
 public:
     SwapChain(
         Device& device,

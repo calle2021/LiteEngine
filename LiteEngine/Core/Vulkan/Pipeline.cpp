@@ -1,22 +1,30 @@
-#include "GraphicsPipeline.h"
+#include "Pipeline.h"
 #include <fstream>
 #include "Core/Logging/Logger.h"
-#include "VertexBuffer.h"
+#include "Buffers.h"
 
 namespace LiteVulkan {
-GraphicsPipeline::GraphicsPipeline(SwapChain& swapChain, Device& device)
-    : m_SwapChain(swapChain)
-    , m_Device(device) {}
+Pipeline::Pipeline(SwapChain& swap, Device& dev)
+    : m_SwapChainRef(swap)
+    , m_DeviceRef(dev) {}
 
-void GraphicsPipeline::CreateGraphicsPipeline()
+void Pipeline::CreateDescriptorLayout()
 {
-    vk::raii::ShaderModule shaderModule = CreateShaderModule(ReadFile("Assets/Shaders/slang.spv"), m_Device.m_Device);
+    vk::DescriptorSetLayoutBinding uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer,
+                                                    1, vk::ShaderStageFlagBits::eVertex, nullptr);
+    vk::DescriptorSetLayoutCreateInfo layoutInfo{ .bindingCount = 1, .pBindings = &uboLayoutBinding };
+    m_DescriptorLayout = vk::raii::DescriptorSetLayout(m_DeviceRef.m_Device, layoutInfo);
+}
+
+void Pipeline::CreatePipeline()
+{
+    vk::raii::ShaderModule shaderModule = CreateShaderModule(ReadFile("Assets/Shaders/slang.spv"), m_DeviceRef.m_Device);
     vk::PipelineShaderStageCreateInfo vertShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eVertex, .module = shaderModule,  .pName = "vertMain" };
     vk::PipelineShaderStageCreateInfo fragShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eFragment, .module = shaderModule, .pName = "fragMain" };
     vk::PipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
-    auto bindingDescription = VertexBuffer::Vertex::GetBindingDescription();
-    auto attributeDescriptions = VertexBuffer::Vertex::GetAttributeDescriptions();
+    auto bindingDescription = Buffers::Vertex::GetBindingDescription();
+    auto attributeDescriptions = Buffers::Vertex::GetAttributeDescriptions();
     vk::PipelineVertexInputStateCreateInfo vertexInputInfo {
         .vertexBindingDescriptionCount =1,
         .pVertexBindingDescriptions = &bindingDescription,
@@ -29,7 +37,7 @@ void GraphicsPipeline::CreateGraphicsPipeline()
 
     vk::PipelineRasterizationStateCreateInfo rasterizer{  .depthClampEnable = vk::False, .rasterizerDiscardEnable = vk::False,
                                                             .polygonMode = vk::PolygonMode::eFill, .cullMode = vk::CullModeFlagBits::eBack,
-                                                            .frontFace = vk::FrontFace::eClockwise, .depthBiasEnable = vk::False,
+                                                            .frontFace = vk::FrontFace::eCounterClockwise, .depthBiasEnable = vk::False,
                                                             .depthBiasSlopeFactor = 1.0f, .lineWidth = 1.0f };
 
     vk::PipelineMultisampleStateCreateInfo multisampling{ .rasterizationSamples = vk::SampleCountFlagBits::e1, .sampleShadingEnable = vk::False};
@@ -46,12 +54,12 @@ void GraphicsPipeline::CreateGraphicsPipeline()
     };
     vk::PipelineDynamicStateCreateInfo dynamicState{ .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()), .pDynamicStates = dynamicStates.data() };
 
-    vk::PipelineLayoutCreateInfo pipelineLayoutInfo{ .setLayoutCount = 0, .pushConstantRangeCount = 0 };
+    vk::PipelineLayoutCreateInfo pipelineLayoutInfo{ .setLayoutCount = 1, .pSetLayouts = &*m_DescriptorLayout, .pushConstantRangeCount = 0 };
 
-    m_PipelineLayout = vk::raii::PipelineLayout( m_Device.m_Device, pipelineLayoutInfo );
+    m_PipelineLayout = vk::raii::PipelineLayout( m_DeviceRef.m_Device, pipelineLayoutInfo );
     CORE_LOG_INFO("Pipeline layout created.");
 
-    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo{ .colorAttachmentCount = 1, .pColorAttachmentFormats = &m_SwapChain.m_ImageFormat };
+    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo{ .colorAttachmentCount = 1, .pColorAttachmentFormats = &m_SwapChainRef.m_ImageFormat };
     vk::GraphicsPipelineCreateInfo pipelineInfo {
         .pNext = &pipelineRenderingCreateInfo,
         .stageCount = 2,
@@ -67,19 +75,19 @@ void GraphicsPipeline::CreateGraphicsPipeline()
         .renderPass = nullptr
     };
 
-    m_GraphicsPipeline = vk::raii::Pipeline(m_Device.m_Device, nullptr, pipelineInfo);
+    m_Pipeline = vk::raii::Pipeline(m_DeviceRef.m_Device, nullptr, pipelineInfo);
     CORE_LOG_INFO("Graphics pipeline created.");
 }
 
-[[nodiscard]] vk::raii::ShaderModule GraphicsPipeline::CreateShaderModule(const std::vector<char>& code,  vk::raii::Device& device) const
+[[nodiscard]] vk::raii::ShaderModule Pipeline::CreateShaderModule(const std::vector<char>& code,  vk::raii::Device& device) const
 {
     vk::ShaderModuleCreateInfo createInfo{ .codeSize = code.size() * sizeof(char), .pCode = reinterpret_cast<const uint32_t*>(code.data()) };
-    vk::raii::ShaderModule shaderModule{ m_Device.m_Device, createInfo };
+    vk::raii::ShaderModule shaderModule{ m_DeviceRef.m_Device, createInfo };
     CORE_LOG_INFO("Shadermodule created.");
     return shaderModule;
 }
 
-std::vector<char> GraphicsPipeline::ReadFile(const std::string& filename) {
+std::vector<char> Pipeline::ReadFile(const std::string& filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
     if (!file.is_open()) {
         CORE_LOG_ERROR("Failed to open {}", filename);

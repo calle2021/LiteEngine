@@ -5,17 +5,17 @@
 
 namespace LiteVulkan {
 class SwapChain;
-class GraphicsPipeline;
+class Pipeline;
 class Renderer;
 class Context;
-class VertexBuffer;
+class Buffers;
 class Device
 {
 friend class SwapChain;
-friend class GraphicsPipeline;
+friend class Pipeline;
 friend class Renderer;
 friend class Context;
-friend class VertexBuffer;
+friend class Buffers;
 public:
     void PickPhysicalDevice(vk::raii::Instance& instance);
     void CreateLogicalDevice(vk::raii::SurfaceKHR& surface);
