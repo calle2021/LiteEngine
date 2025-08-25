@@ -9,8 +9,10 @@ add_subdirectory(Core)
 add_subdirectory(Assets)
 add_subdirectory(Include)
 
+target_include_directories(LiteEngine PRIVATE Vendor)
+
 set_target_properties(LiteEngine PROPERTIES
-    LITE_ENGINE_ASSETS_DIR "${CMAKE_CURRENT_BINARY_DIR}/Assets"
+    LITE_ENGINE_SHADER_DIR "${CMAKE_CURRENT_BINARY_DIR}/Assets/Shaders"
 )
 
 find_package (Vulkan REQUIRED)

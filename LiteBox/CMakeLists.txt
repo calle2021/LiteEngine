@@ -13,11 +13,18 @@ set_target_properties(LiteBox PROPERTIES
     LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
 )
 
-get_target_property(LITE_ENGINE_ASSETS_DIR LiteEngine LITE_ENGINE_ASSETS_DIR)
+add_custom_command(
+    TARGET LiteBox POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/Assets
+            $<TARGET_FILE_DIR:LiteBox>/Assets
+)
+
+get_target_property(LITE_ENGINE_SHADER_DIR LiteEngine LITE_ENGINE_SHADER_DIR)
 
 add_custom_command(
   TARGET LiteBox POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory
-          ${LITE_ENGINE_ASSETS_DIR}
-          $<TARGET_FILE_DIR:LiteBox>/Assets
+          ${LITE_ENGINE_SHADER_DIR}
+          $<TARGET_FILE_DIR:LiteBox>/Assets/Shaders
 )

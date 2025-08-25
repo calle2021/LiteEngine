@@ -225,4 +225,20 @@ void Renderer::TransitionImageLayout(
     };
     m_CommandBuffers[m_CurrentFrame].pipelineBarrier2(dependencyInfo);
 }
+
+std::unique_ptr<vk::raii::CommandBuffer> Renderer::BeginSingleTimeCommands() {
+    vk::CommandBufferAllocateInfo allocInfo{ .commandPool = m_CommandPool, .level = vk::CommandBufferLevel::ePrimary, .commandBufferCount = 1 };
+    std::unique_ptr<vk::raii::CommandBuffer> cmdbuf = std::make_unique<vk::raii::CommandBuffer>(std::move(vk::raii::CommandBuffers(m_Device.m_Device, allocInfo).front()));
+    vk::CommandBufferBeginInfo beginfo{ .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
+    cmdbuf->begin(beginfo);
+    return cmdbuf;
+}
+
+void Renderer::EndSingleTimeCommands(vk::raii::CommandBuffer& cmdbuf) {
+    cmdbuf.end();
+    vk::SubmitInfo subinfo { .commandBufferCount = 1, .pCommandBuffers = &*cmdbuf };
+    m_Device.m_Queue.submit(subinfo, nullptr);
+    m_Device.m_Queue.waitIdle();
+}
+
 }

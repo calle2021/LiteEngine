@@ -93,7 +93,7 @@ void Buffers::CopyBuffer(vk::raii::Buffer& src, vk::raii::Buffer& dst, vk::Devic
     vk::CommandBufferAllocateInfo allocInfo{ .commandPool = m_RendererRef.m_CommandPool, .level = vk::CommandBufferLevel::ePrimary, .commandBufferCount = 1 };
     vk::raii::CommandBuffer commandCopyBuffer = std::move(m_DeviceRef.m_Device.allocateCommandBuffers(allocInfo).front());
     commandCopyBuffer.begin(vk::CommandBufferBeginInfo { .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit });
-    commandCopyBuffer.copyBuffer(*src, *dst, vk::BufferCopy(0, 0, size));
+    commandCopyBuffer.copyBuffer(*src, *dst, vk::BufferCopy{ .size = size });
     commandCopyBuffer.end();
     m_DeviceRef.m_Queue.submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &*commandCopyBuffer }, nullptr);
     m_DeviceRef.m_Queue.waitIdle();

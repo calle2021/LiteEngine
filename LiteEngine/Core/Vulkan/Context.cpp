@@ -6,6 +6,8 @@ const std::vector validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
 
+const std::string texture = "Assets/Textures/texture.jpg";
+
 #ifdef NDEBUG
 constexpr bool enable_validation_layers = false;
 #else
@@ -18,7 +20,8 @@ Context::Context(GLFWindow& window)
     , m_SwapChain(m_Device, m_Surface, window)
     , m_Pipeline(m_SwapChain, m_Device)
     , m_Renderer(m_Buffers, m_SwapChain, m_Device, m_Pipeline, window)
-    , m_Buffers(m_Device, m_Renderer, m_SwapChain) {}
+    , m_Buffers(m_Device, m_Renderer, m_SwapChain)
+    , m_Texture(m_Device, m_Buffers, m_Renderer) {}
 
 void Context::Init()
 {
@@ -32,6 +35,7 @@ void Context::Init()
     m_Pipeline.CreateDescriptorLayout();
     m_Pipeline.CreatePipeline();
     m_Renderer.CreateCommandPool();
+    m_Texture.CreateTexture(texture);
     m_Buffers.CreateVertexBuffer();
     m_Buffers.CreateIndexBuffer();
     m_Buffers.CreateUniformBuffers();

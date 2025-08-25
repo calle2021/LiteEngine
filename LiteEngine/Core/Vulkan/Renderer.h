@@ -26,6 +26,8 @@ public:
     void CreateSyncObjects();
     void CreateDescriptorSets();
     void CreateDescriptorPool();
+    std::unique_ptr<vk::raii::CommandBuffer> BeginSingleTimeCommands();
+    void EndSingleTimeCommands(vk::raii::CommandBuffer& cmdbuf);
 private:
     void TransitionImageLayout(
         uint32_t imageIndex,

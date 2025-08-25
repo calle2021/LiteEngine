@@ -10,9 +10,11 @@
 
 namespace LiteVulkan {
 class Renderer;
+class Texture;
 class Buffers
 {
 friend class Renderer;
+friend class Texture;
 public:
     Buffers(Device& dev, Renderer& rend, SwapChain& swap);
     void CreateVertexBuffer();
@@ -61,6 +63,8 @@ private:
     std::vector<vk::raii::Buffer> m_UniformBuffers;
     std::vector<vk::raii::DeviceMemory> m_UniformBuffersMemory;
     std::vector<void*> m_UniformBuffersMapped;
+    vk::raii::Image m_Texture = nullptr;
+    vk::raii::DeviceMemory m_TextureMemory = nullptr;
 private: // Class references
     Device& m_DeviceRef;
     Renderer& m_RendererRef;

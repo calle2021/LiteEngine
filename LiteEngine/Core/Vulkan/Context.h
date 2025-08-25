@@ -8,6 +8,7 @@
 #include "Pipeline.h"
 #include "Renderer.h"
 #include "Buffers.h"
+#include "Texture.h"
 
 namespace LiteVulkan {
 class Context
@@ -33,5 +34,6 @@ class Context
     Pipeline m_Pipeline;
     Renderer m_Renderer;
     Buffers m_Buffers;
+    Texture m_Texture;
 };
 }
