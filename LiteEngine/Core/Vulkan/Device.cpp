@@ -52,7 +52,7 @@ void Device::CreateLogicalDevice(vk::raii::SurfaceKHR& surface)
     CORE_LOG_INFO("Found queue family ({}).", m_QueueIndex.value());
 
     vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain = {
-        {},                                                     // vk::PhysicalDeviceFeatures2
+        {.features = { .samplerAnisotropy = true }},                                                     // vk::PhysicalDeviceFeatures2
         {.synchronization2 = true, .dynamicRendering = true },  // vk::PhysicalDeviceVulkan13Features
         {.extendedDynamicState = true }                         // vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
     };

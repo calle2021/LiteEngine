@@ -11,6 +11,8 @@ class Texture
 public:
     Texture(Device& dev, Buffers& buf, Renderer& rend);
     void CreateTexture(std::string path);
+    void CreateTextureImageView();
+    void CreateTextureSampler();
 private:
     void CreateImage(uint32_t width, uint32_t height, vk::Format format,
                     vk::ImageTiling tiling, vk::ImageUsageFlags usage,
@@ -21,6 +23,8 @@ private:
 private:
     vk::raii::Image m_Texture = nullptr;
     vk::raii::DeviceMemory m_TextureMemory = nullptr;
+    vk::raii::ImageView m_TextureImageView = nullptr;
+    vk::raii::Sampler m_TextureSampler = nullptr;
 private:
     Device& m_DeviceRef;
     Buffers& m_BuffersRef;

@@ -36,6 +36,8 @@ void Context::Init()
     m_Pipeline.CreatePipeline();
     m_Renderer.CreateCommandPool();
     m_Texture.CreateTexture(texture);
+    m_Texture.CreateTextureImageView();
+    m_Texture.CreateTextureSampler();
     m_Buffers.CreateVertexBuffer();
     m_Buffers.CreateIndexBuffer();
     m_Buffers.CreateUniformBuffers();

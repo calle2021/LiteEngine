@@ -36,6 +36,35 @@ void Texture::CreateTexture(std::string path)
     TransitionImageLayout(m_Texture, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 }
 
+void Texture::CreateTextureImageView()
+{
+    vk::ImageViewCreateInfo viewInfo
+    {
+        .image = m_Texture,
+        .viewType = vk::ImageViewType::e2D,
+        .format = vk::Format::eR8G8B8A8Srgb,
+        .subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
+    };
+    m_TextureImageView = vk::raii::ImageView(m_DeviceRef.m_Device, viewInfo);
+}
+void Texture::CreateTextureSampler()
+{
+    vk::PhysicalDeviceProperties properties = m_DeviceRef.m_PhysicalDevice.getProperties();
+    vk::SamplerCreateInfo samplerInfo{
+        .magFilter = vk::Filter::eLinear,
+        .minFilter = vk::Filter::eLinear,
+        .mipmapMode = vk::SamplerMipmapMode::eLinear,
+        .addressModeU = vk::SamplerAddressMode::eRepeat,
+        .addressModeV = vk::SamplerAddressMode::eRepeat,
+        .addressModeW = vk::SamplerAddressMode::eRepeat,
+        .mipLodBias = 0.0f,
+        .anisotropyEnable = vk::True,
+        .maxAnisotropy = properties.limits.maxSamplerAnisotropy,
+        .compareEnable = vk::False,
+        .compareOp = vk::CompareOp::eAlways };
+    m_TextureSampler = vk::raii::Sampler(m_DeviceRef.m_Device, samplerInfo);
+}
+
 void Texture::CreateImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory) {
     vk::ImageCreateInfo imageInfo{ .imageType = vk::ImageType::e2D, .format = format,
                                     .extent = {width, height, 1}, .mipLevels = 1, .arrayLayers = 1,
