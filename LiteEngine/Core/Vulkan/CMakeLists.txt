@@ -1,6 +1,7 @@
 target_sources(LiteEngine PRIVATE
     Context.cpp
     Context.h
+    Config.h
     Device.cpp
     Device.h
     SwapChain.cpp

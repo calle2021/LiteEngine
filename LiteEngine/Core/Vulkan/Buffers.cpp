@@ -1,12 +1,13 @@
 #include "Buffers.h"
 #include "Core/Logging/Logger.h"
+#include "Config.h"
 
 namespace LiteVulkan {
 const std::vector<Buffers::Vertex> m_Verticies = {
-    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 };
 Buffers::Buffers(Device& dev, Renderer& rend, SwapChain& swap)
     : m_DeviceRef(dev)
@@ -62,7 +63,7 @@ void Buffers::CreateUniformBuffers()
     m_UniformBuffersMemory.clear();
     m_UniformBuffersMapped.clear();
 
-    for (size_t i = 0; i < m_RendererRef.MaxFramesInFlight; i++) {
+    for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++) {
         vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
         vk::raii::Buffer buffer({});
         vk::raii::DeviceMemory bufferMem({});

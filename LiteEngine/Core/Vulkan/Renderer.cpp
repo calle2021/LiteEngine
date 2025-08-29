@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "Core/Logging/Logger.h"
+#include "Config.h"
 
 namespace LiteVulkan {
 Renderer::Renderer(Buffers& buf, SwapChain& swap, Device& dev,
@@ -79,7 +80,7 @@ void Renderer::DrawFrame()
             break;
     }
 
-    m_CurrentFrame = (m_CurrentFrame + 1) % MaxFramesInFlight;
+    m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT;
 }
 
 void Renderer::CreateCommandPool()
@@ -98,7 +99,7 @@ void Renderer::CreateCommandBuffers()
     vk::CommandBufferAllocateInfo allocInfo {
         .commandPool = m_CommandPool,
         .level = vk::CommandBufferLevel::ePrimary,
-        .commandBufferCount = MaxFramesInFlight,
+        .commandBufferCount = FRAMES_IN_FLIGHT,
     };
     m_CommandBuffers = vk::raii::CommandBuffers(m_Device.m_Device, allocInfo);
     CORE_LOG_INFO("Commandbuffer created.");
@@ -110,35 +111,15 @@ void Renderer::CreateSyncObjects()
     m_RenderSemaphores.clear();
     m_Fences.clear();
 
-    for (size_t i = 0; i < MaxFramesInFlight; i++)
+    for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++)
     {
         m_PresentSemaphores.emplace_back(m_Device.m_Device, vk::SemaphoreCreateInfo());
         m_RenderSemaphores.emplace_back(m_Device.m_Device, vk::SemaphoreCreateInfo());
         m_Fences.emplace_back(m_Device.m_Device, vk::FenceCreateInfo { .flags = vk::FenceCreateFlagBits::eSignaled });
     }
 
-    CORE_LOG_INFO("Using {} frames in flight in flight", MaxFramesInFlight);
+    CORE_LOG_INFO("Using {} frames in flight in flight", FRAMES_IN_FLIGHT);
     CORE_LOG_INFO("Sync objects created");
-}
-
-void Renderer::CreateDescriptorSets()
-{
-    std::vector<vk::DescriptorSetLayout> layouts(MaxFramesInFlight, *m_Pipeline.m_DescriptorLayout);
-    vk::DescriptorSetAllocateInfo allocInfo{ .descriptorPool = m_DescriptorPool, .descriptorSetCount = static_cast<uint32_t>(layouts.size()), .pSetLayouts = layouts.data() };
-
-    m_DescriptorSets = m_Device.m_Device.allocateDescriptorSets(allocInfo);
-
-    for (size_t i = 0; i < MaxFramesInFlight; i++) {
-        vk::DescriptorBufferInfo bufferInfo{ .buffer = m_Buffers.m_UniformBuffers[i], .offset = 0, .range = sizeof(Buffers::UniformBufferObject) };
-        vk::WriteDescriptorSet descriptorWrite{ .dstSet = m_DescriptorSets[i], .dstBinding = 0, .dstArrayElement = 0, .descriptorCount = 1, .descriptorType = vk::DescriptorType::eUniformBuffer, .pBufferInfo = &bufferInfo };
-        m_Device.m_Device.updateDescriptorSets(descriptorWrite, {});
-    }
-}
-void Renderer::CreateDescriptorPool()
-{
-    vk::DescriptorPoolSize poolSize(vk::DescriptorType::eUniformBuffer, MaxFramesInFlight);
-    vk::DescriptorPoolCreateInfo poolInfo{ .flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, .maxSets = MaxFramesInFlight, .poolSizeCount = 1, .pPoolSizes = &poolSize };
-    m_DescriptorPool = vk::raii::DescriptorPool(m_Device.m_Device, poolInfo);
 }
 
 void Renderer::RecordCommandBuffer(uint32_t imageIndex)
@@ -175,7 +156,7 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex)
     m_CommandBuffers[m_CurrentFrame].setScissor(0, vk::Rect2D(vk::Offset2D( 0, 0 ), m_SwapChain.m_Extent));
     m_CommandBuffers[m_CurrentFrame].bindVertexBuffers(0, *m_Buffers.m_Buffers, {0});
     m_CommandBuffers[m_CurrentFrame].bindIndexBuffer( *m_Buffers.m_IndexBuffer, 0, vk::IndexTypeValue<decltype(m_Buffers.m_Indices)::value_type>::value );
-    m_CommandBuffers[m_CurrentFrame].bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_Pipeline.m_PipelineLayout, 0, *m_DescriptorSets[m_CurrentFrame], nullptr);
+    m_CommandBuffers[m_CurrentFrame].bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_Pipeline.m_PipelineLayout, 0, *m_Pipeline.m_DescriptorSets[m_CurrentFrame], nullptr);
     m_CommandBuffers[m_CurrentFrame].drawIndexed(m_Buffers.m_Indices.size(), 1, 0, 0, 0);
     m_CommandBuffers[m_CurrentFrame].endRendering();
 

@@ -24,8 +24,6 @@ public:
     void CreateCommandBuffers();
     void RecordCommandBuffer(uint32_t imageIndex);
     void CreateSyncObjects();
-    void CreateDescriptorSets();
-    void CreateDescriptorPool();
     std::unique_ptr<vk::raii::CommandBuffer> BeginSingleTimeCommands();
     void EndSingleTimeCommands(vk::raii::CommandBuffer& cmdbuf);
 private:
@@ -41,8 +39,6 @@ private:
 private:
     vk::raii::CommandPool m_CommandPool = nullptr;
     std::vector<vk::raii::CommandBuffer> m_CommandBuffers;
-    vk::raii::DescriptorPool m_DescriptorPool = nullptr;
-    std::vector<vk::raii::DescriptorSet> m_DescriptorSets;
 private: // Synchronization objects
     std::vector<vk::raii::Semaphore> m_PresentSemaphores;
     std::vector<vk::raii::Semaphore> m_RenderSemaphores;
@@ -55,6 +51,5 @@ private: // References
     GLFWindow& m_Window;
 private:
     uint32_t m_CurrentFrame = 0;
-    const uint32_t MaxFramesInFlight = 2;
 };
 }

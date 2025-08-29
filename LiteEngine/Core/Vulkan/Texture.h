@@ -4,10 +4,12 @@
 #include "Buffers.h"
 #include "Renderer.h"
 
+class Pipeline;
 namespace LiteVulkan
 {
 class Texture
 {
+friend class Pipeline;
 public:
     Texture(Device& dev, Buffers& buf, Renderer& rend);
     void CreateTexture(std::string path);

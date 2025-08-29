@@ -2,18 +2,75 @@
 #include <fstream>
 #include "Core/Logging/Logger.h"
 #include "Buffers.h"
+#include "Config.h"
 
 namespace LiteVulkan {
-Pipeline::Pipeline(SwapChain& swap, Device& dev)
+Pipeline::Pipeline(SwapChain& swap, Device& dev, Buffers& buf, Texture& text)
     : m_SwapChainRef(swap)
-    , m_DeviceRef(dev) {}
+    , m_DeviceRef(dev)
+    , m_BuffersRef(buf)
+    , m_TextureRef(text) {}
 
 void Pipeline::CreateDescriptorLayout()
 {
-    vk::DescriptorSetLayoutBinding uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer,
-                                                    1, vk::ShaderStageFlagBits::eVertex, nullptr);
-    vk::DescriptorSetLayoutCreateInfo layoutInfo{ .bindingCount = 1, .pBindings = &uboLayoutBinding };
+    std::array bindings =
+    {
+        vk::DescriptorSetLayoutBinding( 0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
+        vk::DescriptorSetLayoutBinding( 1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)
+    };
+    vk::DescriptorSetLayoutCreateInfo layoutInfo{.bindingCount = bindings.size(), .pBindings = bindings.data()};
     m_DescriptorLayout = vk::raii::DescriptorSetLayout(m_DeviceRef.m_Device, layoutInfo);
+}
+
+void Pipeline::CreateDescriptorSets()
+{
+    std::vector<vk::DescriptorSetLayout> layouts(FRAMES_IN_FLIGHT, m_DescriptorLayout);
+    vk::DescriptorSetAllocateInfo allocInfo{ .descriptorPool = m_DescriptorPool, .descriptorSetCount = static_cast<uint32_t>(layouts.size()), .pSetLayouts = layouts.data() };
+
+    m_DescriptorSets.clear();
+    m_DescriptorSets = m_DeviceRef.m_Device.allocateDescriptorSets(allocInfo);
+
+    for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++) {
+        vk::DescriptorBufferInfo bufferInfo{ .buffer = m_BuffersRef.m_UniformBuffers[i], .offset = 0, .range = sizeof(Buffers::UniformBufferObject) };
+        vk::DescriptorImageInfo imageInfo{
+            .sampler = m_TextureRef.m_TextureSampler,
+            .imageView = m_TextureRef.m_TextureImageView,
+            .imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal
+        };
+        std::array descriptorWrites{
+            vk::WriteDescriptorSet{
+                .dstSet = m_DescriptorSets[i],
+                .dstBinding = 0,
+                .dstArrayElement = 0,
+                .descriptorCount = 1,
+                .descriptorType = vk::DescriptorType::eUniformBuffer,
+                .pBufferInfo = &bufferInfo
+            },
+            vk::WriteDescriptorSet{
+                .dstSet = m_DescriptorSets[i],
+                .dstBinding = 1,
+                .dstArrayElement = 0,
+                .descriptorCount = 1,
+                .descriptorType = vk::DescriptorType::eCombinedImageSampler,
+                .pImageInfo = &imageInfo
+            }
+        };
+        m_DeviceRef.m_Device.updateDescriptorSets(descriptorWrites, {});
+    }
+}
+void Pipeline::CreateDescriptorPool()
+{
+    std::array pool {
+        vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, FRAMES_IN_FLIGHT),
+        vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, FRAMES_IN_FLIGHT)
+    };
+    vk::DescriptorPoolCreateInfo poolInfo{
+        .flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
+        .maxSets = FRAMES_IN_FLIGHT,
+        .poolSizeCount = static_cast<uint32_t>(pool.size()),
+        .pPoolSizes = pool.data()
+    };
+    m_DescriptorPool = vk::raii::DescriptorPool(m_DeviceRef.m_Device, poolInfo);
 }
 
 void Pipeline::CreatePipeline()

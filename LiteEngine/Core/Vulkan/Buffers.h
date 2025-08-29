@@ -11,10 +11,12 @@
 namespace LiteVulkan {
 class Renderer;
 class Texture;
+class Pipeline;
 class Buffers
 {
 friend class Renderer;
 friend class Texture;
+friend class Pipeline;
 public:
     Buffers(Device& dev, Renderer& rend, SwapChain& swap);
     void CreateVertexBuffer();
@@ -26,14 +28,16 @@ public:
     {
         glm::vec2 m_Pos;
         glm::vec3 m_Color;
+        glm::vec2 m_Tex;
         static vk::VertexInputBindingDescription GetBindingDescription() {
             return { 0, sizeof(Vertex), vk::VertexInputRate::eVertex };
         }
 
-        static std::array<vk::VertexInputAttributeDescription, 2> GetAttributeDescriptions() {
+        static std::array<vk::VertexInputAttributeDescription, 3> GetAttributeDescriptions() {
             return {
-                vk::VertexInputAttributeDescription( 0, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, m_Pos) ),
-                vk::VertexInputAttributeDescription( 1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, m_Color) )
+                vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, m_Pos) ),
+                vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, m_Color)),
+                vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, m_Tex))
             };
         }
     };
