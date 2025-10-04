@@ -20,8 +20,8 @@ Context::Context(GLFWindow& window)
     , m_SwapChain(m_Device, m_Surface, window)
     , m_Buffers(m_Device, m_Renderer, m_SwapChain)
     , m_Pipeline(m_SwapChain, m_Device, m_Buffers, m_Texture)
-    , m_Texture(m_Device, m_Buffers, m_Renderer)
-    , m_Renderer(m_Buffers, m_SwapChain, m_Device, m_Pipeline, window) {}
+    , m_Texture(m_Device, m_Buffers, m_Renderer, m_SwapChain)
+    , m_Renderer(m_Buffers, m_SwapChain, m_Device, m_Pipeline, m_Texture, window) {}
 
 void Context::Init()
 {
@@ -35,6 +35,7 @@ void Context::Init()
     m_Pipeline.CreateDescriptorLayout();
     m_Pipeline.CreatePipeline();
     m_Renderer.CreateCommandPool();
+    m_Texture.CreateDepthResources();
     m_Texture.CreateTexture(texture);
     m_Texture.CreateTextureImageView();
     m_Texture.CreateTextureSampler();

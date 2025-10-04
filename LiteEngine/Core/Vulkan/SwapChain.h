@@ -8,11 +8,13 @@ namespace LiteVulkan {
 class Pipeline;
 class Renderer;
 class Buffers;
+class Texture;
 class SwapChain
 {
 friend class Pipeline;
 friend class Renderer;
 friend class Buffers;
+friend class Texture;
 public:
     SwapChain(
         Device& device,
@@ -21,8 +23,8 @@ public:
     );
     void CreateSwapChain();
     void CreateImageViews();
-    void RecreateSwapChain();
 private:
+    vk::raii::ImageView GetImageView(vk::raii::Image& img, vk::Format format, vk::ImageAspectFlags flags);
     vk::Format ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
     vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);

@@ -46,30 +46,23 @@ void SwapChain::CreateImageViews()
         .format = m_ImageFormat,
         .subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
     };
-    CORE_LOG_INFO("Found {} image(s)", m_Images.size());
+
     for ( auto image : m_Images )
     {
         imageViewCreateInfo.image = image;
         m_ImageViews.emplace_back(m_Device.m_Device, imageViewCreateInfo);
     }
-    CORE_LOG_INFO("Image views created");
 }
 
-void SwapChain::RecreateSwapChain()
+vk::raii::ImageView SwapChain::GetImageView(vk::raii::Image& img, vk::Format format, vk::ImageAspectFlags flags)
 {
-    CORE_LOG_INFO("Recreate swap chain");
-    int width = 0, height = 0;
-    glfwGetFramebufferSize(m_Window.GetWindowHandle(), &width, &height);
-    while (width == 0 || height == 0) {
-        glfwGetFramebufferSize(m_Window.GetWindowHandle(), &width, &height);
-        glfwWaitEvents();
-    }
-    m_Device.m_Device.waitIdle();
-    m_ImageViews.clear();
-    m_SwapChain = nullptr;
-    CreateSwapChain();
-    CreateImageViews();
-    m_Window.ResizeHandled();
+    vk::ImageViewCreateInfo info {
+        .image = img,
+        .viewType = vk::ImageViewType::e2D,
+        .format = format,
+        .subresourceRange = { flags, 0, 1, 0, 1 }
+    };
+    return vk::raii::ImageView(m_Device.m_Device, info);
 }
 
 vk::Format SwapChain::ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)

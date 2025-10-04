@@ -83,27 +83,39 @@ void Pipeline::CreatePipeline()
     auto bindingDescription = Buffers::Vertex::GetBindingDescription();
     auto attributeDescriptions = Buffers::Vertex::GetAttributeDescriptions();
     vk::PipelineVertexInputStateCreateInfo vertexInputInfo {
-        .vertexBindingDescriptionCount =1,
+        .vertexBindingDescriptionCount = 1,
         .pVertexBindingDescriptions = &bindingDescription,
         .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
         .pVertexAttributeDescriptions = attributeDescriptions.data()
     };
 
-    vk::PipelineInputAssemblyStateCreateInfo inputAssembly{  .topology = vk::PrimitiveTopology::eTriangleList };
+    vk::PipelineInputAssemblyStateCreateInfo inputAssembly{ .topology = vk::PrimitiveTopology::eTriangleList, .primitiveRestartEnable = vk::False };
     vk::PipelineViewportStateCreateInfo viewportState{ .viewportCount = 1, .scissorCount = 1 };
 
     vk::PipelineRasterizationStateCreateInfo rasterizer{  .depthClampEnable = vk::False, .rasterizerDiscardEnable = vk::False,
                                                             .polygonMode = vk::PolygonMode::eFill, .cullMode = vk::CullModeFlagBits::eBack,
-                                                            .frontFace = vk::FrontFace::eCounterClockwise, .depthBiasEnable = vk::False,
-                                                            .depthBiasSlopeFactor = 1.0f, .lineWidth = 1.0f };
-
+                                                            .frontFace = vk::FrontFace::eCounterClockwise, .depthBiasEnable = vk::False };
+    rasterizer.lineWidth = 1;
     vk::PipelineMultisampleStateCreateInfo multisampling{ .rasterizationSamples = vk::SampleCountFlagBits::e1, .sampleShadingEnable = vk::False};
 
-    vk::PipelineColorBlendAttachmentState colorBlendAttachment{ .blendEnable = vk::False,
-        .colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
+    vk::PipelineDepthStencilStateCreateInfo depthStencil{
+        .depthTestEnable = vk::True,
+        .depthWriteEnable = vk::True,
+        .depthCompareOp = vk::CompareOp::eLess,
+        .depthBoundsTestEnable = vk::False,
+        .stencilTestEnable = vk::False
     };
 
-    vk::PipelineColorBlendStateCreateInfo colorBlending{ .logicOpEnable = vk::False, .logicOp =  vk::LogicOp::eCopy, .attachmentCount = 1, .pAttachments =  &colorBlendAttachment };
+    vk::PipelineColorBlendAttachmentState colorBlendAttachment;
+    colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+    colorBlendAttachment.blendEnable = vk::False;
+
+    vk::PipelineColorBlendStateCreateInfo colorBlending{
+        .logicOpEnable = vk::False,
+        .logicOp = vk::LogicOp::eCopy,
+        .attachmentCount = 1,
+        .pAttachments = &colorBlendAttachment
+    };
 
     std::vector dynamicStates = {
         vk::DynamicState::eViewport,
@@ -116,7 +128,9 @@ void Pipeline::CreatePipeline()
     m_PipelineLayout = vk::raii::PipelineLayout( m_DeviceRef.m_Device, pipelineLayoutInfo );
     CORE_LOG_INFO("Pipeline layout created.");
 
-    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo{ .colorAttachmentCount = 1, .pColorAttachmentFormats = &m_SwapChainRef.m_ImageFormat };
+    vk::Format depthFormat = m_TextureRef.FindDepthFormat();
+    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo { .colorAttachmentCount = 1, .pColorAttachmentFormats = &m_SwapChainRef.m_ImageFormat,
+                                                                  .depthAttachmentFormat = depthFormat };
     vk::GraphicsPipelineCreateInfo pipelineInfo {
         .pNext = &pipelineRenderingCreateInfo,
         .stageCount = 2,
@@ -126,6 +140,7 @@ void Pipeline::CreatePipeline()
         .pViewportState = &viewportState,
         .pRasterizationState = &rasterizer,
         .pMultisampleState = &multisampling,
+        .pDepthStencilState = &depthStencil,
         .pColorBlendState = &colorBlending,
         .pDynamicState = &dynamicState,
         .layout = m_PipelineLayout,

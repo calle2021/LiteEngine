@@ -4,11 +4,12 @@
 
 namespace LiteVulkan {
 Renderer::Renderer(Buffers& buf, SwapChain& swap, Device& dev,
-                   Pipeline& pipe, GLFWindow& win)
+                   Pipeline& pipe, Texture& tex, GLFWindow& win)
     : m_Buffers(buf)
     , m_SwapChain(swap)
     , m_Device(dev)
     , m_Pipeline(pipe)
+    , m_TextureRef(tex)
     , m_Window(win) {}
 
 void Renderer::DrawFrame()
@@ -21,7 +22,7 @@ void Renderer::DrawFrame()
 
     if(m_Window.HasResized())
     {
-        m_SwapChain.RecreateSwapChain();
+        RecreateSwapChain();
         return;
     }
 
@@ -29,7 +30,7 @@ void Renderer::DrawFrame()
 
     if (result == vk::Result::eErrorOutOfDateKHR)
     {
-        m_SwapChain.RecreateSwapChain();
+        RecreateSwapChain();
         return;
     }
 
@@ -72,7 +73,7 @@ void Renderer::DrawFrame()
             break;
         case vk::Result::eErrorOutOfDateKHR:
             CORE_LOG_INFO("eErrorOutOfDateKHR");
-            m_SwapChain.RecreateSwapChain();
+            RecreateSwapChain();
             break;
         default:
             CORE_LOG_ERROR("Failed to present image");
@@ -135,7 +136,34 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex)
         vk::PipelineStageFlagBits2::eColorAttachmentOutput
     );
 
+    vk::ImageMemoryBarrier2 depthBarrier = {
+        .srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe,
+        .srcAccessMask = {},
+        .dstStageMask = vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
+        .dstAccessMask = vk::AccessFlagBits2::eDepthStencilAttachmentRead | vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+        .oldLayout = vk::ImageLayout::eUndefined,
+        .newLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = m_TextureRef.m_DepthImage,
+        .subresourceRange = {
+            .aspectMask = vk::ImageAspectFlagBits::eDepth,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = 1
+        }
+    };
+    vk::DependencyInfo depthDependencyInfo = {
+        .dependencyFlags = {},
+        .imageMemoryBarrierCount = 1,
+        .pImageMemoryBarriers = &depthBarrier
+    };
+    m_CommandBuffers[m_CurrentFrame].pipelineBarrier2(depthDependencyInfo);
+
+
     vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
+    vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
     vk::RenderingAttachmentInfo attachmentInfo = {
         .imageView = m_SwapChain.m_ImageViews[imageIndex],
         .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
@@ -143,11 +171,19 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex)
         .storeOp = vk::AttachmentStoreOp::eStore,
         .clearValue = clearColor
     };
+    vk::RenderingAttachmentInfo depthAttachmentInfo = {
+        .imageView = m_TextureRef.m_DepthBufferView,
+        .imageLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal,
+        .loadOp = vk::AttachmentLoadOp::eClear,
+        .storeOp = vk::AttachmentStoreOp::eDontCare,
+        .clearValue = clearDepth
+    };
     vk::RenderingInfo renderingInfo = {
         .renderArea = { .offset = { 0, 0 }, .extent = m_SwapChain.m_Extent },
         .layerCount = 1,
         .colorAttachmentCount = 1,
-        .pColorAttachments = &attachmentInfo
+        .pColorAttachments = &attachmentInfo,
+        .pDepthAttachment = &depthAttachmentInfo
     };
 
     m_CommandBuffers[m_CurrentFrame].beginRendering(renderingInfo);
@@ -220,6 +256,24 @@ void Renderer::EndSingleTimeCommands(vk::raii::CommandBuffer& cmdbuf) {
     vk::SubmitInfo subinfo { .commandBufferCount = 1, .pCommandBuffers = &*cmdbuf };
     m_Device.m_Queue.submit(subinfo, nullptr);
     m_Device.m_Queue.waitIdle();
+}
+
+void Renderer::RecreateSwapChain()
+{
+    CORE_LOG_INFO("Recreate swap chain");
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(m_Window.GetWindowHandle(), &width, &height);
+    while (width == 0 || height == 0) {
+        glfwGetFramebufferSize(m_Window.GetWindowHandle(), &width, &height);
+        glfwWaitEvents();
+    }
+    m_Device.m_Device.waitIdle();
+    m_SwapChain.m_ImageViews.clear();
+    m_SwapChain.m_SwapChain = nullptr;
+    m_SwapChain.CreateSwapChain();
+    m_SwapChain.CreateImageViews();
+    m_TextureRef.CreateDepthResources();
+    m_Window.ResizeHandled();
 }
 
 }

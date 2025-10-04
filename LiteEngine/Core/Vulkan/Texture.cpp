@@ -4,10 +4,11 @@
 
 namespace LiteVulkan
 {
-Texture::Texture(Device& dev, Buffers& buf, Renderer& rend)
+Texture::Texture(Device& dev, Buffers& buf, Renderer& rend, SwapChain& swap)
     : m_DeviceRef(dev)
     , m_BuffersRef(buf)
-    , m_RendererRef(rend) {}
+    , m_RendererRef(rend)
+    , m_SwapChainRef(swap) {}
 
 void Texture::CreateTexture(std::string path)
 {
@@ -29,23 +30,23 @@ void Texture::CreateTexture(std::string path)
 
     stbi_image_free(pixels);
 
-    CreateImage(texWidth, texHeight, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, m_Texture, m_TextureMemory);
+    CreateImage(texWidth, texHeight, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, m_TextureImage, m_TextureMemory);
 
-    TransitionImageLayout(m_Texture, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-    CopyBufferToImage(stagingBuffer, m_Texture, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-    TransitionImageLayout(m_Texture, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+    TransitionImageLayout(m_TextureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+    CopyBufferToImage(stagingBuffer, m_TextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+    TransitionImageLayout(m_TextureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+}
+
+void Texture::CreateDepthResources()
+{
+    vk::Format depthFormat = FindDepthFormat();
+    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, m_DepthImage, m_DepthBufferMemory);
+    m_DepthBufferView = m_SwapChainRef.GetImageView(m_DepthImage, depthFormat, vk::ImageAspectFlagBits::eDepth);
 }
 
 void Texture::CreateTextureImageView()
 {
-    vk::ImageViewCreateInfo viewInfo
-    {
-        .image = m_Texture,
-        .viewType = vk::ImageViewType::e2D,
-        .format = vk::Format::eR8G8B8A8Srgb,
-        .subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
-    };
-    m_TextureImageView = vk::raii::ImageView(m_DeviceRef.m_Device, viewInfo);
+    m_TextureImageView = m_SwapChainRef.GetImageView(m_TextureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
 }
 void Texture::CreateTextureSampler()
 {
@@ -69,7 +70,8 @@ void Texture::CreateImage(uint32_t width, uint32_t height, vk::Format format, vk
     vk::ImageCreateInfo imageInfo{ .imageType = vk::ImageType::e2D, .format = format,
                                     .extent = {width, height, 1}, .mipLevels = 1, .arrayLayers = 1,
                                     .samples = vk::SampleCountFlagBits::e1, .tiling = tiling,
-                                    .usage = usage, .sharingMode = vk::SharingMode::eExclusive };
+                                    .usage = usage, .sharingMode = vk::SharingMode::eExclusive,
+                                    .initialLayout = vk::ImageLayout::eUndefined };
 
     image = vk::raii::Image(m_DeviceRef.m_Device, imageInfo );
 
@@ -118,5 +120,25 @@ void Texture::CopyBufferToImage(const vk::raii::Buffer& buf, vk::raii::Image& im
                                 .imageOffset = {0, 0, 0}, .imageExtent = {width, height, 1} };
     cmdbuf->copyBufferToImage(buf, image, vk::ImageLayout::eTransferDstOptimal, {region});
     m_RendererRef.EndSingleTimeCommands(*cmdbuf);
+}
+
+vk::Format Texture::FindSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
+{
+    for (const auto format : candidates) {
+        vk::FormatProperties props = m_DeviceRef.m_PhysicalDevice.getFormatProperties(format);
+
+        if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
+            return format;
+        }
+        if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
+            return format;
+        }
+    }
+    throw std::runtime_error("Failed to find supported format");
+}
+
+vk::Format Texture::FindDepthFormat()
+{
+    return FindSupportedFormat({vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint}, vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
 }
 }

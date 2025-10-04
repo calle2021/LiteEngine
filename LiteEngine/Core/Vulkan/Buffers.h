@@ -26,7 +26,7 @@ public:
 public:
     struct Vertex
     {
-        glm::vec2 m_Pos;
+        glm::vec3 m_Pos;
         glm::vec3 m_Color;
         glm::vec2 m_Tex;
         static vk::VertexInputBindingDescription GetBindingDescription() {
@@ -35,7 +35,7 @@ public:
 
         static std::array<vk::VertexInputAttributeDescription, 3> GetAttributeDescriptions() {
             return {
-                vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, m_Pos) ),
+                vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, m_Pos) ),
                 vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, m_Color)),
                 vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, m_Tex))
             };
@@ -48,8 +48,15 @@ public:
         glm::mat4 view;
         glm::mat4 proj;
     };
+
 private:
-    const std::vector<uint16_t> m_Indices = {0, 1, 2, 2, 3, 0};
+    const std::vector<uint16_t> m_Indices =
+    {
+        0, 1, 2, 2, 3, 0,
+        4, 5, 6, 6, 7, 4
+    };
+
+
 private:
     void CreateBuffer(
         vk::DeviceSize size,

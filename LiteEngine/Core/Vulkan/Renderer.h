@@ -4,6 +4,7 @@
 #include "SwapChain.h"
 #include "Device.h"
 #include "Pipeline.h"
+#include "Texture.h"
 #include "Core/Window/GLFWindow.h"
 
 namespace LiteVulkan {
@@ -17,6 +18,7 @@ public:
         SwapChain& swap,
         Device& device,
         Pipeline& Pipeline,
+        Texture& tex,
         GLFWindow& window
     );
     void DrawFrame();
@@ -27,6 +29,7 @@ public:
     std::unique_ptr<vk::raii::CommandBuffer> BeginSingleTimeCommands();
     void EndSingleTimeCommands(vk::raii::CommandBuffer& cmdbuf);
 private:
+    void RecreateSwapChain();
     void TransitionImageLayout(
         uint32_t imageIndex,
         vk::ImageLayout oldLayout,
@@ -49,6 +52,7 @@ private: // References
     Device& m_Device;
     Pipeline& m_Pipeline;
     GLFWindow& m_Window;
+    Texture& m_TextureRef;
 private:
     uint32_t m_CurrentFrame = 0;
 };
