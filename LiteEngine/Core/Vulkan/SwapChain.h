@@ -8,13 +8,13 @@ namespace LiteVulkan {
 class Pipeline;
 class Renderer;
 class Buffers;
-class Texture;
+class Assets;
 class SwapChain
 {
 friend class Pipeline;
 friend class Renderer;
 friend class Buffers;
-friend class Texture;
+friend class Assets;
 public:
     SwapChain(
         Device& device,

@@ -4,7 +4,7 @@
 #include "SwapChain.h"
 #include "Device.h"
 #include "Pipeline.h"
-#include "Texture.h"
+#include "Assets.h"
 #include "Core/Window/GLFWindow.h"
 
 namespace LiteVulkan {
@@ -18,7 +18,7 @@ public:
         SwapChain& swap,
         Device& device,
         Pipeline& Pipeline,
-        Texture& tex,
+        Assets& assets,
         GLFWindow& window
     );
     void DrawFrame();
@@ -52,7 +52,7 @@ private: // References
     Device& m_Device;
     Pipeline& m_Pipeline;
     GLFWindow& m_Window;
-    Texture& m_TextureRef;
+    Assets& m_AssetsRef;
 private:
     uint32_t m_CurrentFrame = 0;
 };

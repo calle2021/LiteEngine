@@ -6,8 +6,6 @@ const std::vector validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
 
-const std::string texture = "Assets/Textures/texture.jpg";
-
 #ifdef NDEBUG
 constexpr bool enable_validation_layers = false;
 #else
@@ -18,10 +16,10 @@ Context::Context(GLFWindow& window)
     : m_Window(window)
     , m_Device()
     , m_SwapChain(m_Device, m_Surface, window)
-    , m_Buffers(m_Device, m_Renderer, m_SwapChain)
-    , m_Pipeline(m_SwapChain, m_Device, m_Buffers, m_Texture)
-    , m_Texture(m_Device, m_Buffers, m_Renderer, m_SwapChain)
-    , m_Renderer(m_Buffers, m_SwapChain, m_Device, m_Pipeline, m_Texture, window) {}
+    , m_Buffers(m_Device, m_Renderer, m_SwapChain, m_Assets)
+    , m_Pipeline(m_SwapChain, m_Device, m_Buffers, m_Assets)
+    , m_Assets(m_Device, m_Buffers, m_Renderer, m_SwapChain)
+    , m_Renderer(m_Buffers, m_SwapChain, m_Device, m_Pipeline, m_Assets, window) {}
 
 void Context::Init()
 {
@@ -35,10 +33,12 @@ void Context::Init()
     m_Pipeline.CreateDescriptorLayout();
     m_Pipeline.CreatePipeline();
     m_Renderer.CreateCommandPool();
-    m_Texture.CreateDepthResources();
-    m_Texture.CreateTexture(texture);
-    m_Texture.CreateTextureImageView();
-    m_Texture.CreateTextureSampler();
+    m_Assets.CreateDepthResources();
+    m_Assets.CreateTexture();
+    m_Assets.CreateTextureImageView();
+    m_Assets.CreateTextureSampler();
+    m_Assets.LoadModel();
+    m_Buffers.BufferModels();
     m_Buffers.CreateVertexBuffer();
     m_Buffers.CreateIndexBuffer();
     m_Buffers.CreateUniformBuffers();

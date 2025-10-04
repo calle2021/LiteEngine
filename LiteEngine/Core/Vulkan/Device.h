@@ -9,7 +9,7 @@ class Pipeline;
 class Renderer;
 class Context;
 class Buffers;
-class Texture;
+class Assets;
 class Device
 {
 friend class SwapChain;
@@ -17,7 +17,7 @@ friend class Pipeline;
 friend class Renderer;
 friend class Context;
 friend class Buffers;
-friend class Texture;
+friend class Assets;
 public:
     void PickPhysicalDevice(vk::raii::Instance& instance);
     void CreateLogicalDevice(vk::raii::SurfaceKHR& surface);

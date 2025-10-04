@@ -1,24 +1,14 @@
 #include "Buffers.h"
 #include "Core/Logging/Logger.h"
 #include "Config.h"
+#include <unordered_map>
 
 namespace LiteVulkan {
-const std::vector<Buffers::Vertex> m_Verticies = {
-    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-
-    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-};
-
-Buffers::Buffers(Device& dev, Renderer& rend, SwapChain& swap)
+Buffers::Buffers(Device& dev, Renderer& rend, SwapChain& swap, Assets& assets)
     : m_DeviceRef(dev)
     , m_RendererRef(rend)
-    , m_SwapChainRef(swap) {}
+    , m_SwapChainRef(swap)
+    , m_AssetsRef(assets) {}
 
 void Buffers::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory) {
     vk::BufferCreateInfo bufferInfo{ .size = size, .usage = usage, .sharingMode = vk::SharingMode::eExclusive };
@@ -48,7 +38,7 @@ void Buffers::CreateVertexBuffer()
 
 void Buffers::CreateIndexBuffer()
 {
-     vk::DeviceSize bufferSize = sizeof(m_Indices[0]) * m_Indices.size();
+    vk::DeviceSize bufferSize = sizeof(m_Indices[0]) * m_Indices.size();
 
     vk::raii::Buffer stagingBuffer({});
     vk::raii::DeviceMemory stagingBufferMemory({});
@@ -106,6 +96,37 @@ void Buffers::CopyBuffer(vk::raii::Buffer& src, vk::raii::Buffer& dst, vk::Devic
     m_DeviceRef.m_Queue.waitIdle();
 }
 
+void Buffers::BufferModels()
+{
+    std::unordered_map<Vertex, uint32_t> unique_verticies;
+
+    for (const auto& shape : m_AssetsRef.shapes) {
+        for (const auto& index : shape.mesh.indices) {
+            Vertex vertex{};
+
+            vertex.m_Pos = {
+                m_AssetsRef.attrib.vertices[3 * index.vertex_index + 0],
+                m_AssetsRef.attrib.vertices[3 * index.vertex_index + 1],
+                m_AssetsRef.attrib.vertices[3 * index.vertex_index + 2]
+            };
+
+            vertex.m_Tex = {
+                m_AssetsRef.attrib.texcoords[2 * index.texcoord_index + 0],
+                // obj format defines 0 as bottom but in vulkan 0 is top
+                // so we flip the vertical component
+                1.0 - m_AssetsRef.attrib.texcoords[2 * index.texcoord_index + 1]
+            };
+            vertex.m_Color = {1.0f, 1.0f, 1.0f};
+
+            if (unique_verticies.count(vertex) == 0) {
+                unique_verticies[vertex] = static_cast<uint32_t>(m_Verticies.size());
+                m_Verticies.push_back(vertex);
+            }
+
+            m_Indices.push_back(unique_verticies[vertex]);
+        }
+    }
+}
 
 uint32_t Buffers::FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
     vk::PhysicalDeviceMemoryProperties memProperties = m_DeviceRef.m_PhysicalDevice.getMemoryProperties();

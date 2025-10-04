@@ -6,19 +6,23 @@
 #include "Device.h"
 #include "Renderer.h"
 #include "SwapChain.h"
+#include "Assets.h"
 #include <array>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 
 namespace LiteVulkan {
 class Renderer;
-class Texture;
+class Assets;
 class Pipeline;
 class Buffers
 {
 friend class Renderer;
-friend class Texture;
+friend class Assets;
 friend class Pipeline;
 public:
-    Buffers(Device& dev, Renderer& rend, SwapChain& swap);
+    Buffers(Device& dev, Renderer& rend, SwapChain& swap, Assets& assets);
+    void BufferModels();
     void CreateVertexBuffer();
     void CreateIndexBuffer();
     void CreateUniformBuffers();
@@ -29,16 +33,21 @@ public:
         glm::vec3 m_Pos;
         glm::vec3 m_Color;
         glm::vec2 m_Tex;
+
         static vk::VertexInputBindingDescription GetBindingDescription() {
             return { 0, sizeof(Vertex), vk::VertexInputRate::eVertex };
         }
 
         static std::array<vk::VertexInputAttributeDescription, 3> GetAttributeDescriptions() {
             return {
-                vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, m_Pos) ),
+                vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, m_Pos)),
                 vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, m_Color)),
                 vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, m_Tex))
             };
+        }
+
+        bool operator==(const Vertex& v) const {
+            return m_Pos == v.m_Pos && m_Color == v.m_Color && m_Tex == v.m_Tex;
         }
     };
 
@@ -50,12 +59,8 @@ public:
     };
 
 private:
-    const std::vector<uint16_t> m_Indices =
-    {
-        0, 1, 2, 2, 3, 0,
-        4, 5, 6, 6, 7, 4
-    };
-
+    std::vector<Vertex> m_Verticies;
+    std::vector<uint32_t> m_Indices;
 
 private:
     void CreateBuffer(
@@ -80,5 +85,16 @@ private: // Class references
     Device& m_DeviceRef;
     Renderer& m_RendererRef;
     SwapChain& m_SwapChainRef;
+    Assets& m_AssetsRef;
 };
+}
+
+namespace std {
+    template<> struct hash<LiteVulkan::Buffers::Vertex> {
+        size_t operator()(LiteVulkan::Buffers::Vertex const& vertex) const {
+            return ((hash<glm::vec3>()(vertex.m_Pos) ^
+                   (hash<glm::vec3>()(vertex.m_Color) << 1)) >> 1) ^
+                   (hash<glm::vec2>()(vertex.m_Tex) << 1);
+        }
+    };
 }

@@ -5,17 +5,22 @@
 #include "Renderer.h"
 #include "SwapChain.h"
 
+#include "tiny_obj_loader.h"
+
 class Renderer;
 class Pipeline;
+class Buffers;
 namespace LiteVulkan
 {
-class Texture
+class Assets
 {
 friend class Pipeline;
 friend class Renderer;
+friend class Buffers;
 public:
-    Texture(Device& dev, Buffers& buf, Renderer& rend, SwapChain& swap);
-    void CreateTexture(std::string path);
+    Assets(Device& dev, Buffers& buf, Renderer& rend, SwapChain& swap);
+    void LoadModel();
+    void CreateTexture();
     void CreateDepthResources();
     void CreateTextureImageView();
     void CreateTextureSampler();
@@ -36,6 +41,10 @@ private:
     vk::raii::Image m_DepthImage = nullptr;
     vk::raii::DeviceMemory m_DepthBufferMemory = nullptr;
     vk::raii::ImageView m_DepthBufferView = nullptr;
+private: // Models
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
 private:
     Device& m_DeviceRef;
     Buffers& m_BuffersRef;

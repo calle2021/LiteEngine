@@ -12,6 +12,7 @@ target_sources(LiteEngine PRIVATE
     Renderer.h
     Buffers.cpp
     Buffers.h
-    Texture.cpp
-    Texture.h
+    Assets.cpp
+    Assets.h
+    TinyObjLoader.cpp
 )

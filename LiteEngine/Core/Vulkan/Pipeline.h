@@ -4,7 +4,7 @@
 #include "SwapChain.h"
 #include "Device.h"
 #include "Buffers.h"
-#include "Texture.h"
+#include "Assets.h"
 
 namespace LiteVulkan {
 class Renderer;
@@ -12,7 +12,7 @@ class Pipeline
 {
 friend class Renderer;
 public:
-    Pipeline(SwapChain& swapChain, Device& device, Buffers& buf, Texture& text);
+    Pipeline(SwapChain& swapChain, Device& device, Buffers& buf, Assets& assets);
     void CreateDescriptorLayout();
     void CreatePipeline();
     void CreateDescriptorSets();
@@ -31,6 +31,6 @@ private:
     SwapChain& m_SwapChainRef;
     Device& m_DeviceRef;
     Buffers& m_BuffersRef;
-    Texture& m_TextureRef;
+    Assets& m_AssetsRef;
 };
 }

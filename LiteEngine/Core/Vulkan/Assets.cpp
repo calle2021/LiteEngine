@@ -1,19 +1,32 @@
-#include "Texture.h"
+#include "Assets.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-
 namespace LiteVulkan
 {
-Texture::Texture(Device& dev, Buffers& buf, Renderer& rend, SwapChain& swap)
+constexpr uint32_t WIDTH = 800;
+constexpr uint32_t HEIGHT = 600;
+constexpr uint64_t FenceTimeout = 100000000;
+const std::string MODEL_PATH = "Assets/Models/viking_room.obj";
+const std::string TEXTURE_PATH = "Assets/Textures/viking_room.png";
+
+Assets::Assets(Device& dev, Buffers& buf, Renderer& rend, SwapChain& swap)
     : m_DeviceRef(dev)
     , m_BuffersRef(buf)
     , m_RendererRef(rend)
     , m_SwapChainRef(swap) {}
 
-void Texture::CreateTexture(std::string path)
+void Assets::LoadModel()
+{
+    std::string warn, err;
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
+        throw std::runtime_error(warn + err);
+    }
+}
+
+void Assets::CreateTexture()
 {
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     vk::DeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels) {
@@ -37,18 +50,18 @@ void Texture::CreateTexture(std::string path)
     TransitionImageLayout(m_TextureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 }
 
-void Texture::CreateDepthResources()
+void Assets::CreateDepthResources()
 {
     vk::Format depthFormat = FindDepthFormat();
     CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, m_DepthImage, m_DepthBufferMemory);
     m_DepthBufferView = m_SwapChainRef.GetImageView(m_DepthImage, depthFormat, vk::ImageAspectFlagBits::eDepth);
 }
 
-void Texture::CreateTextureImageView()
+void Assets::CreateTextureImageView()
 {
     m_TextureImageView = m_SwapChainRef.GetImageView(m_TextureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
 }
-void Texture::CreateTextureSampler()
+void Assets::CreateTextureSampler()
 {
     vk::PhysicalDeviceProperties properties = m_DeviceRef.m_PhysicalDevice.getProperties();
     vk::SamplerCreateInfo samplerInfo{
@@ -66,7 +79,7 @@ void Texture::CreateTextureSampler()
     m_TextureSampler = vk::raii::Sampler(m_DeviceRef.m_Device, samplerInfo);
 }
 
-void Texture::CreateImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory) {
+void Assets::CreateImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory) {
     vk::ImageCreateInfo imageInfo{ .imageType = vk::ImageType::e2D, .format = format,
                                     .extent = {width, height, 1}, .mipLevels = 1, .arrayLayers = 1,
                                     .samples = vk::SampleCountFlagBits::e1, .tiling = tiling,
@@ -82,7 +95,7 @@ void Texture::CreateImage(uint32_t width, uint32_t height, vk::Format format, vk
     image.bindMemory(imageMemory, 0);
 }
 
-void Texture::TransitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
+void Assets::TransitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
 {
     auto cmdbuf = m_RendererRef.BeginSingleTimeCommands();
 
@@ -112,7 +125,7 @@ void Texture::TransitionImageLayout(const vk::raii::Image& image, vk::ImageLayou
     m_RendererRef.EndSingleTimeCommands(*cmdbuf);
 }
 
-void Texture::CopyBufferToImage(const vk::raii::Buffer& buf, vk::raii::Image& image, uint32_t width, uint32_t height)
+void Assets::CopyBufferToImage(const vk::raii::Buffer& buf, vk::raii::Image& image, uint32_t width, uint32_t height)
 {
     auto cmdbuf = m_RendererRef.BeginSingleTimeCommands();
     vk::BufferImageCopy region{ .bufferOffset = 0, .bufferRowLength = 0, .bufferImageHeight = 0,
@@ -122,7 +135,7 @@ void Texture::CopyBufferToImage(const vk::raii::Buffer& buf, vk::raii::Image& im
     m_RendererRef.EndSingleTimeCommands(*cmdbuf);
 }
 
-vk::Format Texture::FindSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
+vk::Format Assets::FindSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
 {
     for (const auto format : candidates) {
         vk::FormatProperties props = m_DeviceRef.m_PhysicalDevice.getFormatProperties(format);
@@ -137,7 +150,7 @@ vk::Format Texture::FindSupportedFormat(const std::vector<vk::Format>& candidate
     throw std::runtime_error("Failed to find supported format");
 }
 
-vk::Format Texture::FindDepthFormat()
+vk::Format Assets::FindDepthFormat()
 {
     return FindSupportedFormat({vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint}, vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
 }

@@ -5,11 +5,11 @@
 #include "Config.h"
 
 namespace LiteVulkan {
-Pipeline::Pipeline(SwapChain& swap, Device& dev, Buffers& buf, Texture& text)
+Pipeline::Pipeline(SwapChain& swap, Device& dev, Buffers& buf, Assets& assets)
     : m_SwapChainRef(swap)
     , m_DeviceRef(dev)
     , m_BuffersRef(buf)
-    , m_TextureRef(text) {}
+    , m_AssetsRef(assets) {}
 
 void Pipeline::CreateDescriptorLayout()
 {
@@ -33,8 +33,8 @@ void Pipeline::CreateDescriptorSets()
     for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++) {
         vk::DescriptorBufferInfo bufferInfo{ .buffer = m_BuffersRef.m_UniformBuffers[i], .offset = 0, .range = sizeof(Buffers::UniformBufferObject) };
         vk::DescriptorImageInfo imageInfo{
-            .sampler = m_TextureRef.m_TextureSampler,
-            .imageView = m_TextureRef.m_TextureImageView,
+            .sampler = m_AssetsRef.m_TextureSampler,
+            .imageView = m_AssetsRef.m_TextureImageView,
             .imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal
         };
         std::array descriptorWrites{
@@ -128,7 +128,7 @@ void Pipeline::CreatePipeline()
     m_PipelineLayout = vk::raii::PipelineLayout( m_DeviceRef.m_Device, pipelineLayoutInfo );
     CORE_LOG_INFO("Pipeline layout created.");
 
-    vk::Format depthFormat = m_TextureRef.FindDepthFormat();
+    vk::Format depthFormat = m_AssetsRef.FindDepthFormat();
     vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo { .colorAttachmentCount = 1, .pColorAttachmentFormats = &m_SwapChainRef.m_ImageFormat,
                                                                   .depthAttachmentFormat = depthFormat };
     vk::GraphicsPipelineCreateInfo pipelineInfo {

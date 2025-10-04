@@ -4,12 +4,12 @@
 
 namespace LiteVulkan {
 Renderer::Renderer(Buffers& buf, SwapChain& swap, Device& dev,
-                   Pipeline& pipe, Texture& tex, GLFWindow& win)
+                   Pipeline& pipe, Assets& assets, GLFWindow& win)
     : m_Buffers(buf)
     , m_SwapChain(swap)
     , m_Device(dev)
     , m_Pipeline(pipe)
-    , m_TextureRef(tex)
+    , m_AssetsRef(assets)
     , m_Window(win) {}
 
 void Renderer::DrawFrame()
@@ -145,7 +145,7 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex)
         .newLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = m_TextureRef.m_DepthImage,
+        .image = m_AssetsRef.m_DepthImage,
         .subresourceRange = {
             .aspectMask = vk::ImageAspectFlagBits::eDepth,
             .baseMipLevel = 0,
@@ -172,7 +172,7 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex)
         .clearValue = clearColor
     };
     vk::RenderingAttachmentInfo depthAttachmentInfo = {
-        .imageView = m_TextureRef.m_DepthBufferView,
+        .imageView = m_AssetsRef.m_DepthBufferView,
         .imageLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal,
         .loadOp = vk::AttachmentLoadOp::eClear,
         .storeOp = vk::AttachmentStoreOp::eDontCare,
@@ -272,7 +272,7 @@ void Renderer::RecreateSwapChain()
     m_SwapChain.m_SwapChain = nullptr;
     m_SwapChain.CreateSwapChain();
     m_SwapChain.CreateImageViews();
-    m_TextureRef.CreateDepthResources();
+    m_AssetsRef.CreateDepthResources();
     m_Window.ResizeHandled();
 }
 
