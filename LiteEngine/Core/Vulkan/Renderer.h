@@ -30,14 +30,16 @@ public:
     void EndSingleTimeCommands(vk::raii::CommandBuffer& cmdbuf);
 private:
     void RecreateSwapChain();
+    template <typename T>
     void TransitionImageLayout(
-        uint32_t imageIndex,
+        const T& image,
         vk::ImageLayout oldLayout,
         vk::ImageLayout newLayout,
         vk::AccessFlags2 srcAccessMask,
         vk::AccessFlags2 dstAccessMask,
         vk::PipelineStageFlags2 srcStageMask,
-        vk::PipelineStageFlags2 dstStageMask
+        vk::PipelineStageFlags2 dstStageMask,
+        vk::ImageAspectFlags aspect_mask
     );
 private:
     vk::raii::CommandPool m_CommandPool = nullptr;

@@ -127,50 +127,51 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex)
 {
     m_CommandBuffers[m_CurrentFrame].begin({});
     TransitionImageLayout(
-        imageIndex,
+        m_SwapChain.m_Images[imageIndex],
         vk::ImageLayout::eUndefined,
         vk::ImageLayout::eColorAttachmentOptimal,
         {},
         vk::AccessFlagBits2::eColorAttachmentWrite,
         vk::PipelineStageFlagBits2::eTopOfPipe,
-        vk::PipelineStageFlagBits2::eColorAttachmentOutput
+        vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+        vk::ImageAspectFlagBits::eColor
     );
 
-    vk::ImageMemoryBarrier2 depthBarrier = {
-        .srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe,
-        .srcAccessMask = {},
-        .dstStageMask = vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
-        .dstAccessMask = vk::AccessFlagBits2::eDepthStencilAttachmentRead | vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
-        .oldLayout = vk::ImageLayout::eUndefined,
-        .newLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal,
-        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = m_AssetsRef.m_DepthImage,
-        .subresourceRange = {
-            .aspectMask = vk::ImageAspectFlagBits::eDepth,
-            .baseMipLevel = 0,
-            .levelCount = 1,
-            .baseArrayLayer = 0,
-            .layerCount = 1
-        }
-    };
-    vk::DependencyInfo depthDependencyInfo = {
-        .dependencyFlags = {},
-        .imageMemoryBarrierCount = 1,
-        .pImageMemoryBarriers = &depthBarrier
-    };
-    m_CommandBuffers[m_CurrentFrame].pipelineBarrier2(depthDependencyInfo);
+    TransitionImageLayout(
+        m_AssetsRef.m_ColorImage,
+        vk::ImageLayout::eUndefined,
+        vk::ImageLayout::eColorAttachmentOptimal,
+        {},
+        vk::AccessFlagBits2::eColorAttachmentWrite,
+        vk::PipelineStageFlagBits2::eTopOfPipe,
+        vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+        vk::ImageAspectFlagBits::eColor
+    );
 
+    TransitionImageLayout(
+        m_AssetsRef.m_DepthImage,
+        vk::ImageLayout::eUndefined,
+        vk::ImageLayout::eDepthAttachmentOptimal,
+        {},
+        vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+        vk::PipelineStageFlagBits2::eTopOfPipe,
+        vk::PipelineStageFlagBits2::eEarlyFragmentTests,
+        vk::ImageAspectFlagBits::eDepth
+    );
 
     vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
     vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
-    vk::RenderingAttachmentInfo attachmentInfo = {
-        .imageView = m_SwapChain.m_ImageViews[imageIndex],
-        .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
-        .loadOp = vk::AttachmentLoadOp::eClear,
-        .storeOp = vk::AttachmentStoreOp::eStore,
-        .clearValue = clearColor
-    };
+
+    vk::RenderingAttachmentInfo colorAttachment = {};
+    colorAttachment.imageView = m_AssetsRef.m_ColorImageView;
+    colorAttachment.imageLayout = vk::ImageLayout::eColorAttachmentOptimal;
+    colorAttachment.resolveMode = vk::ResolveModeFlagBits::eAverage;
+    colorAttachment.resolveImageView = m_SwapChain.m_ImageViews[imageIndex];
+    colorAttachment.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal;
+    colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+    colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
+    colorAttachment.clearValue = clearColor;
+
     vk::RenderingAttachmentInfo depthAttachmentInfo = {
         .imageView = m_AssetsRef.m_DepthBufferView,
         .imageLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal,
@@ -182,7 +183,7 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex)
         .renderArea = { .offset = { 0, 0 }, .extent = m_SwapChain.m_Extent },
         .layerCount = 1,
         .colorAttachmentCount = 1,
-        .pColorAttachments = &attachmentInfo,
+        .pColorAttachments = &colorAttachment,
         .pDepthAttachment = &depthAttachmentInfo
     };
 
@@ -197,25 +198,27 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex)
     m_CommandBuffers[m_CurrentFrame].endRendering();
 
     TransitionImageLayout(
-        imageIndex,
+        m_SwapChain.m_Images[imageIndex],
         vk::ImageLayout::eColorAttachmentOptimal,
         vk::ImageLayout::ePresentSrcKHR,
         vk::AccessFlagBits2::eColorAttachmentWrite,
         {},
         vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-        vk::PipelineStageFlagBits2::eBottomOfPipe
+        vk::PipelineStageFlagBits2::eBottomOfPipe,
+        vk::ImageAspectFlagBits::eColor
     );
     m_CommandBuffers[m_CurrentFrame].end();
 }
-
+template <typename T>
 void Renderer::TransitionImageLayout(
-    uint32_t imageIndex,
+    const T& image,
     vk::ImageLayout oldLayout,
     vk::ImageLayout newLayout,
     vk::AccessFlags2 srcAccessMask,
     vk::AccessFlags2 dstAccessMask,
     vk::PipelineStageFlags2 srcStageMask,
-    vk::PipelineStageFlags2 dstStageMask)
+    vk::PipelineStageFlags2 dstStageMask,
+    vk::ImageAspectFlags aspect_mask)
 {
     vk::ImageMemoryBarrier2 barrier = {
         .srcStageMask = srcStageMask,
@@ -226,9 +229,9 @@ void Renderer::TransitionImageLayout(
         .newLayout = newLayout,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = m_SwapChain.m_Images[imageIndex],
+        .image = image,
         .subresourceRange = {
-            .aspectMask = vk::ImageAspectFlagBits::eColor,
+            .aspectMask = aspect_mask,
             .baseMipLevel = 0,
             .levelCount = 1,
             .baseArrayLayer = 0,
@@ -272,6 +275,7 @@ void Renderer::RecreateSwapChain()
     m_SwapChain.m_SwapChain = nullptr;
     m_SwapChain.CreateSwapChain();
     m_SwapChain.CreateImageViews();
+    m_AssetsRef.CreateColorResources();
     m_AssetsRef.CreateDepthResources();
     m_Window.ResizeHandled();
 }

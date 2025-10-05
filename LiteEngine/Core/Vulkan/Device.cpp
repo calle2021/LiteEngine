@@ -30,6 +30,21 @@ void Device::PickPhysicalDevice(vk::raii::Instance& instance)
         m_PhysicalDevice = devices[0];
         break;
     }
+    m_msaa_samples = GetMaxUsableSampleCount();
+}
+
+vk::SampleCountFlagBits Device::GetMaxUsableSampleCount() {
+    vk::PhysicalDeviceProperties physicalDeviceProperties = m_PhysicalDevice.getProperties();
+
+    vk::SampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+    if (counts & vk::SampleCountFlagBits::e64) { return vk::SampleCountFlagBits::e64; }
+    if (counts & vk::SampleCountFlagBits::e32) { return vk::SampleCountFlagBits::e32; }
+    if (counts & vk::SampleCountFlagBits::e16) { return vk::SampleCountFlagBits::e16; }
+    if (counts & vk::SampleCountFlagBits::e8) { return vk::SampleCountFlagBits::e8; }
+    if (counts & vk::SampleCountFlagBits::e4) { return vk::SampleCountFlagBits::e4; }
+    if (counts & vk::SampleCountFlagBits::e2) { return vk::SampleCountFlagBits::e2; }
+
+    return vk::SampleCountFlagBits::e1;
 }
 
 void Device::CreateLogicalDevice(vk::raii::SurfaceKHR& surface)
@@ -52,9 +67,9 @@ void Device::CreateLogicalDevice(vk::raii::SurfaceKHR& surface)
     CORE_LOG_INFO("Found queue family ({}).", m_QueueIndex.value());
 
     vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain = {
-        {.features = { .samplerAnisotropy = true }},                                                     // vk::PhysicalDeviceFeatures2
-        {.synchronization2 = true, .dynamicRendering = true },  // vk::PhysicalDeviceVulkan13Features
-        {.extendedDynamicState = true }                         // vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
+        {.features = { .sampleRateShading = true, .samplerAnisotropy = true }},
+        {.synchronization2 = true, .dynamicRendering = true },
+        {.extendedDynamicState = true }
     };
 
     float queuePriority = 0.0f;

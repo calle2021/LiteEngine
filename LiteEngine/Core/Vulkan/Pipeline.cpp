@@ -96,7 +96,7 @@ void Pipeline::CreatePipeline()
                                                             .polygonMode = vk::PolygonMode::eFill, .cullMode = vk::CullModeFlagBits::eBack,
                                                             .frontFace = vk::FrontFace::eCounterClockwise, .depthBiasEnable = vk::False };
     rasterizer.lineWidth = 1;
-    vk::PipelineMultisampleStateCreateInfo multisampling{ .rasterizationSamples = vk::SampleCountFlagBits::e1, .sampleShadingEnable = vk::False};
+    vk::PipelineMultisampleStateCreateInfo multisampling{ .rasterizationSamples = m_DeviceRef.m_msaa_samples, .sampleShadingEnable = vk::True, .minSampleShading = 1.0f};
 
     vk::PipelineDepthStencilStateCreateInfo depthStencil{
         .depthTestEnable = vk::True,

@@ -21,11 +21,12 @@ public:
     Assets(Device& dev, Buffers& buf, Renderer& rend, SwapChain& swap);
     void LoadModel();
     void CreateTexture();
+    void CreateColorResources();
     void CreateDepthResources();
     void CreateTextureImageView();
     void CreateTextureSampler();
 private:
-    void CreateImage(uint32_t width, uint32_t height, uint32_t mip_levels,
+    void CreateImage(uint32_t width, uint32_t height, uint32_t mip_levels, vk::SampleCountFlagBits nsamples,
                     vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage,
                     vk::MemoryPropertyFlags properties, vk::raii::Image& image,
                     vk::raii::DeviceMemory& imageMemory);
@@ -43,6 +44,10 @@ private:
     vk::raii::Image m_DepthImage = nullptr;
     vk::raii::DeviceMemory m_DepthBufferMemory = nullptr;
     vk::raii::ImageView m_DepthBufferView = nullptr;
+    vk::raii::Image m_ColorImage = nullptr;
+    vk::raii::DeviceMemory m_ColorImageMemory = nullptr;
+    vk::raii::ImageView m_ColorImageView = nullptr;
+
 private: // Models
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;

@@ -44,17 +44,23 @@ void Assets::CreateTexture()
 
     stbi_image_free(pixels);
 
-    CreateImage(texWidth, texHeight, nmip_levels, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal,  vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, m_TextureImage, m_TextureMemory);
+    CreateImage(texWidth, texHeight, nmip_levels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal,  vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, m_TextureImage, m_TextureMemory);
 
     TransitionImageLayout(m_TextureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, nmip_levels);
     CopyBufferToImage(stagingBuffer, m_TextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
     GenerateMipmaps(m_TextureImage, vk::Format::eR8G8B8A8Srgb, texWidth, texHeight, nmip_levels);
 }
 
+void Assets::CreateColorResources() {
+    vk::Format colorFormat = m_SwapChainRef.m_ImageFormat;
+    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, 1, m_DeviceRef.m_msaa_samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment,  vk::MemoryPropertyFlagBits::eDeviceLocal, m_ColorImage, m_ColorImageMemory);
+    m_ColorImageView = m_SwapChainRef.GetImageView(m_ColorImage, colorFormat, vk::ImageAspectFlagBits::eColor, 1);
+}
+
 void Assets::CreateDepthResources()
 {
     vk::Format depthFormat = FindDepthFormat();
-    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, 1, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, m_DepthImage, m_DepthBufferMemory);
+    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, 1, m_DeviceRef.m_msaa_samples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, m_DepthImage, m_DepthBufferMemory);
     m_DepthBufferView = m_SwapChainRef.GetImageView(m_DepthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, 1);
 }
 
@@ -85,10 +91,10 @@ void Assets::CreateTextureSampler()
     m_TextureSampler = vk::raii::Sampler(m_DeviceRef.m_Device, samplerInfo);
 }
 
-void Assets::CreateImage(uint32_t width, uint32_t height, uint32_t mip_levels, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory) {
+void Assets::CreateImage(uint32_t width, uint32_t height, uint32_t mip_levels, vk::SampleCountFlagBits nsamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory) {
     vk::ImageCreateInfo imageInfo{ .imageType = vk::ImageType::e2D, .format = format,
                                     .extent = {width, height, 1}, .mipLevels = mip_levels, .arrayLayers = 1,
-                                    .samples = vk::SampleCountFlagBits::e1, .tiling = tiling,
+                                    .samples = nsamples, .tiling = tiling,
                                     .usage = usage, .sharingMode = vk::SharingMode::eExclusive,
                                     .initialLayout = vk::ImageLayout::eUndefined };
 

@@ -22,9 +22,12 @@ public:
     void PickPhysicalDevice(vk::raii::Instance& instance);
     void CreateLogicalDevice(vk::raii::SurfaceKHR& surface);
 private:
+    vk::SampleCountFlagBits GetMaxUsableSampleCount();
+private:
     vk::raii::PhysicalDevice m_PhysicalDevice = nullptr;
     vk::raii::Device m_Device = nullptr;
     vk::raii::Queue m_Queue = nullptr;
     std::optional<uint32_t> m_QueueIndex;
+    vk::SampleCountFlagBits m_msaa_samples = vk::SampleCountFlagBits::e1;
 };
 }

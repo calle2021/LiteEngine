@@ -33,6 +33,7 @@ void Context::Init()
     m_Pipeline.CreateDescriptorLayout();
     m_Pipeline.CreatePipeline();
     m_Renderer.CreateCommandPool();
+    m_Assets.CreateColorResources();
     m_Assets.CreateDepthResources();
     m_Assets.CreateTexture();
     m_Assets.CreateTextureImageView();
