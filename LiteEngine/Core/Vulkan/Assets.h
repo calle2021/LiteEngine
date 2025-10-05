@@ -25,15 +25,17 @@ public:
     void CreateTextureImageView();
     void CreateTextureSampler();
 private:
-    void CreateImage(uint32_t width, uint32_t height, vk::Format format,
-                    vk::ImageTiling tiling, vk::ImageUsageFlags usage,
+    void CreateImage(uint32_t width, uint32_t height, uint32_t mip_levels,
+                    vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage,
                     vk::MemoryPropertyFlags properties, vk::raii::Image& image,
                     vk::raii::DeviceMemory& imageMemory);
-    void TransitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
+    void TransitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mip_levels);
     void CopyBufferToImage(const vk::raii::Buffer& buf, vk::raii::Image& image, uint32_t width, uint32_t height);
+    void GenerateMipmaps(vk::raii::Image& image, vk::Format imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
     vk::Format FindDepthFormat();
     vk::Format FindSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
 private:
+    uint32_t nmip_levels;
     vk::raii::Image m_TextureImage = nullptr;
     vk::raii::DeviceMemory m_TextureMemory = nullptr;
     vk::raii::ImageView m_TextureImageView = nullptr;

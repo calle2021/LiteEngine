@@ -24,7 +24,8 @@ public:
     void CreateSwapChain();
     void CreateImageViews();
 private:
-    vk::raii::ImageView GetImageView(vk::raii::Image& img, vk::Format format, vk::ImageAspectFlags flags);
+    vk::raii::ImageView GetImageView(vk::raii::Image& img, vk::Format format,
+                                     vk::ImageAspectFlags aspect_flags, uint32_t mip_levels);
     vk::Format ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
     vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);

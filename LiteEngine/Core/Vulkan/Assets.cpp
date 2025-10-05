@@ -28,6 +28,7 @@ void Assets::CreateTexture()
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     vk::DeviceSize imageSize = texWidth * texHeight * 4;
+    nmip_levels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
     if (!pixels) {
         throw std::runtime_error("failed to load texture image!");
@@ -43,28 +44,29 @@ void Assets::CreateTexture()
 
     stbi_image_free(pixels);
 
-    CreateImage(texWidth, texHeight, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, m_TextureImage, m_TextureMemory);
+    CreateImage(texWidth, texHeight, nmip_levels, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal,  vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, m_TextureImage, m_TextureMemory);
 
-    TransitionImageLayout(m_TextureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+    TransitionImageLayout(m_TextureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, nmip_levels);
     CopyBufferToImage(stagingBuffer, m_TextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-    TransitionImageLayout(m_TextureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+    GenerateMipmaps(m_TextureImage, vk::Format::eR8G8B8A8Srgb, texWidth, texHeight, nmip_levels);
 }
 
 void Assets::CreateDepthResources()
 {
     vk::Format depthFormat = FindDepthFormat();
-    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, m_DepthImage, m_DepthBufferMemory);
-    m_DepthBufferView = m_SwapChainRef.GetImageView(m_DepthImage, depthFormat, vk::ImageAspectFlagBits::eDepth);
+    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, 1, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, m_DepthImage, m_DepthBufferMemory);
+    m_DepthBufferView = m_SwapChainRef.GetImageView(m_DepthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, 1);
 }
 
 void Assets::CreateTextureImageView()
 {
-    m_TextureImageView = m_SwapChainRef.GetImageView(m_TextureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);
+    m_TextureImageView = m_SwapChainRef.GetImageView(m_TextureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, nmip_levels);
 }
+
 void Assets::CreateTextureSampler()
 {
     vk::PhysicalDeviceProperties properties = m_DeviceRef.m_PhysicalDevice.getProperties();
-    vk::SamplerCreateInfo samplerInfo{
+    vk::SamplerCreateInfo samplerInfo {
         .magFilter = vk::Filter::eLinear,
         .minFilter = vk::Filter::eLinear,
         .mipmapMode = vk::SamplerMipmapMode::eLinear,
@@ -75,13 +77,17 @@ void Assets::CreateTextureSampler()
         .anisotropyEnable = vk::True,
         .maxAnisotropy = properties.limits.maxSamplerAnisotropy,
         .compareEnable = vk::False,
-        .compareOp = vk::CompareOp::eAlways };
+        .compareOp = vk::CompareOp::eAlways
+    };
+    samplerInfo.minLod = 0;
+    samplerInfo.maxLod = static_cast<float>(nmip_levels);
+
     m_TextureSampler = vk::raii::Sampler(m_DeviceRef.m_Device, samplerInfo);
 }
 
-void Assets::CreateImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory) {
+void Assets::CreateImage(uint32_t width, uint32_t height, uint32_t mip_levels, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory) {
     vk::ImageCreateInfo imageInfo{ .imageType = vk::ImageType::e2D, .format = format,
-                                    .extent = {width, height, 1}, .mipLevels = 1, .arrayLayers = 1,
+                                    .extent = {width, height, 1}, .mipLevels = mip_levels, .arrayLayers = 1,
                                     .samples = vk::SampleCountFlagBits::e1, .tiling = tiling,
                                     .usage = usage, .sharingMode = vk::SharingMode::eExclusive,
                                     .initialLayout = vk::ImageLayout::eUndefined };
@@ -95,13 +101,13 @@ void Assets::CreateImage(uint32_t width, uint32_t height, vk::Format format, vk:
     image.bindMemory(imageMemory, 0);
 }
 
-void Assets::TransitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout)
+void Assets::TransitionImageLayout(const vk::raii::Image& image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t mip_levels)
 {
     auto cmdbuf = m_RendererRef.BeginSingleTimeCommands();
 
     vk::ImageMemoryBarrier barrier{ .oldLayout = oldLayout, .newLayout = newLayout,
                                     .image = image,
-                                    .subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 } };
+                                    .subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, mip_levels, 0, 1 } };
 
     vk::PipelineStageFlags sourceStage;
     vk::PipelineStageFlags destinationStage;
@@ -133,6 +139,69 @@ void Assets::CopyBufferToImage(const vk::raii::Buffer& buf, vk::raii::Image& ima
                                 .imageOffset = {0, 0, 0}, .imageExtent = {width, height, 1} };
     cmdbuf->copyBufferToImage(buf, image, vk::ImageLayout::eTransferDstOptimal, {region});
     m_RendererRef.EndSingleTimeCommands(*cmdbuf);
+}
+
+void Assets::GenerateMipmaps(vk::raii::Image& image, vk::Format imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {
+    // Check if image format supports linear blit-ing
+    vk::FormatProperties formatProperties = m_DeviceRef.m_PhysicalDevice.getFormatProperties(imageFormat);
+
+    if (!(formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear)) {
+        throw std::runtime_error("texture image format does not support linear blitting!");
+    }
+
+    std::unique_ptr<vk::raii::CommandBuffer> commandBuffer = m_RendererRef.BeginSingleTimeCommands();
+
+    vk::ImageMemoryBarrier barrier = { .srcAccessMask = vk::AccessFlagBits::eTransferWrite, .dstAccessMask =vk::AccessFlagBits::eTransferRead
+                            , .oldLayout = vk::ImageLayout::eTransferDstOptimal, .newLayout = vk::ImageLayout::eTransferSrcOptimal
+                            , .srcQueueFamilyIndex = vk::QueueFamilyIgnored, .dstQueueFamilyIndex = vk::QueueFamilyIgnored, .image = image };
+    barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.levelCount = 1;
+
+    int32_t mipWidth = texWidth;
+    int32_t mipHeight = texHeight;
+
+    for (uint32_t i = 1; i < mipLevels; i++) {
+        barrier.subresourceRange.baseMipLevel = i - 1;
+        barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+        barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
+        barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+        barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
+
+        commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, {}, {}, {}, barrier);
+
+        vk::ArrayWrapper1D<vk::Offset3D, 2> offsets, dstOffsets;
+        offsets[0] = vk::Offset3D(0, 0, 0);
+        offsets[1] = vk::Offset3D(mipWidth, mipHeight, 1);
+        dstOffsets[0] = vk::Offset3D(0, 0, 0);
+        dstOffsets[1] = vk::Offset3D(mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1);
+        vk::ImageBlit blit = { .srcSubresource = {}, .srcOffsets = offsets,
+                            .dstSubresource =  {}, .dstOffsets = dstOffsets };
+        blit.srcSubresource = vk::ImageSubresourceLayers( vk::ImageAspectFlagBits::eColor, i - 1, 0, 1);
+        blit.dstSubresource = vk::ImageSubresourceLayers( vk::ImageAspectFlagBits::eColor, i, 0, 1);
+
+        commandBuffer->blitImage(image, vk::ImageLayout::eTransferSrcOptimal, image, vk::ImageLayout::eTransferDstOptimal, { blit }, vk::Filter::eLinear);
+
+        barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
+        barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
+        barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+        commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, barrier);
+
+        if (mipWidth > 1) mipWidth /= 2;
+        if (mipHeight > 1) mipHeight /= 2;
+    }
+
+    barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+    barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+    barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+    barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+    barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+    commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, barrier);
+    m_RendererRef.EndSingleTimeCommands(*commandBuffer);
 }
 
 vk::Format Assets::FindSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)

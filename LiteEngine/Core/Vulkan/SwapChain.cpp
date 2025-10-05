@@ -54,13 +54,13 @@ void SwapChain::CreateImageViews()
     }
 }
 
-vk::raii::ImageView SwapChain::GetImageView(vk::raii::Image& img, vk::Format format, vk::ImageAspectFlags flags)
+vk::raii::ImageView SwapChain::GetImageView(vk::raii::Image& img, vk::Format format, vk::ImageAspectFlags aspect_flags, uint32_t mip_levels)
 {
     vk::ImageViewCreateInfo info {
         .image = img,
         .viewType = vk::ImageViewType::e2D,
         .format = format,
-        .subresourceRange = { flags, 0, 1, 0, 1 }
+        .subresourceRange = { aspect_flags, 0, mip_levels, 0, 1 }
     };
     return vk::raii::ImageView(m_Device.m_Device, info);
 }

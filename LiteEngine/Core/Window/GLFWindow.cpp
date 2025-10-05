@@ -12,7 +12,7 @@ void GLFWindow::Init()
         throw std::runtime_error("Failed to initialize glfw.");
     }
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    m_GLFWindow = glfwCreateWindow(WIDTH, HEIGHT, "GameSystem", nullptr, nullptr);
+    m_GLFWindow = glfwCreateWindow(WIDTH, HEIGHT, "LiteEngine", nullptr, nullptr);
 
     if (!m_GLFWindow) {
         CORE_LOG_ERROR("Failed to create glfw window.");
