@@ -5,7 +5,7 @@ namespace LiteVulkan {
 
 const uint32_t preferred_image_count = 3;
 
-SwapChain::SwapChain(Device& device, vk::raii::SurfaceKHR& surface, GLFWindow& window)
+SwapChain::SwapChain(Device& device, vk::raii::SurfaceKHR& surface, LiteEngine::Window& window)
     : m_Device(device)
     , m_Surface(surface)
     , m_Window(window) {}

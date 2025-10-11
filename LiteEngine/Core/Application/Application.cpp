@@ -1,15 +1,17 @@
 #include "Include/LiteEngine.h"
 #include "Core/Logging/Logger.h"
-#include "Core/Window/GLFWindow.h"
+#include "Core/Window/Window.h"
+#include "Core/Vulkan/Context.h"
+#include "Core/Camera/OrbitCamera.h"
 
 namespace LiteEngine
 {
 int Application::Launch(iLiteBox& app)
 {
     Logger::Init();
-    GLFWindow window;
-    window.Init();
-    LiteVulkan::Context vulkan(window);
+    Window window;
+    LiteEngine::OrbitCamera cam(window.GetAspect());
+    LiteVulkan::Context vulkan(window, cam);
     vulkan.Init();
 
     while (!window.Close())

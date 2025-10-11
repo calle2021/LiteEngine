@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <vulkan/vulkan_raii.hpp>
-#include "Core/Window/GLFWindow.h"
+#include "Core/Window/Window.h"
 #include "Device.h"
 
 namespace LiteVulkan {
@@ -19,7 +19,7 @@ public:
     SwapChain(
         Device& device,
         vk::raii::SurfaceKHR& surface,
-        GLFWindow& window
+        LiteEngine::Window& window
     );
     void CreateSwapChain();
     void CreateImageViews();
@@ -38,6 +38,6 @@ private:
 private:
     Device& m_Device;
     vk::raii::SurfaceKHR& m_Surface;
-    GLFWindow& m_Window;
+    LiteEngine::Window& m_Window;
 };
 }

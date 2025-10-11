@@ -5,7 +5,7 @@
 #include "Device.h"
 #include "Pipeline.h"
 #include "Assets.h"
-#include "Core/Window/GLFWindow.h"
+#include "Core/Window/Window.h"
 
 namespace LiteVulkan {
 class Buffers;
@@ -19,7 +19,7 @@ public:
         Device& device,
         Pipeline& Pipeline,
         Assets& assets,
-        GLFWindow& window
+        LiteEngine::Window& window
     );
     void DrawFrame();
     void CreateCommandPool();
@@ -53,7 +53,7 @@ private: // References
     SwapChain& m_SwapChain;
     Device& m_Device;
     Pipeline& m_Pipeline;
-    GLFWindow& m_Window;
+    LiteEngine::Window& m_Window;
     Assets& m_AssetsRef;
 private:
     uint32_t m_CurrentFrame = 0;

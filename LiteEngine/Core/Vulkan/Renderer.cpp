@@ -4,7 +4,7 @@
 
 namespace LiteVulkan {
 Renderer::Renderer(Buffers& buf, SwapChain& swap, Device& dev,
-                   Pipeline& pipe, Assets& assets, GLFWindow& win)
+                   Pipeline& pipe, Assets& assets, LiteEngine::Window& win)
     : m_Buffers(buf)
     , m_SwapChain(swap)
     , m_Device(dev)

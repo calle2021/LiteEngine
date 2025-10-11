@@ -12,11 +12,12 @@ constexpr bool enable_validation_layers = false;
 constexpr bool enable_validation_layers = true;
 #endif
 namespace LiteVulkan {
-Context::Context(GLFWindow& window)
+Context::Context(Window& window, Camera& cam)
     : m_Window(window)
+    , m_Camera(cam)
     , m_Device()
     , m_SwapChain(m_Device, m_Surface, window)
-    , m_Buffers(m_Device, m_Renderer, m_SwapChain, m_Assets)
+    , m_Buffers(m_Device, m_Renderer, m_SwapChain, m_Assets, m_Camera)
     , m_Pipeline(m_SwapChain, m_Device, m_Buffers, m_Assets)
     , m_Assets(m_Device, m_Buffers, m_Renderer, m_SwapChain)
     , m_Renderer(m_Buffers, m_SwapChain, m_Device, m_Pipeline, m_Assets, window) {}

@@ -10,6 +10,9 @@
 #include <array>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
+#include "Core/Camera/Camera.h"
+
+using namespace LiteEngine;
 
 namespace LiteVulkan {
 class Renderer;
@@ -21,7 +24,7 @@ friend class Renderer;
 friend class Assets;
 friend class Pipeline;
 public:
-    Buffers(Device& dev, Renderer& rend, SwapChain& swap, Assets& assets);
+    Buffers(Device& dev, Renderer& rend, SwapChain& swap, Assets& assets, Camera& cam);
     void BufferModels();
     void CreateVertexBuffer();
     void CreateIndexBuffer();
@@ -81,6 +84,8 @@ private:
     std::vector<void*> m_UniformBuffersMapped;
     vk::raii::Image m_Texture = nullptr;
     vk::raii::DeviceMemory m_TextureMemory = nullptr;
+private:
+    Camera& m_CameraRef;
 private: // Class references
     Device& m_DeviceRef;
     Renderer& m_RendererRef;

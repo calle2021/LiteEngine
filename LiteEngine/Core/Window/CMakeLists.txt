@@ -1,4 +1,4 @@
 target_sources(LiteEngine PRIVATE
-    GLFWindow.cpp
-    GLFWindow.h
+    Window.cpp
+    Window.h
 )

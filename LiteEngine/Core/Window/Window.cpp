@@ -1,11 +1,14 @@
-#include "GLFWindow.h"
+#include "Window.h"
 #include "Core/Logging/Logger.h"
 
 
 constexpr uint32_t WIDTH = 1280;
 constexpr uint32_t HEIGHT = 720;
 
-void GLFWindow::Init()
+namespace LiteEngine {
+Window::Window()
+    : m_Width(WIDTH)
+    , m_Height(HEIGHT)
 {
     if (!glfwInit()) {
         CORE_LOG_ERROR("Failed to initialize glfw.");
@@ -27,23 +30,24 @@ void GLFWindow::Init()
     glfwSetFramebufferSizeCallback(m_GLFWindow, FrameBufferResizeCallback);
 }
 
-void GLFWindow::FrameBufferResizeCallback(GLFWwindow* window, int width, int height) {
-    auto container = reinterpret_cast<GLFWindow*>(glfwGetWindowUserPointer(window));
+void Window::FrameBufferResizeCallback(GLFWwindow* window, int width, int height) {
+    auto container = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
     container->m_FrameBufferResized = true;
-    container->m_Resolution = std::make_pair(width, height);
+    container->m_Width = width;
+    container->m_Height = height;
 }
 
-bool GLFWindow::Close()
+bool Window::Close()
 {
     return glfwWindowShouldClose(m_GLFWindow);
 }
 
-void GLFWindow::Update()
+void Window::Update()
 {
     glfwPollEvents();
 }
 
-double GLFWindow::GetDeltaTime()
+double Window::GetDeltaTime()
 {
     double curr = glfwGetTime();
     double deltaTime = curr - time;
@@ -51,8 +55,9 @@ double GLFWindow::GetDeltaTime()
     return deltaTime;
 }
 
-void GLFWindow::Destroy()
+void Window::Destroy()
 {
     glfwDestroyWindow(m_GLFWindow);
     glfwTerminate();
+}
 }
