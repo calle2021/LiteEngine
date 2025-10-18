@@ -36,7 +36,7 @@ private:
     vk::Extent2D m_Extent;
     std::vector<vk::raii::ImageView> m_ImageViews;
 private:
-    Device& m_Device;
+    Device& m_DeviceRef;
     vk::raii::SurfaceKHR& m_Surface;
     LiteEngine::Window& m_Window;
 };

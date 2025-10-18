@@ -5,7 +5,7 @@
 #include "Config.h"
 
 namespace LiteVulkan {
-Pipeline::Pipeline(SwapChain& swap, Device& dev, Buffers& buf, Assets& assets)
+Pipeline::Pipeline(SwapChain& swap, const Device& dev, Buffers& buf, Assets& assets)
     : m_SwapChainRef(swap)
     , m_DeviceRef(dev)
     , m_BuffersRef(buf)
@@ -19,7 +19,7 @@ void Pipeline::CreateDescriptorLayout()
         vk::DescriptorSetLayoutBinding( 1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)
     };
     vk::DescriptorSetLayoutCreateInfo layoutInfo{.bindingCount = bindings.size(), .pBindings = bindings.data()};
-    m_DescriptorLayout = vk::raii::DescriptorSetLayout(m_DeviceRef.m_Device, layoutInfo);
+    m_DescriptorLayout = vk::raii::DescriptorSetLayout(m_DeviceRef.GetDevice(), layoutInfo);
 }
 
 void Pipeline::CreateDescriptorSets()
@@ -28,7 +28,7 @@ void Pipeline::CreateDescriptorSets()
     vk::DescriptorSetAllocateInfo allocInfo{ .descriptorPool = m_DescriptorPool, .descriptorSetCount = static_cast<uint32_t>(layouts.size()), .pSetLayouts = layouts.data() };
 
     m_DescriptorSets.clear();
-    m_DescriptorSets = m_DeviceRef.m_Device.allocateDescriptorSets(allocInfo);
+    m_DescriptorSets = m_DeviceRef.GetDevice().allocateDescriptorSets(allocInfo);
 
     for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++) {
         vk::DescriptorBufferInfo bufferInfo{ .buffer = m_BuffersRef.m_UniformBuffers[i], .offset = 0, .range = sizeof(Buffers::UniformBufferObject) };
@@ -55,7 +55,7 @@ void Pipeline::CreateDescriptorSets()
                 .pImageInfo = &imageInfo
             }
         };
-        m_DeviceRef.m_Device.updateDescriptorSets(descriptorWrites, {});
+        m_DeviceRef.GetDevice().updateDescriptorSets(descriptorWrites, {});
     }
 }
 void Pipeline::CreateDescriptorPool()
@@ -70,12 +70,12 @@ void Pipeline::CreateDescriptorPool()
         .poolSizeCount = static_cast<uint32_t>(pool.size()),
         .pPoolSizes = pool.data()
     };
-    m_DescriptorPool = vk::raii::DescriptorPool(m_DeviceRef.m_Device, poolInfo);
+    m_DescriptorPool = vk::raii::DescriptorPool(m_DeviceRef.GetDevice(), poolInfo);
 }
 
 void Pipeline::CreatePipeline()
 {
-    vk::raii::ShaderModule shaderModule = CreateShaderModule(ReadFile("Assets/Shaders/slang.spv"), m_DeviceRef.m_Device);
+    vk::raii::ShaderModule shaderModule = CreateShaderModule(ReadFile("Assets/Shaders/slang.spv"));
     vk::PipelineShaderStageCreateInfo vertShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eVertex, .module = shaderModule,  .pName = "vertMain" };
     vk::PipelineShaderStageCreateInfo fragShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eFragment, .module = shaderModule, .pName = "fragMain" };
     vk::PipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
@@ -97,7 +97,7 @@ void Pipeline::CreatePipeline()
                                                             .frontFace = vk::FrontFace::eCounterClockwise, .depthBiasEnable = vk::False };
     rasterizer.lineWidth = 1;
     // sampleShadingEnable and minSampleShading = 1.0f might be costly
-    vk::PipelineMultisampleStateCreateInfo multisampling{ .rasterizationSamples = m_DeviceRef.m_msaa_samples, .sampleShadingEnable = vk::True, .minSampleShading = 1.0f};
+    vk::PipelineMultisampleStateCreateInfo multisampling{ .rasterizationSamples = m_DeviceRef.GetMsaaSamples(), .sampleShadingEnable = vk::True, .minSampleShading = 1.0f};
 
     vk::PipelineDepthStencilStateCreateInfo depthStencil{
         .depthTestEnable = vk::True,
@@ -126,7 +126,7 @@ void Pipeline::CreatePipeline()
 
     vk::PipelineLayoutCreateInfo pipelineLayoutInfo{ .setLayoutCount = 1, .pSetLayouts = &*m_DescriptorLayout, .pushConstantRangeCount = 0 };
 
-    m_PipelineLayout = vk::raii::PipelineLayout( m_DeviceRef.m_Device, pipelineLayoutInfo );
+    m_PipelineLayout = vk::raii::PipelineLayout(m_DeviceRef.GetDevice(), pipelineLayoutInfo);
     CORE_LOG_INFO("Pipeline layout created.");
 
     vk::Format depthFormat = m_AssetsRef.FindDepthFormat();
@@ -148,14 +148,14 @@ void Pipeline::CreatePipeline()
         .renderPass = nullptr
     };
 
-    m_Pipeline = vk::raii::Pipeline(m_DeviceRef.m_Device, nullptr, pipelineInfo);
+    m_Pipeline = vk::raii::Pipeline(m_DeviceRef.GetDevice(), nullptr, pipelineInfo);
     CORE_LOG_INFO("Graphics pipeline created.");
 }
 
-[[nodiscard]] vk::raii::ShaderModule Pipeline::CreateShaderModule(const std::vector<char>& code,  vk::raii::Device& device) const
+vk::raii::ShaderModule Pipeline::CreateShaderModule(const std::vector<char>& code) const
 {
     vk::ShaderModuleCreateInfo createInfo{ .codeSize = code.size() * sizeof(char), .pCode = reinterpret_cast<const uint32_t*>(code.data()) };
-    vk::raii::ShaderModule shaderModule{ m_DeviceRef.m_Device, createInfo };
+    vk::raii::ShaderModule shaderModule{ m_DeviceRef.GetDevice(), createInfo };
     CORE_LOG_INFO("Shadermodule created.");
     return shaderModule;
 }

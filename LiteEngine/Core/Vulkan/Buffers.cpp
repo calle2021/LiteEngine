@@ -13,10 +13,10 @@ Buffers::Buffers(Device& dev, Renderer& rend, SwapChain& swap, Assets& assets, C
 
 void Buffers::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory) {
     vk::BufferCreateInfo bufferInfo{ .size = size, .usage = usage, .sharingMode = vk::SharingMode::eExclusive };
-    buffer = vk::raii::Buffer(m_DeviceRef.m_Device, bufferInfo);
+    buffer = vk::raii::Buffer(m_DeviceRef.GetDevice(), bufferInfo);
     vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
     vk::MemoryAllocateInfo allocInfo{ .allocationSize =memRequirements.size, .memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties) };
-    bufferMemory = vk::raii::DeviceMemory(m_DeviceRef.m_Device, allocInfo);
+    bufferMemory = vk::raii::DeviceMemory(m_DeviceRef.GetDevice(), allocInfo);
     buffer.bindMemory(bufferMemory, 0);
 }
 
@@ -74,7 +74,7 @@ void Buffers::CreateUniformBuffers()
 void Buffers::UpdateUniformBuffer(uint32_t curr)
 {
     UniformBufferObject ubo{};
-    ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.model = glm::mat4(1.0f);
     ubo.view = m_CameraRef.GetView();
     ubo.proj = m_CameraRef.GetProjection();
     ubo.proj[1][1] *= -1;
@@ -84,12 +84,12 @@ void Buffers::UpdateUniformBuffer(uint32_t curr)
 
 void Buffers::CopyBuffer(vk::raii::Buffer& src, vk::raii::Buffer& dst, vk::DeviceSize size) {
     vk::CommandBufferAllocateInfo allocInfo{ .commandPool = m_RendererRef.m_CommandPool, .level = vk::CommandBufferLevel::ePrimary, .commandBufferCount = 1 };
-    vk::raii::CommandBuffer commandCopyBuffer = std::move(m_DeviceRef.m_Device.allocateCommandBuffers(allocInfo).front());
+    vk::raii::CommandBuffer commandCopyBuffer = std::move(m_DeviceRef.GetDevice().allocateCommandBuffers(allocInfo).front());
     commandCopyBuffer.begin(vk::CommandBufferBeginInfo { .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit });
     commandCopyBuffer.copyBuffer(*src, *dst, vk::BufferCopy{ .size = size });
     commandCopyBuffer.end();
-    m_DeviceRef.m_Queue.submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &*commandCopyBuffer }, nullptr);
-    m_DeviceRef.m_Queue.waitIdle();
+    m_DeviceRef.GetQueue().submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &*commandCopyBuffer }, nullptr);
+    m_DeviceRef.GetQueue().waitIdle();
 }
 
 void Buffers::BufferModels()
@@ -125,7 +125,7 @@ void Buffers::BufferModels()
 }
 
 uint32_t Buffers::FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
-    vk::PhysicalDeviceMemoryProperties memProperties = m_DeviceRef.m_PhysicalDevice.getMemoryProperties();
+    vk::PhysicalDeviceMemoryProperties memProperties = m_DeviceRef.GetPhysicalDevice().getMemoryProperties();
 
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
         if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {

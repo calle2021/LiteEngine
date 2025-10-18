@@ -1,6 +1,8 @@
 #include "Assets.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include "Core/Logging/Logger.h"
+
 namespace LiteVulkan
 {
 constexpr uint32_t WIDTH = 800;
@@ -53,14 +55,14 @@ void Assets::CreateTexture()
 
 void Assets::CreateColorResources() {
     vk::Format colorFormat = m_SwapChainRef.m_ImageFormat;
-    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, 1, m_DeviceRef.m_msaa_samples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment,  vk::MemoryPropertyFlagBits::eDeviceLocal, m_ColorImage, m_ColorImageMemory);
+    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, 1, m_DeviceRef.GetMsaaSamples(), colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment,  vk::MemoryPropertyFlagBits::eDeviceLocal, m_ColorImage, m_ColorImageMemory);
     m_ColorImageView = m_SwapChainRef.GetImageView(m_ColorImage, colorFormat, vk::ImageAspectFlagBits::eColor, 1);
 }
 
 void Assets::CreateDepthResources()
 {
     vk::Format depthFormat = FindDepthFormat();
-    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, 1, m_DeviceRef.m_msaa_samples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, m_DepthImage, m_DepthBufferMemory);
+    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, 1, m_DeviceRef.GetMsaaSamples(), depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, m_DepthImage, m_DepthBufferMemory);
     m_DepthBufferView = m_SwapChainRef.GetImageView(m_DepthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, 1);
 }
 
@@ -71,7 +73,7 @@ void Assets::CreateTextureImageView()
 
 void Assets::CreateTextureSampler()
 {
-    vk::PhysicalDeviceProperties properties = m_DeviceRef.m_PhysicalDevice.getProperties();
+    vk::PhysicalDeviceProperties properties = m_DeviceRef.GetPhysicalDevice().getProperties();
     vk::SamplerCreateInfo samplerInfo {
         .magFilter = vk::Filter::eLinear,
         .minFilter = vk::Filter::eLinear,
@@ -88,7 +90,7 @@ void Assets::CreateTextureSampler()
     samplerInfo.minLod = 0;
     samplerInfo.maxLod = static_cast<float>(nmip_levels);
 
-    m_TextureSampler = vk::raii::Sampler(m_DeviceRef.m_Device, samplerInfo);
+    m_TextureSampler = vk::raii::Sampler(m_DeviceRef.GetDevice(), samplerInfo);
 }
 
 void Assets::CreateImage(uint32_t width, uint32_t height, uint32_t mip_levels, vk::SampleCountFlagBits nsamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image& image, vk::raii::DeviceMemory& imageMemory) {
@@ -98,12 +100,12 @@ void Assets::CreateImage(uint32_t width, uint32_t height, uint32_t mip_levels, v
                                     .usage = usage, .sharingMode = vk::SharingMode::eExclusive,
                                     .initialLayout = vk::ImageLayout::eUndefined };
 
-    image = vk::raii::Image(m_DeviceRef.m_Device, imageInfo );
+    image = vk::raii::Image(m_DeviceRef.GetDevice(), imageInfo );
 
     vk::MemoryRequirements memRequirements = image.getMemoryRequirements();
     vk::MemoryAllocateInfo allocInfo{ .allocationSize = memRequirements.size,
                                      .memoryTypeIndex = m_BuffersRef.FindMemoryType(memRequirements.memoryTypeBits, properties) };
-    imageMemory = vk::raii::DeviceMemory(m_DeviceRef.m_Device, allocInfo);
+    imageMemory = vk::raii::DeviceMemory(m_DeviceRef.GetDevice(), allocInfo);
     image.bindMemory(imageMemory, 0);
 }
 
@@ -149,7 +151,7 @@ void Assets::CopyBufferToImage(const vk::raii::Buffer& buf, vk::raii::Image& ima
 
 void Assets::GenerateMipmaps(vk::raii::Image& image, vk::Format imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {
     // Check if image format supports linear blit-ing
-    vk::FormatProperties formatProperties = m_DeviceRef.m_PhysicalDevice.getFormatProperties(imageFormat);
+    vk::FormatProperties formatProperties = m_DeviceRef.GetPhysicalDevice().getFormatProperties(imageFormat);
 
     if (!(formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear)) {
         throw std::runtime_error("texture image format does not support linear blitting!");
@@ -213,7 +215,7 @@ void Assets::GenerateMipmaps(vk::raii::Image& image, vk::Format imageFormat, int
 vk::Format Assets::FindSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
 {
     for (const auto format : candidates) {
-        vk::FormatProperties props = m_DeviceRef.m_PhysicalDevice.getFormatProperties(format);
+        vk::FormatProperties props = m_DeviceRef.GetPhysicalDevice().getFormatProperties(format);
 
         if (tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
             return format;

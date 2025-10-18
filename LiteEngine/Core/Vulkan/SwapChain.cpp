@@ -6,14 +6,14 @@ namespace LiteVulkan {
 const uint32_t preferred_image_count = 3;
 
 SwapChain::SwapChain(Device& device, vk::raii::SurfaceKHR& surface, LiteEngine::Window& window)
-    : m_Device(device)
+    : m_DeviceRef(device)
     , m_Surface(surface)
     , m_Window(window) {}
 
 void SwapChain::CreateSwapChain()
 {
-    auto surfaceCapabilities = m_Device.m_PhysicalDevice.getSurfaceCapabilitiesKHR(m_Surface);
-    m_ImageFormat = ChooseSwapchainSurfaceFormat(m_Device.m_PhysicalDevice.getSurfaceFormatsKHR(m_Surface));
+    auto surfaceCapabilities = m_DeviceRef.GetPhysicalDevice().getSurfaceCapabilitiesKHR(m_Surface);
+    m_ImageFormat = ChooseSwapchainSurfaceFormat(m_DeviceRef.GetPhysicalDevice().getSurfaceFormatsKHR(m_Surface));
     m_Extent = ChooseSwapExtent(surfaceCapabilities);
     uint32_t minImageCount = preferred_image_count > surfaceCapabilities.maxImageCount
                              ? surfaceCapabilities.maxImageCount : preferred_image_count;
@@ -28,10 +28,10 @@ void SwapChain::CreateSwapChain()
         .imageSharingMode = vk::SharingMode::eExclusive,
         .preTransform = surfaceCapabilities.currentTransform,
         .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        .presentMode = ChooseSwapPresentMode(m_Device.m_PhysicalDevice.getSurfacePresentModesKHR(m_Surface)),
+        .presentMode = ChooseSwapPresentMode(m_DeviceRef.GetPhysicalDevice().getSurfacePresentModesKHR(m_Surface)),
         .clipped = true };
 
-    m_SwapChain = vk::raii::SwapchainKHR(m_Device.m_Device, swapChainCreateInfo);
+    m_SwapChain = vk::raii::SwapchainKHR(m_DeviceRef.GetDevice(), swapChainCreateInfo);
     CORE_LOG_INFO("Swap chain created");
     m_Images = m_SwapChain.getImages();
     CORE_LOG_INFO("Using {} images", m_Images.size());
@@ -50,7 +50,7 @@ void SwapChain::CreateImageViews()
     for ( auto image : m_Images )
     {
         imageViewCreateInfo.image = image;
-        m_ImageViews.emplace_back(m_Device.m_Device, imageViewCreateInfo);
+        m_ImageViews.emplace_back(m_DeviceRef.GetDevice(), imageViewCreateInfo);
     }
 }
 
@@ -62,7 +62,7 @@ vk::raii::ImageView SwapChain::GetImageView(vk::raii::Image& img, vk::Format for
         .format = format,
         .subresourceRange = { aspect_flags, 0, mip_levels, 0, 1 }
     };
-    return vk::raii::ImageView(m_Device.m_Device, info);
+    return vk::raii::ImageView(m_DeviceRef.GetDevice(), info);
 }
 
 vk::Format SwapChain::ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)

@@ -51,7 +51,7 @@ private: // Synchronization objects
 private: // References
     Buffers& m_Buffers;
     SwapChain& m_SwapChain;
-    Device& m_Device;
+    Device& m_DeviceRef;
     Pipeline& m_Pipeline;
     LiteEngine::Window& m_Window;
     Assets& m_AssetsRef;

@@ -4,30 +4,24 @@
 #include <cstdint>
 
 namespace LiteVulkan {
-class SwapChain;
-class Pipeline;
-class Renderer;
-class Context;
-class Buffers;
-class Assets;
 class Device
 {
-friend class SwapChain;
-friend class Pipeline;
-friend class Renderer;
-friend class Context;
-friend class Buffers;
-friend class Assets;
 public:
-    void PickPhysicalDevice(vk::raii::Instance& instance);
-    void CreateLogicalDevice(vk::raii::SurfaceKHR& surface);
+    void PickPhysicalDevice(const vk::raii::Instance& instance);
+    void CreateLogicalDevice(const vk::raii::SurfaceKHR& surface);
+    const vk::raii::PhysicalDevice& GetPhysicalDevice() const { return m_PhysicalDevice; };
+    const vk::raii::Device& GetDevice() const { return m_Device; };
+    const vk::raii::Queue& GetQueue() const { return m_Queue; };
+    vk::SampleCountFlagBits GetMsaaSamples() const { return m_MsaaSamples; };
+    uint32_t GetQueueIndex() const { return m_QueueIndex.value(); };
 private:
+    bool DeviceSuitable(const vk::raii::PhysicalDevice& device) const;
     vk::SampleCountFlagBits GetMaxUsableSampleCount();
 private:
     vk::raii::PhysicalDevice m_PhysicalDevice = nullptr;
     vk::raii::Device m_Device = nullptr;
     vk::raii::Queue m_Queue = nullptr;
     std::optional<uint32_t> m_QueueIndex;
-    vk::SampleCountFlagBits m_msaa_samples = vk::SampleCountFlagBits::e1;
+    vk::SampleCountFlagBits m_MsaaSamples = vk::SampleCountFlagBits::e1;
 };
 }

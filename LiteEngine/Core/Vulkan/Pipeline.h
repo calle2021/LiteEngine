@@ -12,14 +12,14 @@ class Pipeline
 {
 friend class Renderer;
 public:
-    Pipeline(SwapChain& swapChain, Device& device, Buffers& buf, Assets& assets);
+    Pipeline(SwapChain& swapChain, const Device& device, Buffers& buf, Assets& assets);
     void CreateDescriptorLayout();
     void CreatePipeline();
     void CreateDescriptorSets();
     void CreateDescriptorPool();
     const vk::raii::Pipeline& GetPipeline() const { return m_Pipeline; }
 private:
-    [[nodiscard]] vk::raii::ShaderModule CreateShaderModule(const std::vector<char>& code, vk::raii::Device& device) const;
+    vk::raii::ShaderModule CreateShaderModule(const std::vector<char>& code) const;
     static std::vector<char> ReadFile(const std::string& filename);
 private:
     vk::raii::DescriptorSetLayout m_DescriptorLayout = nullptr;
@@ -29,7 +29,7 @@ private:
     vk::raii::Pipeline m_Pipeline = nullptr;
 private:
     SwapChain& m_SwapChainRef;
-    Device& m_DeviceRef;
+    const Device& m_DeviceRef;
     Buffers& m_BuffersRef;
     Assets& m_AssetsRef;
 };

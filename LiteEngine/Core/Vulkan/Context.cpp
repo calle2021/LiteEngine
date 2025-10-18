@@ -57,7 +57,7 @@ void Context::Update()
 
 void Context::WaitIdle()
 {
-    m_Device.m_Device.waitIdle();
+    m_Device.GetDevice().waitIdle();
 }
 
 void Context::CreateInstance()

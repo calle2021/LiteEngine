@@ -7,14 +7,14 @@ Renderer::Renderer(Buffers& buf, SwapChain& swap, Device& dev,
                    Pipeline& pipe, Assets& assets, LiteEngine::Window& win)
     : m_Buffers(buf)
     , m_SwapChain(swap)
-    , m_Device(dev)
+    , m_DeviceRef(dev)
     , m_Pipeline(pipe)
     , m_AssetsRef(assets)
     , m_Window(win) {}
 
 void Renderer::DrawFrame()
 {
-    while (vk::Result::eTimeout == m_Device.m_Device.waitForFences(*m_Fences[m_CurrentFrame], vk::True, UINT64_MAX))
+    while (vk::Result::eTimeout == m_DeviceRef.GetDevice().waitForFences(*m_Fences[m_CurrentFrame], vk::True, UINT64_MAX))
     {
         CORE_LOG_INFO("Timeout!");
     }
@@ -36,7 +36,7 @@ void Renderer::DrawFrame()
 
     m_Buffers.UpdateUniformBuffer(m_CurrentFrame);
 
-    m_Device.m_Device.resetFences(*m_Fences[m_CurrentFrame]);
+    m_DeviceRef.GetDevice().resetFences(*m_Fences[m_CurrentFrame]);
     m_CommandBuffers[m_CurrentFrame].reset();
     RecordCommandBuffer(imageIndex);
 
@@ -50,7 +50,7 @@ void Renderer::DrawFrame()
         .signalSemaphoreCount = 1,
         .pSignalSemaphores = &*m_RenderSemaphores[imageIndex]
     };
-    m_Device.m_Queue.submit(submitInfo, *m_Fences[m_CurrentFrame]);
+    m_DeviceRef.GetQueue().submit(submitInfo, *m_Fences[m_CurrentFrame]);
 
     const vk::PresentInfoKHR presentInfoKHR {
         .waitSemaphoreCount = 1,
@@ -60,7 +60,7 @@ void Renderer::DrawFrame()
         .pImageIndices = &imageIndex
     };
 
-    result = m_Device.m_Queue.presentKHR(presentInfoKHR);
+    result = m_DeviceRef.GetQueue().presentKHR(presentInfoKHR);
 
     result = m_Window.HasResized() ? vk::Result::eErrorOutOfDateKHR : result;
 
@@ -88,9 +88,9 @@ void Renderer::CreateCommandPool()
 {
     vk::CommandPoolCreateInfo poolInfo {
         .flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-        .queueFamilyIndex = m_Device.m_QueueIndex.value()
+        .queueFamilyIndex = m_DeviceRef.GetQueueIndex(),
     };
-    m_CommandPool = vk::raii::CommandPool(m_Device.m_Device, poolInfo);
+    m_CommandPool = vk::raii::CommandPool(m_DeviceRef.GetDevice(), poolInfo);
     CORE_LOG_INFO("Commandpool created with queue family index {}", poolInfo.queueFamilyIndex);
 }
 
@@ -102,7 +102,7 @@ void Renderer::CreateCommandBuffers()
         .level = vk::CommandBufferLevel::ePrimary,
         .commandBufferCount = FRAMES_IN_FLIGHT,
     };
-    m_CommandBuffers = vk::raii::CommandBuffers(m_Device.m_Device, allocInfo);
+    m_CommandBuffers = vk::raii::CommandBuffers(m_DeviceRef.GetDevice(), allocInfo);
     CORE_LOG_INFO("Commandbuffer created.");
 }
 
@@ -114,9 +114,9 @@ void Renderer::CreateSyncObjects()
 
     for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++)
     {
-        m_PresentSemaphores.emplace_back(m_Device.m_Device, vk::SemaphoreCreateInfo());
-        m_RenderSemaphores.emplace_back(m_Device.m_Device, vk::SemaphoreCreateInfo());
-        m_Fences.emplace_back(m_Device.m_Device, vk::FenceCreateInfo { .flags = vk::FenceCreateFlagBits::eSignaled });
+        m_PresentSemaphores.emplace_back(m_DeviceRef.GetDevice(), vk::SemaphoreCreateInfo());
+        m_RenderSemaphores.emplace_back(m_DeviceRef.GetDevice(), vk::SemaphoreCreateInfo());
+        m_Fences.emplace_back(m_DeviceRef.GetDevice(), vk::FenceCreateInfo { .flags = vk::FenceCreateFlagBits::eSignaled });
     }
 
     CORE_LOG_INFO("Using {} frames in flight in flight", FRAMES_IN_FLIGHT);
@@ -248,7 +248,7 @@ void Renderer::TransitionImageLayout(
 
 std::unique_ptr<vk::raii::CommandBuffer> Renderer::BeginSingleTimeCommands() {
     vk::CommandBufferAllocateInfo allocInfo{ .commandPool = m_CommandPool, .level = vk::CommandBufferLevel::ePrimary, .commandBufferCount = 1 };
-    std::unique_ptr<vk::raii::CommandBuffer> cmdbuf = std::make_unique<vk::raii::CommandBuffer>(std::move(vk::raii::CommandBuffers(m_Device.m_Device, allocInfo).front()));
+    std::unique_ptr<vk::raii::CommandBuffer> cmdbuf = std::make_unique<vk::raii::CommandBuffer>(std::move(vk::raii::CommandBuffers(m_DeviceRef.GetDevice(), allocInfo).front()));
     vk::CommandBufferBeginInfo beginfo{ .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
     cmdbuf->begin(beginfo);
     return cmdbuf;
@@ -257,8 +257,8 @@ std::unique_ptr<vk::raii::CommandBuffer> Renderer::BeginSingleTimeCommands() {
 void Renderer::EndSingleTimeCommands(vk::raii::CommandBuffer& cmdbuf) {
     cmdbuf.end();
     vk::SubmitInfo subinfo { .commandBufferCount = 1, .pCommandBuffers = &*cmdbuf };
-    m_Device.m_Queue.submit(subinfo, nullptr);
-    m_Device.m_Queue.waitIdle();
+    m_DeviceRef.GetQueue().submit(subinfo, nullptr);
+    m_DeviceRef.GetQueue().waitIdle();
 }
 
 void Renderer::RecreateSwapChain()
@@ -270,7 +270,7 @@ void Renderer::RecreateSwapChain()
         glfwGetFramebufferSize(m_Window.GetWindowHandle(), &width, &height);
         glfwWaitEvents();
     }
-    m_Device.m_Device.waitIdle();
+    m_DeviceRef.GetDevice().waitIdle();
     m_SwapChain.m_ImageViews.clear();
     m_SwapChain.m_SwapChain = nullptr;
     m_SwapChain.CreateSwapChain();
