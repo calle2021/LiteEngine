@@ -5,20 +5,26 @@ namespace LiteVulkan {
 
 const uint32_t preferred_image_count = 3;
 
-SwapChain::SwapChain(Device& device, vk::raii::SurfaceKHR& surface, LiteEngine::Window& window)
-    : m_DeviceRef(device)
-    , m_Surface(surface)
-    , m_Window(window) {}
+SwapChain::SwapChain(const Device& device)
+    : m_DeviceRef(device){}
 
-void SwapChain::CreateSwapChain()
+void SwapChain::Reset() {
+    m_ImageViews.clear();
+    m_SwapChain = nullptr;
+}
+
+void SwapChain::CreateSwapChain(const uint32_t width, const uint32_t height, const vk::raii::SurfaceKHR& surface)
 {
-    auto surfaceCapabilities = m_DeviceRef.GetPhysicalDevice().getSurfaceCapabilitiesKHR(m_Surface);
-    m_ImageFormat = ChooseSwapchainSurfaceFormat(m_DeviceRef.GetPhysicalDevice().getSurfaceFormatsKHR(m_Surface));
-    m_Extent = ChooseSwapExtent(surfaceCapabilities);
+    auto surfaceCapabilities = m_DeviceRef.GetPhysicalDevice().getSurfaceCapabilitiesKHR(surface);
+    m_ImageFormat = ChooseSwapchainSurfaceFormat(m_DeviceRef.GetPhysicalDevice().getSurfaceFormatsKHR(surface));
+    m_Extent = {
+        std::clamp<uint32_t>(width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width),
+        std::clamp<uint32_t>(height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height)
+    };
     uint32_t minImageCount = preferred_image_count > surfaceCapabilities.maxImageCount
                              ? surfaceCapabilities.maxImageCount : preferred_image_count;
     vk::SwapchainCreateInfoKHR swapChainCreateInfo{
-        .surface = m_Surface,
+        .surface = surface,
         .minImageCount = surfaceCapabilities.minImageCount,
         .imageFormat = m_ImageFormat,
         .imageColorSpace = vk::ColorSpaceKHR::eSrgbNonlinear,
@@ -28,7 +34,7 @@ void SwapChain::CreateSwapChain()
         .imageSharingMode = vk::SharingMode::eExclusive,
         .preTransform = surfaceCapabilities.currentTransform,
         .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        .presentMode = ChooseSwapPresentMode(m_DeviceRef.GetPhysicalDevice().getSurfacePresentModesKHR(m_Surface)),
+        .presentMode = ChooseSwapPresentMode(m_DeviceRef.GetPhysicalDevice().getSurfacePresentModesKHR(surface)),
         .clipped = true };
 
     m_SwapChain = vk::raii::SwapchainKHR(m_DeviceRef.GetDevice(), swapChainCreateInfo);
@@ -52,17 +58,6 @@ void SwapChain::CreateImageViews()
         imageViewCreateInfo.image = image;
         m_ImageViews.emplace_back(m_DeviceRef.GetDevice(), imageViewCreateInfo);
     }
-}
-
-vk::raii::ImageView SwapChain::GetImageView(vk::raii::Image& img, vk::Format format, vk::ImageAspectFlags aspect_flags, uint32_t mip_levels)
-{
-    vk::ImageViewCreateInfo info {
-        .image = img,
-        .viewType = vk::ImageViewType::e2D,
-        .format = format,
-        .subresourceRange = { aspect_flags, 0, mip_levels, 0, 1 }
-    };
-    return vk::raii::ImageView(m_DeviceRef.GetDevice(), info);
 }
 
 vk::Format SwapChain::ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats)
@@ -92,19 +87,5 @@ vk::PresentModeKHR SwapChain::ChooseSwapPresentMode(const std::vector<vk::Presen
         }
     }
     return vk::PresentModeKHR::eFifo;
-}
-
-vk::Extent2D SwapChain::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
-{
-    auto resolution = m_Window.GetResolution();
-    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
-        CORE_LOG_INFO("Using current extent ({}x{})", capabilities.currentExtent.width, capabilities.currentExtent.height);
-        return capabilities.currentExtent;
-    }
-    CORE_LOG_INFO("Using extent {}x{}", resolution.first, resolution.second);
-    return {
-        std::clamp<uint32_t>(resolution.first, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
-        std::clamp<uint32_t>(resolution.second, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
-    };
 }
 }

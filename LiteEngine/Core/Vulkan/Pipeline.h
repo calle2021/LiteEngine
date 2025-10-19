@@ -1,10 +1,7 @@
 
 #pragma once
-#include <vulkan/vulkan_raii.hpp>
-#include "SwapChain.h"
 #include "Device.h"
-#include "Buffers.h"
-#include "Assets.h"
+#include <vulkan/vulkan_raii.hpp>
 
 namespace LiteVulkan {
 class Renderer;
@@ -12,10 +9,10 @@ class Pipeline
 {
 friend class Renderer;
 public:
-    Pipeline(SwapChain& swapChain, const Device& device, Buffers& buf, Assets& assets);
+    Pipeline(const Device& device);
     void CreateDescriptorLayout();
-    void CreatePipeline();
-    void CreateDescriptorSets();
+    void CreatePipeline(const vk::Format imageFormat, const vk::Format depthFormat);
+    void CreateDescriptorSets(const vk::raii::Sampler& textureSampler, const vk::raii::ImageView& textureImageView, const std::vector<vk::raii::Buffer>& uniformBuffer);
     void CreateDescriptorPool();
     const vk::raii::Pipeline& GetPipeline() const { return m_Pipeline; }
 private:
@@ -28,9 +25,6 @@ private:
     vk::raii::PipelineLayout m_PipelineLayout = nullptr;
     vk::raii::Pipeline m_Pipeline = nullptr;
 private:
-    SwapChain& m_SwapChainRef;
     const Device& m_DeviceRef;
-    Buffers& m_BuffersRef;
-    Assets& m_AssetsRef;
 };
 }

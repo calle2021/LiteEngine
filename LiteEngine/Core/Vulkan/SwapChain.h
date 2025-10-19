@@ -1,34 +1,25 @@
 #pragma once
 #include <vector>
-#include <vulkan/vulkan_raii.hpp>
-#include "Core/Window/Window.h"
 #include "Device.h"
+#include <vulkan/vulkan_raii.hpp>
 
 namespace LiteVulkan {
-class Pipeline;
 class Renderer;
-class Buffers;
-class Assets;
 class SwapChain
 {
-friend class Pipeline;
 friend class Renderer;
-friend class Buffers;
-friend class Assets;
 public:
-    SwapChain(
-        Device& device,
-        vk::raii::SurfaceKHR& surface,
-        LiteEngine::Window& window
-    );
-    void CreateSwapChain();
+    SwapChain(const Device& device);
+    void Reset();
+    void CreateSwapChain(const uint32_t width, const uint32_t height, const vk::raii::SurfaceKHR& surface);
     void CreateImageViews();
+    const vk::raii::SwapchainKHR& GetSwapChain() const { return m_SwapChain; };
+    uint32_t GetExtentWidth() const { return m_Extent.width; };
+    uint32_t GetExtentHeight() const { return m_Extent.height; };
+    vk::Format GetImageFormat() const { return m_ImageFormat; };
 private:
-    vk::raii::ImageView GetImageView(vk::raii::Image& img, vk::Format format,
-                                     vk::ImageAspectFlags aspect_flags, uint32_t mip_levels);
     vk::Format ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
-    vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
 private:
     vk::raii::SwapchainKHR m_SwapChain = nullptr;
     std::vector<vk::Image> m_Images;
@@ -36,8 +27,6 @@ private:
     vk::Extent2D m_Extent;
     std::vector<vk::raii::ImageView> m_ImageViews;
 private:
-    Device& m_DeviceRef;
-    vk::raii::SurfaceKHR& m_Surface;
-    LiteEngine::Window& m_Window;
+    const Device& m_DeviceRef;
 };
 }

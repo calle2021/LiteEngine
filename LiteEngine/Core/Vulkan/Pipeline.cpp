@@ -5,11 +5,7 @@
 #include "Config.h"
 
 namespace LiteVulkan {
-Pipeline::Pipeline(SwapChain& swap, const Device& dev, Buffers& buf, Assets& assets)
-    : m_SwapChainRef(swap)
-    , m_DeviceRef(dev)
-    , m_BuffersRef(buf)
-    , m_AssetsRef(assets) {}
+Pipeline::Pipeline(const Device& device) : m_DeviceRef(device) {}
 
 void Pipeline::CreateDescriptorLayout()
 {
@@ -22,7 +18,7 @@ void Pipeline::CreateDescriptorLayout()
     m_DescriptorLayout = vk::raii::DescriptorSetLayout(m_DeviceRef.GetDevice(), layoutInfo);
 }
 
-void Pipeline::CreateDescriptorSets()
+void Pipeline::CreateDescriptorSets(const vk::raii::Sampler& textureSampler, const vk::raii::ImageView& textureImageView, const std::vector<vk::raii::Buffer>& uniformBuffer)
 {
     std::vector<vk::DescriptorSetLayout> layouts(FRAMES_IN_FLIGHT, m_DescriptorLayout);
     vk::DescriptorSetAllocateInfo allocInfo{ .descriptorPool = m_DescriptorPool, .descriptorSetCount = static_cast<uint32_t>(layouts.size()), .pSetLayouts = layouts.data() };
@@ -31,10 +27,10 @@ void Pipeline::CreateDescriptorSets()
     m_DescriptorSets = m_DeviceRef.GetDevice().allocateDescriptorSets(allocInfo);
 
     for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++) {
-        vk::DescriptorBufferInfo bufferInfo{ .buffer = m_BuffersRef.m_UniformBuffers[i], .offset = 0, .range = sizeof(Buffers::UniformBufferObject) };
+        vk::DescriptorBufferInfo bufferInfo{ .buffer = uniformBuffer[i], .offset = 0, .range = sizeof(Buffers::UniformBufferObject) };
         vk::DescriptorImageInfo imageInfo{
-            .sampler = m_AssetsRef.m_TextureSampler,
-            .imageView = m_AssetsRef.m_TextureImageView,
+            .sampler = textureSampler,
+            .imageView = textureImageView,
             .imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal
         };
         std::array descriptorWrites{
@@ -73,7 +69,7 @@ void Pipeline::CreateDescriptorPool()
     m_DescriptorPool = vk::raii::DescriptorPool(m_DeviceRef.GetDevice(), poolInfo);
 }
 
-void Pipeline::CreatePipeline()
+void Pipeline::CreatePipeline(const vk::Format imageFormat, const vk::Format depthFormat)
 {
     vk::raii::ShaderModule shaderModule = CreateShaderModule(ReadFile("Assets/Shaders/slang.spv"));
     vk::PipelineShaderStageCreateInfo vertShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eVertex, .module = shaderModule,  .pName = "vertMain" };
@@ -129,8 +125,7 @@ void Pipeline::CreatePipeline()
     m_PipelineLayout = vk::raii::PipelineLayout(m_DeviceRef.GetDevice(), pipelineLayoutInfo);
     CORE_LOG_INFO("Pipeline layout created.");
 
-    vk::Format depthFormat = m_AssetsRef.FindDepthFormat();
-    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo { .colorAttachmentCount = 1, .pColorAttachmentFormats = &m_SwapChainRef.m_ImageFormat,
+    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo { .colorAttachmentCount = 1, .pColorAttachmentFormats = &imageFormat,
                                                                   .depthAttachmentFormat = depthFormat };
     vk::GraphicsPipelineCreateInfo pipelineInfo {
         .pNext = &pipelineRenderingCreateInfo,

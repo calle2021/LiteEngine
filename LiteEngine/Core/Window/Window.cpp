@@ -1,28 +1,22 @@
 #include "Window.h"
 #include "Core/Logging/Logger.h"
 
-
-constexpr uint32_t WIDTH = 1280;
-constexpr uint32_t HEIGHT = 720;
-
 namespace LiteEngine {
-Window::Window()
-    : m_Width(WIDTH)
-    , m_Height(HEIGHT)
+Window::Window(uint32_t width, uint32_t height)
+    : m_Width(width)
+    , m_Height(height)
 {
     if (!glfwInit()) {
-        CORE_LOG_ERROR("Failed to initialize glfw.");
-        throw std::runtime_error("Failed to initialize glfw.");
+        throw std::runtime_error("Failed to initialize glfw!");
     }
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    m_GLFWindow = glfwCreateWindow(WIDTH, HEIGHT, "LiteEngine", nullptr, nullptr);
+    m_GLFWindow = glfwCreateWindow(m_Width, m_Height, "LiteEngine", nullptr, nullptr);
 
     if (!m_GLFWindow) {
-        CORE_LOG_ERROR("Failed to create glfw window.");
-        throw std::runtime_error("Failed to create glfw window.");
+        throw std::runtime_error("Failed to create glfw window!");
     }
 
-    CORE_LOG_INFO("GLFW window created.");
+    CORE_LOG_INFO("Window created");
 
     glfwMakeContextCurrent(m_GLFWindow);
     time = glfwGetTime();

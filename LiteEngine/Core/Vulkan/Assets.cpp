@@ -2,6 +2,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "Core/Logging/Logger.h"
+#include "Renderer.h"
 
 namespace LiteVulkan
 {
@@ -11,11 +12,9 @@ constexpr uint64_t FenceTimeout = 100000000;
 const std::string MODEL_PATH = "Assets/Models/viking_room.obj";
 const std::string TEXTURE_PATH = "Assets/Textures/viking_room.png";
 
-Assets::Assets(Device& dev, Buffers& buf, Renderer& rend, SwapChain& swap)
-    : m_DeviceRef(dev)
-    , m_BuffersRef(buf)
-    , m_RendererRef(rend)
-    , m_SwapChainRef(swap) {}
+Assets::Assets(const Renderer& renderer, const Device& device) : m_RendererRef(renderer), m_DeviceRef(device) {
+     m_DepthFormat = FindDepthFormat();
+}
 
 void Assets::LoadModel()
 {
@@ -38,7 +37,7 @@ void Assets::CreateTexture()
 
     vk::raii::Buffer stagingBuffer({});
     vk::raii::DeviceMemory stagingBufferMemory({});
-    m_BuffersRef.CreateBuffer(imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+    Buffers::CreateBuffer(m_DeviceRef, imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
     void* data = stagingBufferMemory.mapMemory(0, imageSize);
     memcpy(data, pixels, imageSize);
@@ -53,22 +52,31 @@ void Assets::CreateTexture()
     GenerateMipmaps(m_TextureImage, vk::Format::eR8G8B8A8Srgb, texWidth, texHeight, nmip_levels);
 }
 
-void Assets::CreateColorResources() {
-    vk::Format colorFormat = m_SwapChainRef.m_ImageFormat;
-    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, 1, m_DeviceRef.GetMsaaSamples(), colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment,  vk::MemoryPropertyFlagBits::eDeviceLocal, m_ColorImage, m_ColorImageMemory);
-    m_ColorImageView = m_SwapChainRef.GetImageView(m_ColorImage, colorFormat, vk::ImageAspectFlagBits::eColor, 1);
+void Assets::CreateColorResources(const uint32_t width, const uint32_t height, const vk::Format colorFormat) {
+    CreateImage(width, height, 1, m_DeviceRef.GetMsaaSamples(), colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment,  vk::MemoryPropertyFlagBits::eDeviceLocal, m_ColorImage, m_ColorImageMemory);
+    m_ColorImageView = GetImageView(m_ColorImage, colorFormat, vk::ImageAspectFlagBits::eColor, 1);
 }
 
-void Assets::CreateDepthResources()
+void Assets::CreateDepthResources(const uint32_t width, const uint32_t height)
 {
-    vk::Format depthFormat = FindDepthFormat();
-    CreateImage(m_SwapChainRef.m_Extent.width, m_SwapChainRef.m_Extent.height, 1, m_DeviceRef.GetMsaaSamples(), depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, m_DepthImage, m_DepthBufferMemory);
-    m_DepthBufferView = m_SwapChainRef.GetImageView(m_DepthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, 1);
+    CreateImage(width, height, 1, m_DeviceRef.GetMsaaSamples(), m_DepthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, m_DepthImage, m_DepthBufferMemory);
+    m_DepthBufferView = GetImageView(m_DepthImage, m_DepthFormat, vk::ImageAspectFlagBits::eDepth, 1);
 }
 
 void Assets::CreateTextureImageView()
 {
-    m_TextureImageView = m_SwapChainRef.GetImageView(m_TextureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, nmip_levels);
+    m_TextureImageView = GetImageView(m_TextureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, nmip_levels);
+}
+
+vk::raii::ImageView Assets::GetImageView(vk::raii::Image& img, vk::Format format, vk::ImageAspectFlags aspect_flags, uint32_t mip_levels)
+{
+    vk::ImageViewCreateInfo info {
+        .image = img,
+        .viewType = vk::ImageViewType::e2D,
+        .format = format,
+        .subresourceRange = { aspect_flags, 0, mip_levels, 0, 1 }
+    };
+    return vk::raii::ImageView(m_DeviceRef.GetDevice(), info);
 }
 
 void Assets::CreateTextureSampler()
@@ -104,7 +112,7 @@ void Assets::CreateImage(uint32_t width, uint32_t height, uint32_t mip_levels, v
 
     vk::MemoryRequirements memRequirements = image.getMemoryRequirements();
     vk::MemoryAllocateInfo allocInfo{ .allocationSize = memRequirements.size,
-                                     .memoryTypeIndex = m_BuffersRef.FindMemoryType(memRequirements.memoryTypeBits, properties) };
+                                     .memoryTypeIndex = Buffers::FindMemoryType(m_DeviceRef.GetPhysicalDevice().getMemoryProperties(), memRequirements.memoryTypeBits, properties) };
     imageMemory = vk::raii::DeviceMemory(m_DeviceRef.GetDevice(), allocInfo);
     image.bindMemory(imageMemory, 0);
 }

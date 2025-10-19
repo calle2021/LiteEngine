@@ -6,12 +6,13 @@ namespace LiteEngine {
 class Window
 {
 public:
-    Window();
+    Window(uint32_t width, uint32_t height);
     void Update();
     void Destroy();
     bool Close();
     double GetDeltaTime();
-    std::pair<uint32_t, uint32_t> GetResolution() const { return std::make_pair(m_Width, m_Height); };
+    uint32_t GetWidth() const { return m_Width; };
+    uint32_t GetHeight() const { return m_Height; };
     float GetAspect() const { return static_cast<float>(m_Width) / static_cast<float>(m_Height); };
     GLFWwindow* GetWindowHandle() const { return m_GLFWindow; };
     bool HasResized() { return m_FrameBufferResized; };

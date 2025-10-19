@@ -4,8 +4,6 @@
 #include <chrono>
 #include <vulkan/vulkan_raii.hpp>
 #include "Device.h"
-#include "Renderer.h"
-#include "SwapChain.h"
 #include "Assets.h"
 #include <array>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -16,20 +14,26 @@ using namespace LiteEngine;
 
 namespace LiteVulkan {
 class Renderer;
-class Assets;
-class Pipeline;
 class Buffers
 {
 friend class Renderer;
-friend class Assets;
-friend class Pipeline;
 public:
-    Buffers(Device& dev, Renderer& rend, SwapChain& swap, Assets& assets, Camera& cam);
-    void BufferModels();
-    void CreateVertexBuffer();
-    void CreateIndexBuffer();
+    Buffers(const Device& device, const LiteEngine::Camera& camera);
+    void BufferModels(const std::vector<tinyobj::shape_t>& shapes, const tinyobj::attrib_t& attrib);
+    void CreateVertexBuffer(const vk::raii::CommandPool& command_pool);
+    void CreateIndexBuffer(const vk::raii::CommandPool& command_pool);
     void CreateUniformBuffers();
     void UpdateUniformBuffer(uint32_t curr);
+    const std::vector<vk::raii::Buffer>& GetUniformBuffers() const { return m_UniformBuffers; };
+public:
+    static void CreateBuffer(
+        const Device& device,
+        vk::DeviceSize size,
+        vk::BufferUsageFlags usage,
+        vk::MemoryPropertyFlags properties,
+        vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory
+    );
+    static uint32_t FindMemoryType(vk::PhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 public:
     struct Vertex
     {
@@ -66,14 +70,7 @@ private:
     std::vector<uint32_t> m_Indices;
 
 private:
-    void CreateBuffer(
-        vk::DeviceSize size,
-        vk::BufferUsageFlags usage,
-        vk::MemoryPropertyFlags properties,
-        vk::raii::Buffer& buffer, vk::raii::DeviceMemory& bufferMemory
-    );
-    uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
-    void CopyBuffer(vk::raii::Buffer& src, vk::raii::Buffer& dst, vk::DeviceSize size);
+    void CopyBuffer(const vk::raii::CommandPool& command_pool, vk::raii::Buffer& src, vk::raii::Buffer& dst, vk::DeviceSize size);
 private:
     vk::raii::Buffer m_Buffers = nullptr;
     vk::raii::DeviceMemory m_BuffersMemory = nullptr;
@@ -84,13 +81,9 @@ private:
     std::vector<void*> m_UniformBuffersMapped;
     vk::raii::Image m_Texture = nullptr;
     vk::raii::DeviceMemory m_TextureMemory = nullptr;
-private:
-    Camera& m_CameraRef;
 private: // Class references
-    Device& m_DeviceRef;
-    Renderer& m_RendererRef;
-    SwapChain& m_SwapChainRef;
-    Assets& m_AssetsRef;
+    const Device& m_DeviceRef;
+    const Camera& m_CameraRef;
 };
 }
 

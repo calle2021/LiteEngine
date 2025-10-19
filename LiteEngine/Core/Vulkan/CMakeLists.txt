@@ -1,6 +1,6 @@
 target_sources(LiteEngine PRIVATE
-    Context.cpp
-    Context.h
+    Renderer.cpp
+    Renderer.h
     Config.h
     Device.cpp
     Device.h
@@ -8,8 +8,6 @@ target_sources(LiteEngine PRIVATE
     SwapChain.h
     Pipeline.cpp
     Pipeline.h
-    Renderer.cpp
-    Renderer.h
     Buffers.cpp
     Buffers.h
     Assets.cpp

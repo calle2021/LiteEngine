@@ -1,7 +1,7 @@
 #include "Include/LiteEngine.h"
 #include "Core/Logging/Logger.h"
 #include "Core/Window/Window.h"
-#include "Core/Vulkan/Context.h"
+#include "Core/Vulkan/Renderer.h"
 #include "Core/Camera/OrbitCamera.h"
 
 namespace LiteEngine
@@ -9,18 +9,18 @@ namespace LiteEngine
 int Application::Launch(iLiteBox& app)
 {
     Logger::Init();
-    Window window;
-    LiteEngine::OrbitCamera cam(window.GetAspect());
-    LiteVulkan::Context vulkan(window, cam);
+    Window window(1280, 720);
+    LiteEngine::OrbitCamera camera(window.GetAspect());
+    LiteVulkan::Renderer vulkan(window, camera);
     vulkan.Init();
 
     while (!window.Close())
     {
         window.Update();
-        vulkan.Update();
+        vulkan.DrawFrame();
         app.Update();
     }
-    vulkan.WaitIdle();
+    vulkan.Shutdown();
     window.Destroy();
     return 0;
 }
