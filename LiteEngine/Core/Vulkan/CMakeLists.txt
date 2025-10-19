@@ -12,5 +12,4 @@ target_sources(LiteEngine PRIVATE
     Buffers.h
     Assets.cpp
     Assets.h
-    TinyObjLoader.cpp
 )

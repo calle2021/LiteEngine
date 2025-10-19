@@ -7,6 +7,7 @@ target_include_directories(LiteEngine
 
 add_subdirectory(Core)
 add_subdirectory(Assets)
+add_subdirectory(Vendor)
 add_subdirectory(Include)
 
 target_include_directories(LiteEngine PRIVATE Vendor)
