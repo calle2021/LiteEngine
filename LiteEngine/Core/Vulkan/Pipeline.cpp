@@ -2,7 +2,6 @@
 #include <fstream>
 #include "Core/Logging/Logger.h"
 #include "Buffers.h"
-#include "Config.h"
 
 namespace LiteVulkan {
 Pipeline::Pipeline(const Device& device) : m_DeviceRef(device) {}
@@ -18,15 +17,15 @@ void Pipeline::CreateDescriptorLayout()
     m_DescriptorLayout = vk::raii::DescriptorSetLayout(m_DeviceRef.GetDevice(), layoutInfo);
 }
 
-void Pipeline::CreateDescriptorSets(const vk::raii::Sampler& textureSampler, const vk::raii::ImageView& textureImageView, const std::vector<vk::raii::Buffer>& uniformBuffer)
+void Pipeline::CreateDescriptorSets(const uint32_t nFramesInFlight, const vk::raii::Sampler& textureSampler, const vk::raii::ImageView& textureImageView, const std::vector<vk::raii::Buffer>& uniformBuffer)
 {
-    std::vector<vk::DescriptorSetLayout> layouts(FRAMES_IN_FLIGHT, m_DescriptorLayout);
+    std::vector<vk::DescriptorSetLayout> layouts(nFramesInFlight, m_DescriptorLayout);
     vk::DescriptorSetAllocateInfo allocInfo{ .descriptorPool = m_DescriptorPool, .descriptorSetCount = static_cast<uint32_t>(layouts.size()), .pSetLayouts = layouts.data() };
 
     m_DescriptorSets.clear();
     m_DescriptorSets = m_DeviceRef.GetDevice().allocateDescriptorSets(allocInfo);
 
-    for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < nFramesInFlight; i++) {
         vk::DescriptorBufferInfo bufferInfo{ .buffer = uniformBuffer[i], .offset = 0, .range = sizeof(Buffers::UniformBufferObject) };
         vk::DescriptorImageInfo imageInfo{
             .sampler = textureSampler,
@@ -54,15 +53,15 @@ void Pipeline::CreateDescriptorSets(const vk::raii::Sampler& textureSampler, con
         m_DeviceRef.GetDevice().updateDescriptorSets(descriptorWrites, {});
     }
 }
-void Pipeline::CreateDescriptorPool()
+void Pipeline::CreateDescriptorPool(const uint32_t nFramesInFlight)
 {
     std::array pool {
-        vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, FRAMES_IN_FLIGHT),
-        vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, FRAMES_IN_FLIGHT)
+        vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, nFramesInFlight),
+        vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, nFramesInFlight)
     };
     vk::DescriptorPoolCreateInfo poolInfo{
         .flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
-        .maxSets = FRAMES_IN_FLIGHT,
+        .maxSets = nFramesInFlight,
         .poolSizeCount = static_cast<uint32_t>(pool.size()),
         .pPoolSizes = pool.data()
     };

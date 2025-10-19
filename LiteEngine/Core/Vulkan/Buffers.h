@@ -22,7 +22,7 @@ public:
     void BufferModels(const std::vector<tinyobj::shape_t>& shapes, const tinyobj::attrib_t& attrib);
     void CreateVertexBuffer(const vk::raii::CommandPool& command_pool);
     void CreateIndexBuffer(const vk::raii::CommandPool& command_pool);
-    void CreateUniformBuffers();
+    void CreateUniformBuffers(const uint32_t nFramesInFlight);
     void UpdateUniformBuffer(uint32_t curr);
     const std::vector<vk::raii::Buffer>& GetUniformBuffers() const { return m_UniformBuffers; };
 public:

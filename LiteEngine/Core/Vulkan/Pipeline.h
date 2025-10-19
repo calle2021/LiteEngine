@@ -12,8 +12,8 @@ public:
     Pipeline(const Device& device);
     void CreateDescriptorLayout();
     void CreatePipeline(const vk::Format imageFormat, const vk::Format depthFormat);
-    void CreateDescriptorSets(const vk::raii::Sampler& textureSampler, const vk::raii::ImageView& textureImageView, const std::vector<vk::raii::Buffer>& uniformBuffer);
-    void CreateDescriptorPool();
+    void CreateDescriptorSets(const uint32_t nFramesInFlight, const vk::raii::Sampler& textureSampler, const vk::raii::ImageView& textureImageView, const std::vector<vk::raii::Buffer>& uniformBuffer);
+    void CreateDescriptorPool(const uint32_t nFramesInFlight);
     const vk::raii::Pipeline& GetPipeline() const { return m_Pipeline; }
 private:
     vk::raii::ShaderModule CreateShaderModule(const std::vector<char>& code) const;

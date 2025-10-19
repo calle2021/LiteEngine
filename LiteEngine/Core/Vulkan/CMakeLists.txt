@@ -1,7 +1,6 @@
 target_sources(LiteEngine PRIVATE
     Renderer.cpp
     Renderer.h
-    Config.h
     Device.cpp
     Device.h
     SwapChain.cpp

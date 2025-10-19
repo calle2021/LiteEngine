@@ -1,11 +1,12 @@
 #include "Renderer.h"
 #include "Core/Logging/Logger.h"
 #include <iostream>
-#include "Config.h"
 
 const std::vector validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
+
+constexpr uint32_t nFramesInFlight = 2;
 
 #ifdef NDEBUG
 constexpr bool enable_validation_layers = false;
@@ -48,9 +49,9 @@ void Renderer::Init()
     m_Buffers->BufferModels(m_Assets->GetShapes(), m_Assets->GetAttributes());
     m_Buffers->CreateVertexBuffer(m_CommandPool);
     m_Buffers->CreateIndexBuffer(m_CommandPool);
-    m_Buffers->CreateUniformBuffers();
-    m_Pipeline->CreateDescriptorPool();
-    m_Pipeline->CreateDescriptorSets(m_Assets->GetSampler(), m_Assets->GetTextureImageView(), m_Buffers->GetUniformBuffers());
+    m_Buffers->CreateUniformBuffers(nFramesInFlight);
+    m_Pipeline->CreateDescriptorPool(nFramesInFlight);
+    m_Pipeline->CreateDescriptorSets(nFramesInFlight, m_Assets->GetSampler(), m_Assets->GetTextureImageView(), m_Buffers->GetUniformBuffers());
     m_CommandBuffers = CreateCommandBuffers();
     CreateSyncObjects();
 }
@@ -123,7 +124,7 @@ void Renderer::DrawFrame()
             break;
     }
 
-    m_CurrentFrame = (m_CurrentFrame + 1) % FRAMES_IN_FLIGHT;
+    m_CurrentFrame = (m_CurrentFrame + 1) % nFramesInFlight;
 }
 
 void Renderer::Shutdown()
@@ -221,7 +222,7 @@ std::vector<vk::raii::CommandBuffer> Renderer::CreateCommandBuffers()
     vk::CommandBufferAllocateInfo allocInfo {
         .commandPool = m_CommandPool,
         .level = vk::CommandBufferLevel::ePrimary,
-        .commandBufferCount = FRAMES_IN_FLIGHT,
+        .commandBufferCount = nFramesInFlight,
     };
     return vk::raii::CommandBuffers(m_Device->GetDevice(), allocInfo);
 }
@@ -232,7 +233,7 @@ void Renderer::CreateSyncObjects()
     m_RenderSemaphores.clear();
     m_Fences.clear();
 
-    for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++)
+    for (size_t i = 0; i < nFramesInFlight; i++)
     {
         m_PresentSemaphores.emplace_back(m_Device->GetDevice(), vk::SemaphoreCreateInfo());
         m_RenderSemaphores.emplace_back(m_Device->GetDevice(), vk::SemaphoreCreateInfo());

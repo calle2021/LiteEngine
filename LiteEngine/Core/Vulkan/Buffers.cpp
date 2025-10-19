@@ -1,6 +1,5 @@
 #include "Buffers.h"
 #include "Core/Logging/Logger.h"
-#include "Config.h"
 #include <unordered_map>
 
 namespace LiteVulkan {
@@ -50,13 +49,13 @@ void Buffers::CreateIndexBuffer(const vk::raii::CommandPool& command_pool)
     CopyBuffer(command_pool, stagingBuffer, m_IndexBuffer, bufferSize);
 }
 
-void Buffers::CreateUniformBuffers()
+void Buffers::CreateUniformBuffers(const uint32_t nFramesInFlight)
 {
     m_UniformBuffers.clear();
     m_UniformBuffersMemory.clear();
     m_UniformBuffersMapped.clear();
 
-    for (size_t i = 0; i < FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < nFramesInFlight; i++) {
         vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
         vk::raii::Buffer buffer({});
         vk::raii::DeviceMemory bufferMem({});
