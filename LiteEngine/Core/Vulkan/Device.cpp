@@ -1,16 +1,13 @@
 #include "Device.h"
 #include "Renderer.h"
 #define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 #include "Core/Logging/Logger.h"
+#include <GLFW/glfw3.h>
 #include <set>
 
-const std::vector<const char*> rExtensions  = {
-    vk::KHRSwapchainExtensionName,
-    vk::KHRSpirv14ExtensionName,
-    vk::KHRSynchronization2ExtensionName,
-    vk::KHRCreateRenderpass2ExtensionName
-};
+const std::vector<const char*> rExtensions
+    = { vk::KHRSwapchainExtensionName, vk::KHRSpirv14ExtensionName,
+        vk::KHRSynchronization2ExtensionName, vk::KHRCreateRenderpass2ExtensionName };
 
 namespace LiteVulkan {
 void Device::PickPhysicalDevice(const vk::raii::Instance& instance)
@@ -21,8 +18,9 @@ void Device::PickPhysicalDevice(const vk::raii::Instance& instance)
         throw std::runtime_error("No device with vulkan support found!");
     }
 
-    for (const auto& dev: devices) {
-        if(!DeviceSuitable(dev)) continue;
+    for (const auto& dev : devices) {
+        if (!DeviceSuitable(dev))
+            continue;
         m_PhysicalDevice = dev;
         break;
     }
@@ -36,37 +34,39 @@ void Device::PickPhysicalDevice(const vk::raii::Instance& instance)
 
 bool Device::DeviceSuitable(const vk::raii::PhysicalDevice& device) const
 {
-    if (device.getProperties().apiVersion < VK_API_VERSION_1_3) return false;
+    if (device.getProperties().apiVersion < VK_API_VERSION_1_3)
+        return false;
 
     auto qFamilies = device.getQueueFamilyProperties();
     bool hasGraphics = false;
-    for (const auto& qFamily: qFamilies)
-    {
-        if(qFamily.queueFlags & vk::QueueFlagBits::eGraphics)
-        {
+    for (const auto& qFamily : qFamilies) {
+        if (qFamily.queueFlags & vk::QueueFlagBits::eGraphics) {
             hasGraphics = true;
             break;
         }
     }
-    if (!hasGraphics) return false;
+    if (!hasGraphics)
+        return false;
 
     auto aExtensions = device.enumerateDeviceExtensionProperties();
     std::set<std::string> rExtensionsSet(rExtensions.begin(), rExtensions.end());
-    for (const auto& ext: aExtensions) {
+    for (const auto& ext : aExtensions) {
         rExtensionsSet.erase(ext.extensionName);
     }
-    if (!rExtensionsSet.empty()) return false;
+    if (!rExtensionsSet.empty())
+        return false;
 
-    auto dFeatures = device.getFeatures2<
-        vk::PhysicalDeviceFeatures2,
-        vk::PhysicalDeviceVulkan13Features,
-        vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>();
+    auto dFeatures
+        = device.getFeatures2<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features,
+                              vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>();
 
     const auto& pDevFeatures = dFeatures.get<vk::PhysicalDeviceFeatures2>().features;
     const auto& vk13Features = dFeatures.get<vk::PhysicalDeviceVulkan13Features>();
     const auto& extDynFeatures = dFeatures.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>();
-    bool hasFeatures = pDevFeatures.samplerAnisotropy && vk13Features.dynamicRendering && extDynFeatures.extendedDynamicState;
-    if (!hasFeatures) return false;
+    bool hasFeatures = pDevFeatures.samplerAnisotropy && vk13Features.dynamicRendering
+        && extDynFeatures.extendedDynamicState;
+    if (!hasFeatures)
+        return false;
     return true;
 }
 
@@ -75,10 +75,9 @@ void Device::CreateLogicalDevice(const vk::raii::SurfaceKHR& surface)
     std::vector<vk::QueueFamilyProperties> qFamilies = m_PhysicalDevice.getQueueFamilyProperties();
 
     uint32_t qIndex = 0;
-    for (const auto& qFamily : qFamilies)
-    {
-        bool gSupport = (qFamily.queueFlags & vk::QueueFlagBits::eGraphics) != vk::QueueFlags{};
-        bool pSupport = m_PhysicalDevice.getSurfaceSupportKHR(qIndex , *surface);
+    for (const auto& qFamily : qFamilies) {
+        bool gSupport = (qFamily.queueFlags & vk::QueueFlagBits::eGraphics) != vk::QueueFlags {};
+        bool pSupport = m_PhysicalDevice.getSurfaceSupportKHR(qIndex, *surface);
         if (gSupport && pSupport) {
             m_QueueIndex = qIndex;
             break;
@@ -90,11 +89,11 @@ void Device::CreateLogicalDevice(const vk::raii::SurfaceKHR& surface)
         throw std::runtime_error("Failed to find suitable queue family!");
     }
 
-    vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> fChain = {
-        {.features = { .sampleRateShading = true, .samplerAnisotropy = true } },
-        {.synchronization2 = true, .dynamicRendering = true },
-        {.extendedDynamicState = true }
-    };
+    vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features,
+                       vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>
+        fChain = { { .features = { .sampleRateShading = true, .samplerAnisotropy = true } },
+                   { .synchronization2 = true, .dynamicRendering = true },
+                   { .extendedDynamicState = true } };
 
     float qPrio = 0.0f;
     vk::DeviceQueueCreateInfo qInfo = {};
@@ -103,8 +102,7 @@ void Device::CreateLogicalDevice(const vk::raii::SurfaceKHR& surface)
     qInfo.pQueuePriorities = &qPrio;
 
     vk::DeviceCreateInfo dInfo = {};
-    dInfo.pNext = &fChain.get<vk::PhysicalDeviceFeatures2>(),
-    dInfo.queueCreateInfoCount = 1;
+    dInfo.pNext = &fChain.get<vk::PhysicalDeviceFeatures2>(), dInfo.queueCreateInfoCount = 1;
     dInfo.pQueueCreateInfos = &qInfo;
     dInfo.enabledExtensionCount = static_cast<uint32_t>(rExtensions.size());
     dInfo.ppEnabledExtensionNames = rExtensions.data();
@@ -116,13 +114,26 @@ void Device::CreateLogicalDevice(const vk::raii::SurfaceKHR& surface)
 vk::SampleCountFlagBits Device::GetMaxUsableSampleCount()
 {
     vk::PhysicalDeviceProperties pdProps = m_PhysicalDevice.getProperties();
-    vk::SampleCountFlags counts = pdProps.limits.framebufferColorSampleCounts & pdProps.limits.framebufferDepthSampleCounts;
-    if (counts & vk::SampleCountFlagBits::e64) { return vk::SampleCountFlagBits::e64; }
-    if (counts & vk::SampleCountFlagBits::e32) { return vk::SampleCountFlagBits::e32; }
-    if (counts & vk::SampleCountFlagBits::e16) { return vk::SampleCountFlagBits::e16; }
-    if (counts & vk::SampleCountFlagBits::e8) { return vk::SampleCountFlagBits::e8; }
-    if (counts & vk::SampleCountFlagBits::e4) { return vk::SampleCountFlagBits::e4; }
-    if (counts & vk::SampleCountFlagBits::e2) { return vk::SampleCountFlagBits::e2; }
+    vk::SampleCountFlags counts
+        = pdProps.limits.framebufferColorSampleCounts & pdProps.limits.framebufferDepthSampleCounts;
+    if (counts & vk::SampleCountFlagBits::e64) {
+        return vk::SampleCountFlagBits::e64;
+    }
+    if (counts & vk::SampleCountFlagBits::e32) {
+        return vk::SampleCountFlagBits::e32;
+    }
+    if (counts & vk::SampleCountFlagBits::e16) {
+        return vk::SampleCountFlagBits::e16;
+    }
+    if (counts & vk::SampleCountFlagBits::e8) {
+        return vk::SampleCountFlagBits::e8;
+    }
+    if (counts & vk::SampleCountFlagBits::e4) {
+        return vk::SampleCountFlagBits::e4;
+    }
+    if (counts & vk::SampleCountFlagBits::e2) {
+        return vk::SampleCountFlagBits::e2;
+    }
     return vk::SampleCountFlagBits::e1;
 }
 }

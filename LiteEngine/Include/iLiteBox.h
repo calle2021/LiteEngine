@@ -2,7 +2,7 @@
 
 class iLiteBox
 {
-  public:
+public:
     virtual ~iLiteBox() = default;
     virtual void Update() = 0;
     virtual void Init() = 0;

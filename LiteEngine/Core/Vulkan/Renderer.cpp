@@ -15,7 +15,11 @@ constexpr bool dbgLayers = true;
 #endif
 namespace LiteVulkan {
 
-Renderer::Renderer(Window& window, const Camera& camera) : m_Window(window) , m_Camera(camera) {}
+Renderer::Renderer(Window& window, const Camera& camera)
+    : m_Window(window)
+    , m_Camera(camera)
+{
+}
 
 void Renderer::Init()
 {
@@ -37,7 +41,8 @@ void Renderer::Init()
     m_Pipeline->CreatePipeline(m_SwapChain->GetImageFormat(), m_Assets->GetDepthFormat());
     m_CommandPool = CreateCommandPool();
 
-    m_Assets->CreateColorResources(m_SwapChain->GetExtentWidth(), m_SwapChain->GetExtentHeight(), m_SwapChain->GetImageFormat());
+    m_Assets->CreateColorResources(m_SwapChain->GetExtentWidth(), m_SwapChain->GetExtentHeight(),
+                                   m_SwapChain->GetImageFormat());
     m_Assets->CreateDepthResources(m_SwapChain->GetExtentWidth(), m_SwapChain->GetExtentHeight());
     m_Assets->CreateTexture();
     m_Assets->CreateTextureImageView();
@@ -51,7 +56,9 @@ void Renderer::Init()
     m_Buffers->CreateUniformBuffers(nFramesInFlight);
 
     m_Pipeline->CreateDescriptorPool(nFramesInFlight);
-    m_Pipeline->CreateDescriptorSets(nFramesInFlight, m_Assets->GetSampler(), m_Assets->GetTextureImageView(), m_Buffers->GetUniformBuffers());
+    m_Pipeline->CreateDescriptorSets(nFramesInFlight, m_Assets->GetSampler(),
+                                     m_Assets->GetTextureImageView(),
+                                     m_Buffers->GetUniformBuffers());
 
     m_CommandBuffers = CreateCommandBuffers();
     CreateSyncObjects();
@@ -64,14 +71,15 @@ void Renderer::DrawFrame()
         CORE_LOG_WARN("waitForFences returned {}", vk::to_string(res));
     }
 
-    if(m_Window.HasResized()) {
+    if (m_Window.HasResized()) {
         RecreateSwapChain();
         return;
     }
 
-    auto [vkResult, imageIndex] = m_SwapChain->GetSwapChain().acquireNextImage(UINT64_MAX, *m_PresentSemaphores[m_CurrentFrame], nullptr);
+    auto [vkResult, imageIndex] = m_SwapChain->GetSwapChain().acquireNextImage(
+        UINT64_MAX, *m_PresentSemaphores[m_CurrentFrame], nullptr);
 
-    if (vkResult == vk::Result::eErrorOutOfDateKHR){
+    if (vkResult == vk::Result::eErrorOutOfDateKHR) {
         RecreateSwapChain();
         return;
     }
@@ -82,7 +90,8 @@ void Renderer::DrawFrame()
     m_CommandBuffers[m_CurrentFrame].reset();
     RecordCommandBuffer(imageIndex);
 
-    vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+    vk::PipelineStageFlags waitDestinationStageMask(
+        vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
     vk::SubmitInfo subInfo = {};
     subInfo.waitSemaphoreCount = 1;
@@ -103,7 +112,8 @@ void Renderer::DrawFrame()
     pInfo.pImageIndices = &imageIndex;
 
     vkResult = m_Device->GetQueue().presentKHR(pInfo);
-    if(vkResult == vk::Result::eSuboptimalKHR or vkResult == vk::Result::eErrorOutOfDateKHR or m_Window.HasResized()) {
+    if (vkResult == vk::Result::eSuboptimalKHR or vkResult == vk::Result::eErrorOutOfDateKHR
+        or m_Window.HasResized()) {
         RecreateSwapChain();
     } else if (vkResult != vk::Result::eSuccess) {
         throw std::runtime_error("Failed to present image!");
@@ -132,13 +142,11 @@ void Renderer::Shutdown()
 
 [[nodiscard]] vk::raii::Instance Renderer::CreateInstance()
 {
-    constexpr vk::ApplicationInfo appInfo {
-        .pApplicationName = "LiteBox",
-        .applicationVersion = VK_MAKE_VERSION( 1, 0, 0 ),
-        .pEngineName = "LiteEngine",
-        .engineVersion = VK_MAKE_VERSION( 1, 0, 0 ),
-        .apiVersion = vk::ApiVersion14
-    };
+    constexpr vk::ApplicationInfo appInfo { .pApplicationName = "LiteBox",
+                                            .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+                                            .pEngineName = "LiteEngine",
+                                            .engineVersion = VK_MAKE_VERSION(1, 0, 0),
+                                            .apiVersion = vk::ApiVersion14 };
 
     std::vector<char const*> rLayers;
     if (dbgLayers) {
@@ -162,8 +170,12 @@ void Renderer::Shutdown()
     return vk::raii::Instance(m_Context, CreateInfo);
 }
 
-static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT severity, vk::DebugUtilsMessageTypeFlagsEXT type, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void*) {
-    std::cerr << "validation layer: type " << to_string(type) << " msg: " << pCallbackData->pMessage << std::endl;
+static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
+    vk::DebugUtilsMessageSeverityFlagBitsEXT severity, vk::DebugUtilsMessageTypeFlagsEXT type,
+    const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void*)
+{
+    std::cerr << "validation layer: type " << to_string(type) << " msg: " << pCallbackData->pMessage
+              << std::endl;
     return vk::False;
 }
 
@@ -172,8 +184,14 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSever
     if (!dbgLayers) {
         return nullptr;
     }
-    vk::DebugUtilsMessageSeverityFlagsEXT severityFlags(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
-    vk::DebugUtilsMessageTypeFlagsEXT messageTypeFlags(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation);
+    vk::DebugUtilsMessageSeverityFlagsEXT severityFlags(
+        vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
+        | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
+        | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
+    vk::DebugUtilsMessageTypeFlagsEXT messageTypeFlags(
+        vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
+        | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
+        | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation);
     vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfoEXT {
         .messageSeverity = severityFlags,
         .messageType = messageTypeFlags,
@@ -221,7 +239,8 @@ void Renderer::CreateSyncObjects()
     for (size_t i = 0; i < nFramesInFlight; i++) {
         m_PresentSemaphores.emplace_back(m_Device->GetDevice(), vk::SemaphoreCreateInfo());
         m_RenderSemaphores.emplace_back(m_Device->GetDevice(), vk::SemaphoreCreateInfo());
-        m_Fences.emplace_back(m_Device->GetDevice(), vk::FenceCreateInfo { .flags = vk::FenceCreateFlagBits::eSignaled });
+        m_Fences.emplace_back(m_Device->GetDevice(),
+                              vk::FenceCreateInfo { .flags = vk::FenceCreateFlagBits::eSignaled });
     }
 }
 
@@ -238,7 +257,8 @@ void Renderer::RecreateSwapChain()
     m_SwapChain->Reset();
     m_SwapChain->CreateSwapChain(m_Window.GetWidth(), m_Window.GetHeight(), m_Surface);
     m_SwapChain->CreateImageViews();
-    m_Assets->CreateColorResources(m_SwapChain->GetExtentWidth(), m_SwapChain->GetExtentHeight(), m_SwapChain->GetImageFormat());
+    m_Assets->CreateColorResources(m_SwapChain->GetExtentWidth(), m_SwapChain->GetExtentHeight(),
+                                   m_SwapChain->GetImageFormat());
     m_Assets->CreateDepthResources(m_SwapChain->GetExtentWidth(), m_SwapChain->GetExtentHeight());
     m_Window.ResizeHandled();
 }
@@ -247,37 +267,22 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex)
 {
     m_CommandBuffers[m_CurrentFrame].begin({});
     TransitionImageLayout(
-        m_SwapChain->m_Images[imageIndex],
-        vk::ImageLayout::eUndefined,
-        vk::ImageLayout::eColorAttachmentOptimal,
-        {},
-        vk::AccessFlagBits2::eColorAttachmentWrite,
-        vk::PipelineStageFlagBits2::eTopOfPipe,
-        vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-        vk::ImageAspectFlagBits::eColor
-    );
+        m_SwapChain->m_Images[imageIndex], vk::ImageLayout::eUndefined,
+        vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
+        vk::PipelineStageFlagBits2::eTopOfPipe, vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+        vk::ImageAspectFlagBits::eColor);
 
     TransitionImageLayout(
-        m_Assets->m_ColorImage,
-        vk::ImageLayout::eUndefined,
-        vk::ImageLayout::eColorAttachmentOptimal,
-        {},
-        vk::AccessFlagBits2::eColorAttachmentWrite,
-        vk::PipelineStageFlagBits2::eTopOfPipe,
-        vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-        vk::ImageAspectFlagBits::eColor
-    );
+        m_Assets->m_ColorImage, vk::ImageLayout::eUndefined,
+        vk::ImageLayout::eColorAttachmentOptimal, {}, vk::AccessFlagBits2::eColorAttachmentWrite,
+        vk::PipelineStageFlagBits2::eTopOfPipe, vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+        vk::ImageAspectFlagBits::eColor);
 
     TransitionImageLayout(
-        m_Assets->m_DepthImage,
-        vk::ImageLayout::eUndefined,
-        vk::ImageLayout::eDepthAttachmentOptimal,
-        {},
-        vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
-        vk::PipelineStageFlagBits2::eTopOfPipe,
-        vk::PipelineStageFlagBits2::eEarlyFragmentTests,
-        vk::ImageAspectFlagBits::eDepth
-    );
+        m_Assets->m_DepthImage, vk::ImageLayout::eUndefined,
+        vk::ImageLayout::eDepthAttachmentOptimal, {},
+        vk::AccessFlagBits2::eDepthStencilAttachmentWrite, vk::PipelineStageFlagBits2::eTopOfPipe,
+        vk::PipelineStageFlagBits2::eEarlyFragmentTests, vk::ImageAspectFlagBits::eDepth);
 
     vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
     vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
@@ -292,90 +297,87 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex)
     colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
     colorAttachment.clearValue = clearColor;
 
-    vk::RenderingAttachmentInfo depthAttachmentInfo = {
-        .imageView = m_Assets->m_DepthBufferView,
-        .imageLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal,
-        .loadOp = vk::AttachmentLoadOp::eClear,
-        .storeOp = vk::AttachmentStoreOp::eDontCare,
-        .clearValue = clearDepth
-    };
-    vk::RenderingInfo renderingInfo = {
-        .renderArea = { .offset = { 0, 0 }, .extent = m_SwapChain->m_Extent },
-        .layerCount = 1,
-        .colorAttachmentCount = 1,
-        .pColorAttachments = &colorAttachment,
-        .pDepthAttachment = &depthAttachmentInfo
-    };
+    vk::RenderingAttachmentInfo depthAttachmentInfo
+        = { .imageView = m_Assets->m_DepthBufferView,
+            .imageLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal,
+            .loadOp = vk::AttachmentLoadOp::eClear,
+            .storeOp = vk::AttachmentStoreOp::eDontCare,
+            .clearValue = clearDepth };
+    vk::RenderingInfo renderingInfo
+        = { .renderArea = { .offset = { 0, 0 }, .extent = m_SwapChain->m_Extent },
+            .layerCount = 1,
+            .colorAttachmentCount = 1,
+            .pColorAttachments = &colorAttachment,
+            .pDepthAttachment = &depthAttachmentInfo };
 
     m_CommandBuffers[m_CurrentFrame].beginRendering(renderingInfo);
-    m_CommandBuffers[m_CurrentFrame].bindPipeline(vk::PipelineBindPoint::eGraphics, *m_Pipeline->m_Pipeline);
-    m_CommandBuffers[m_CurrentFrame].setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(m_SwapChain->m_Extent.width), static_cast<float>(m_SwapChain->m_Extent.height), 0.0f, 1.0f));
-    m_CommandBuffers[m_CurrentFrame].setScissor(0, vk::Rect2D(vk::Offset2D( 0, 0 ), m_SwapChain->m_Extent));
-    m_CommandBuffers[m_CurrentFrame].bindVertexBuffers(0, *m_Buffers->m_Buffers, {0});
-    m_CommandBuffers[m_CurrentFrame].bindIndexBuffer( *m_Buffers->m_IndexBuffer, 0, vk::IndexTypeValue<decltype(m_Buffers->m_Indices)::value_type>::value );
-    m_CommandBuffers[m_CurrentFrame].bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_Pipeline->m_PipelineLayout, 0, *m_Pipeline->m_DescriptorSets[m_CurrentFrame], nullptr);
+    m_CommandBuffers[m_CurrentFrame].bindPipeline(vk::PipelineBindPoint::eGraphics,
+                                                  *m_Pipeline->m_Pipeline);
+    m_CommandBuffers[m_CurrentFrame].setViewport(
+        0,
+        vk::Viewport(0.0f, 0.0f, static_cast<float>(m_SwapChain->m_Extent.width),
+                     static_cast<float>(m_SwapChain->m_Extent.height), 0.0f, 1.0f));
+    m_CommandBuffers[m_CurrentFrame].setScissor(
+        0, vk::Rect2D(vk::Offset2D(0, 0), m_SwapChain->m_Extent));
+    m_CommandBuffers[m_CurrentFrame].bindVertexBuffers(0, *m_Buffers->m_Buffers, { 0 });
+    m_CommandBuffers[m_CurrentFrame].bindIndexBuffer(
+        *m_Buffers->m_IndexBuffer, 0,
+        vk::IndexTypeValue<decltype(m_Buffers->m_Indices)::value_type>::value);
+    m_CommandBuffers[m_CurrentFrame].bindDescriptorSets(
+        vk::PipelineBindPoint::eGraphics, m_Pipeline->m_PipelineLayout, 0,
+        *m_Pipeline->m_DescriptorSets[m_CurrentFrame], nullptr);
     m_CommandBuffers[m_CurrentFrame].drawIndexed(m_Buffers->m_Indices.size(), 1, 0, 0, 0);
     m_CommandBuffers[m_CurrentFrame].endRendering();
 
     TransitionImageLayout(
-        m_SwapChain->m_Images[imageIndex],
-        vk::ImageLayout::eColorAttachmentOptimal,
-        vk::ImageLayout::ePresentSrcKHR,
-        vk::AccessFlagBits2::eColorAttachmentWrite,
-        {},
+        m_SwapChain->m_Images[imageIndex], vk::ImageLayout::eColorAttachmentOptimal,
+        vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eColorAttachmentWrite, {},
         vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-        vk::PipelineStageFlagBits2::eBottomOfPipe,
-        vk::ImageAspectFlagBits::eColor
-    );
+        vk::PipelineStageFlagBits2::eBottomOfPipe, vk::ImageAspectFlagBits::eColor);
     m_CommandBuffers[m_CurrentFrame].end();
 }
 
 template <typename T>
-void Renderer::TransitionImageLayout(
-    const T& image,
-    vk::ImageLayout oldLayout,
-    vk::ImageLayout newLayout,
-    vk::AccessFlags2 srcAccessMask,
-    vk::AccessFlags2 dstAccessMask,
-    vk::PipelineStageFlags2 srcStageMask,
-    vk::PipelineStageFlags2 dstStageMask,
-    vk::ImageAspectFlags aspect_mask)
+void Renderer::TransitionImageLayout(const T& image, vk::ImageLayout oldLayout,
+                                     vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask,
+                                     vk::AccessFlags2 dstAccessMask,
+                                     vk::PipelineStageFlags2 srcStageMask,
+                                     vk::PipelineStageFlags2 dstStageMask,
+                                     vk::ImageAspectFlags aspect_mask)
 {
-    vk::ImageMemoryBarrier2 barrier = {
-        .srcStageMask = srcStageMask,
-        .srcAccessMask = srcAccessMask,
-        .dstStageMask = dstStageMask,
-        .dstAccessMask = dstAccessMask,
-        .oldLayout = oldLayout,
-        .newLayout = newLayout,
-        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = image,
-        .subresourceRange = {
-            .aspectMask = aspect_mask,
-            .baseMipLevel = 0,
-            .levelCount = 1,
-            .baseArrayLayer = 0,
-            .layerCount = 1
-        }
-    };
-    vk::DependencyInfo dependencyInfo = {
-        .dependencyFlags = {},
-        .imageMemoryBarrierCount = 1,
-        .pImageMemoryBarriers = &barrier
-    };
+    vk::ImageMemoryBarrier2 barrier = { .srcStageMask = srcStageMask,
+                                        .srcAccessMask = srcAccessMask,
+                                        .dstStageMask = dstStageMask,
+                                        .dstAccessMask = dstAccessMask,
+                                        .oldLayout = oldLayout,
+                                        .newLayout = newLayout,
+                                        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                                        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                                        .image = image,
+                                        .subresourceRange = { .aspectMask = aspect_mask,
+                                                              .baseMipLevel = 0,
+                                                              .levelCount = 1,
+                                                              .baseArrayLayer = 0,
+                                                              .layerCount = 1 } };
+    vk::DependencyInfo dependencyInfo
+        = { .dependencyFlags = {}, .imageMemoryBarrierCount = 1, .pImageMemoryBarriers = &barrier };
     m_CommandBuffers[m_CurrentFrame].pipelineBarrier2(dependencyInfo);
 }
 
-std::unique_ptr<vk::raii::CommandBuffer> Renderer::BeginSingleTimeCommands() const {
-    vk::CommandBufferAllocateInfo allocInfo{ .commandPool = m_CommandPool, .level = vk::CommandBufferLevel::ePrimary, .commandBufferCount = 1 };
-    std::unique_ptr<vk::raii::CommandBuffer> cmdbuf = std::make_unique<vk::raii::CommandBuffer>(std::move(vk::raii::CommandBuffers(m_Device->GetDevice(), allocInfo).front()));
-    vk::CommandBufferBeginInfo beginfo{ .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
+std::unique_ptr<vk::raii::CommandBuffer> Renderer::BeginSingleTimeCommands() const
+{
+    vk::CommandBufferAllocateInfo allocInfo { .commandPool = m_CommandPool,
+                                              .level = vk::CommandBufferLevel::ePrimary,
+                                              .commandBufferCount = 1 };
+    std::unique_ptr<vk::raii::CommandBuffer> cmdbuf = std::make_unique<vk::raii::CommandBuffer>(
+        std::move(vk::raii::CommandBuffers(m_Device->GetDevice(), allocInfo).front()));
+    vk::CommandBufferBeginInfo beginfo { .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
     cmdbuf->begin(beginfo);
     return cmdbuf;
 }
 
-void Renderer::EndSingleTimeCommands(vk::raii::CommandBuffer& cmdbuf) const {
+void Renderer::EndSingleTimeCommands(vk::raii::CommandBuffer& cmdbuf) const
+{
     cmdbuf.end();
     vk::SubmitInfo subinfo { .commandBufferCount = 1, .pCommandBuffers = &*cmdbuf };
     m_Device->GetQueue().submit(subinfo, nullptr);

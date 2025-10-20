@@ -17,13 +17,16 @@ public:
     GLFWwindow* GetWindowHandle() const { return m_GLFWindow; };
     bool HasResized() { return m_FrameBufferResized; };
     void ResizeHandled() { m_FrameBufferResized = false; };
+
 private:
     GLFWwindow* m_GLFWindow;
+
 private:
     uint32_t m_Width;
     uint32_t m_Height;
     double time;
     bool m_FrameBufferResized = false;
+
 private:
     static void FrameBufferResizeCallback(GLFWwindow* window, int width, int height);
 };

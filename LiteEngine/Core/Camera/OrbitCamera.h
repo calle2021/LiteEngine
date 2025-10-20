@@ -1,9 +1,8 @@
+#include "Camera.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Camera.h"
 
-namespace LiteEngine
-{
+namespace LiteEngine {
 
 class OrbitCamera : public Camera
 {
@@ -11,6 +10,7 @@ public:
     OrbitCamera(float aspect);
     glm::mat4 GetView() const override;
     glm::mat4 GetProjection() const override;
+
 private:
     glm::vec3 m_Pos;
     glm::vec3 m_Target;

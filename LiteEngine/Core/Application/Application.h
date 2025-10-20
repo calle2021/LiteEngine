@@ -1,8 +1,7 @@
 #pragma once
 #include "iLiteBox.h"
 
-namespace LiteEngine
-{
+namespace LiteEngine {
 class Application
 {
 public:

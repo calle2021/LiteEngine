@@ -1,8 +1,7 @@
 #include "Logger.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-namespace LiteEngine
-{
+namespace LiteEngine {
 std::shared_ptr<spdlog::logger> Logger::m_CoreLogger;
 
 void Logger::Init()

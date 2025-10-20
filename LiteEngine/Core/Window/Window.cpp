@@ -24,22 +24,17 @@ Window::Window(uint32_t width, uint32_t height)
     glfwSetFramebufferSizeCallback(m_GLFWindow, FrameBufferResizeCallback);
 }
 
-void Window::FrameBufferResizeCallback(GLFWwindow* window, int width, int height) {
+void Window::FrameBufferResizeCallback(GLFWwindow* window, int width, int height)
+{
     auto container = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
     container->m_FrameBufferResized = true;
     container->m_Width = width;
     container->m_Height = height;
 }
 
-bool Window::Close()
-{
-    return glfwWindowShouldClose(m_GLFWindow);
-}
+bool Window::Close() { return glfwWindowShouldClose(m_GLFWindow); }
 
-void Window::Update()
-{
-    glfwPollEvents();
-}
+void Window::Update() { glfwPollEvents(); }
 
 double Window::GetDeltaTime()
 {

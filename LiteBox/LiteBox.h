@@ -3,7 +3,7 @@
 
 class LiteBox : public iLiteBox
 {
-  public:
+public:
     void Init() override;
     void Update() override;
     void Destroy() override;

@@ -1,11 +1,10 @@
-#include "Include/LiteEngine.h"
-#include "Core/Logging/Logger.h"
-#include "Core/Window/Window.h"
-#include "Core/Vulkan/Renderer.h"
 #include "Core/Camera/OrbitCamera.h"
+#include "Core/Logging/Logger.h"
+#include "Core/Vulkan/Renderer.h"
+#include "Core/Window/Window.h"
+#include "Include/LiteEngine.h"
 
-namespace LiteEngine
-{
+namespace LiteEngine {
 int Application::Launch(iLiteBox& app)
 {
     Logger::Init();
@@ -14,8 +13,7 @@ int Application::Launch(iLiteBox& app)
     LiteVulkan::Renderer vulkan(window, camera);
     vulkan.Init();
 
-    while (!window.Close())
-    {
+    while (!window.Close()) {
         window.Update();
         vulkan.DrawFrame();
         app.Update();

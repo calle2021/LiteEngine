@@ -1,7 +1,7 @@
 #pragma once
-#include <vulkan/vulkan_raii.hpp>
-#include <optional>
 #include <cstdint>
+#include <optional>
+#include <vulkan/vulkan_raii.hpp>
 
 namespace LiteVulkan {
 class Device
@@ -14,9 +14,11 @@ public:
     const vk::raii::Queue& GetQueue() const { return m_Queue; };
     vk::SampleCountFlagBits GetMsaaSamples() const { return m_MsaaSamples; };
     uint32_t GetQueueIndex() const { return m_QueueIndex.value(); };
+
 private:
     bool DeviceSuitable(const vk::raii::PhysicalDevice& device) const;
     vk::SampleCountFlagBits GetMaxUsableSampleCount();
+
 private:
     vk::raii::PhysicalDevice m_PhysicalDevice = nullptr;
     vk::raii::Device m_Device = nullptr;
