@@ -1,0 +1,9 @@
+BasedOnStyle: WebKit
+AlignAfterOpenBracket: true
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterClass: true
+    AfteControlStatement: Never
+    AfterFunction: true
+    AfterStruct: true
+ColumnLimit: 100

@@ -16,17 +16,19 @@ namespace LiteVulkan {
 class Renderer
 {
 public:
-    Renderer(Window& window, const Camera& cam);
+    Renderer(Window& window, const Camera& camera);
     void Init();
     void DrawFrame();
     void Shutdown();
+public:
+    std::unique_ptr<vk::raii::CommandBuffer> BeginSingleTimeCommands() const;
+    void EndSingleTimeCommands(vk::raii::CommandBuffer& cmdbuf) const;
 private:
     [[nodiscard]] vk::raii::Instance CreateInstance();
     [[nodiscard]] vk::raii::DebugUtilsMessengerEXT SetupDebugMessenger();
     [[nodiscard]] vk::raii::SurfaceKHR CreateSurface();
-private:
-    vk::raii::CommandPool CreateCommandPool();
-    std::vector<vk::raii::CommandBuffer> CreateCommandBuffers();
+    [[nodiscard]] vk::raii::CommandPool CreateCommandPool();
+    [[nodiscard]] std::vector<vk::raii::CommandBuffer> CreateCommandBuffers();
     void CreateSyncObjects();
     void RecreateSwapChain();
     void RecordCommandBuffer(uint32_t imageIndex);
@@ -35,9 +37,11 @@ private:
                                vk::ImageLayout newLayout, vk::AccessFlags2 srcAccessMask,
                                vk::AccessFlags2 dstAccessMask, vk::PipelineStageFlags2 srcStageMask,
                                vk::PipelineStageFlags2 dstStageMask, vk::ImageAspectFlags aspect_mask);
-public: std::unique_ptr<vk::raii::CommandBuffer> BeginSingleTimeCommands() const;
-public: void EndSingleTimeCommands(vk::raii::CommandBuffer& cmdbuf) const;
 private:
+    vk::raii::Context m_Context;
+    vk::raii::Instance m_Instance = nullptr;
+    vk::raii::DebugUtilsMessengerEXT m_DebugMessenger = nullptr;
+    vk::raii::SurfaceKHR m_Surface = nullptr;
     vk::raii::CommandPool m_CommandPool = nullptr;
     std::vector<vk::raii::CommandBuffer> m_CommandBuffers;
 private: // Synchronization objects
@@ -46,14 +50,9 @@ private: // Synchronization objects
     std::vector<vk::raii::Fence> m_Fences;
     uint32_t m_CurrentFrame = 0;
 private:
-    vk::raii::Context m_Context;
-    vk::raii::Instance m_Instance = nullptr;
-    vk::raii::DebugUtilsMessengerEXT m_DebugMessenger = nullptr;
-    vk::raii::SurfaceKHR m_Surface = nullptr;
-private:
     Window& m_Window;
     const LiteEngine::Camera& m_Camera;
-private:
+private: // Subclasses
     std::unique_ptr<Device> m_Device;
     std::unique_ptr<SwapChain> m_SwapChain;
     std::unique_ptr<Pipeline> m_Pipeline;

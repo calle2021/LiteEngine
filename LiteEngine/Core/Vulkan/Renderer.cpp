@@ -3,15 +3,15 @@
 #include <iostream>
 
 const std::vector validationLayers = {
-    "VK_LAYER_KHRONOS_validation"
+    "VK_LAYER_KHRONOS_validation",
 };
 
 constexpr uint32_t nFramesInFlight = 2;
 
 #ifdef NDEBUG
-constexpr bool enable_validation_layers = false;
+constexpr bool dbgLayers = false;
 #else
-constexpr bool enable_validation_layers = true;
+constexpr bool dbgLayers = true;
 #endif
 namespace LiteVulkan {
 
@@ -45,35 +45,33 @@ void Renderer::Init()
     m_Assets->LoadModel();
 
     m_Buffers = std::make_unique<Buffers>(*m_Device, m_Camera);
-
     m_Buffers->BufferModels(m_Assets->GetShapes(), m_Assets->GetAttributes());
     m_Buffers->CreateVertexBuffer(m_CommandPool);
     m_Buffers->CreateIndexBuffer(m_CommandPool);
     m_Buffers->CreateUniformBuffers(nFramesInFlight);
+
     m_Pipeline->CreateDescriptorPool(nFramesInFlight);
     m_Pipeline->CreateDescriptorSets(nFramesInFlight, m_Assets->GetSampler(), m_Assets->GetTextureImageView(), m_Buffers->GetUniformBuffers());
+
     m_CommandBuffers = CreateCommandBuffers();
     CreateSyncObjects();
 }
 
 void Renderer::DrawFrame()
 {
-    while (vk::Result::eTimeout == m_Device->GetDevice().waitForFences(*m_Fences[m_CurrentFrame], vk::True, UINT64_MAX))
-    {
-        CORE_LOG_INFO("Timeout!");
+    auto res = m_Device->GetDevice().waitForFences(*m_Fences[m_CurrentFrame], vk::True, UINT64_MAX);
+    if (res != vk::Result::eSuccess) {
+        CORE_LOG_WARN("waitForFences returned {}", vk::to_string(res));
     }
 
-
-    if(m_Window.HasResized())
-    {
+    if(m_Window.HasResized()) {
         RecreateSwapChain();
         return;
     }
 
-    auto [result, imageIndex] = m_SwapChain->GetSwapChain().acquireNextImage(UINT64_MAX, *m_PresentSemaphores[m_CurrentFrame], nullptr);
+    auto [vkResult, imageIndex] = m_SwapChain->GetSwapChain().acquireNextImage(UINT64_MAX, *m_PresentSemaphores[m_CurrentFrame], nullptr);
 
-    if (result == vk::Result::eErrorOutOfDateKHR)
-    {
+    if (vkResult == vk::Result::eErrorOutOfDateKHR){
         RecreateSwapChain();
         return;
     }
@@ -85,43 +83,30 @@ void Renderer::DrawFrame()
     RecordCommandBuffer(imageIndex);
 
     vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
-    const vk::SubmitInfo submitInfo {
-        .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &*m_PresentSemaphores[m_CurrentFrame],
-        .pWaitDstStageMask = &waitDestinationStageMask,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &*m_CommandBuffers[m_CurrentFrame],
-        .signalSemaphoreCount = 1,
-        .pSignalSemaphores = &*m_RenderSemaphores[imageIndex]
-    };
-    m_Device->GetQueue().submit(submitInfo, *m_Fences[m_CurrentFrame]);
 
-    const vk::PresentInfoKHR presentInfoKHR {
-        .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &*m_RenderSemaphores[imageIndex],
-        .swapchainCount = 1,
-        .pSwapchains = &*m_SwapChain->GetSwapChain(),
-        .pImageIndices = &imageIndex
-    };
+    vk::SubmitInfo subInfo = {};
+    subInfo.waitSemaphoreCount = 1;
+    subInfo.pWaitSemaphores = &*m_PresentSemaphores[m_CurrentFrame];
+    subInfo.pWaitDstStageMask = &waitDestinationStageMask;
+    subInfo.commandBufferCount = 1;
+    subInfo.pCommandBuffers = &*m_CommandBuffers[m_CurrentFrame];
+    subInfo.signalSemaphoreCount = 1;
+    subInfo.pSignalSemaphores = &*m_RenderSemaphores[imageIndex];
 
-    result = m_Device->GetQueue().presentKHR(presentInfoKHR);
-    result = m_Window.HasResized() ? vk::Result::eErrorOutOfDateKHR : result;
+    m_Device->GetQueue().submit(subInfo, *m_Fences[m_CurrentFrame]);
 
-    switch (result)
-    {
-        case vk::Result::eSuccess:
-            break;
-        case vk::Result::eSuboptimalKHR:
-            CORE_LOG_INFO("what the helly");
-            break;
-        case vk::Result::eErrorOutOfDateKHR:
-            CORE_LOG_INFO("eErrorOutOfDateKHR");
-            RecreateSwapChain();
-            break;
-        default:
-            CORE_LOG_ERROR("Failed to present image");
-            throw std::runtime_error("Failed to present image");
-            break;
+    vk::PresentInfoKHR pInfo = {};
+    pInfo.waitSemaphoreCount = 1;
+    pInfo.pWaitSemaphores = &*m_RenderSemaphores[imageIndex];
+    pInfo.swapchainCount = 1;
+    pInfo.pSwapchains = &*m_SwapChain->GetSwapChain();
+    pInfo.pImageIndices = &imageIndex;
+
+    vkResult = m_Device->GetQueue().presentKHR(pInfo);
+    if(vkResult == vk::Result::eSuboptimalKHR or vkResult == vk::Result::eErrorOutOfDateKHR or m_Window.HasResized()) {
+        RecreateSwapChain();
+    } else if (vkResult != vk::Result::eSuccess) {
+        throw std::runtime_error("Failed to present image!");
     }
 
     m_CurrentFrame = (m_CurrentFrame + 1) % nFramesInFlight;
@@ -147,32 +132,32 @@ void Renderer::Shutdown()
 
 [[nodiscard]] vk::raii::Instance Renderer::CreateInstance()
 {
-    constexpr vk::ApplicationInfo AppInfo {
-        .pApplicationName = "Sample",
+    constexpr vk::ApplicationInfo appInfo {
+        .pApplicationName = "LiteBox",
         .applicationVersion = VK_MAKE_VERSION( 1, 0, 0 ),
-        .pEngineName = "Engine",
+        .pEngineName = "LiteEngine",
         .engineVersion = VK_MAKE_VERSION( 1, 0, 0 ),
         .apiVersion = vk::ApiVersion14
     };
 
-    std::vector<char const*> requiredLayers;
-    if (enable_validation_layers) {
-        requiredLayers.assign(validationLayers.begin(), validationLayers.end());
+    std::vector<char const*> rLayers;
+    if (dbgLayers) {
+        rLayers.assign(validationLayers.begin(), validationLayers.end());
     }
 
     uint32_t glfwExtensionCount = 0;
     auto glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-    std::vector requiredExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-    if (enable_validation_layers) {
-        requiredExtensions.push_back(vk::EXTDebugUtilsExtensionName);
+    std::vector rExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    if (dbgLayers) {
+        rExtensions.push_back(vk::EXTDebugUtilsExtensionName);
     }
 
     vk::InstanceCreateInfo CreateInfo {
-        .pApplicationInfo = &AppInfo,
-        .enabledLayerCount = static_cast<uint32_t>(requiredLayers.size()),
-        .ppEnabledLayerNames = requiredLayers.data(),
-        .enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size()),
-        .ppEnabledExtensionNames = requiredExtensions.data(),
+        .pApplicationInfo = &appInfo,
+        .enabledLayerCount = static_cast<uint32_t>(rLayers.size()),
+        .ppEnabledLayerNames = rLayers.data(),
+        .enabledExtensionCount = static_cast<uint32_t>(rExtensions.size()),
+        .ppEnabledExtensionNames = rExtensions.data(),
     };
     return vk::raii::Instance(m_Context, CreateInfo);
 }
@@ -184,7 +169,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSever
 
 [[nodiscard]] vk::raii::DebugUtilsMessengerEXT Renderer::SetupDebugMessenger()
 {
-    if (!enable_validation_layers) {
+    if (!dbgLayers) {
         return nullptr;
     }
     vk::DebugUtilsMessageSeverityFlagsEXT severityFlags(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
@@ -207,7 +192,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSever
     return vk::raii::SurfaceKHR(m_Instance, surface);
 }
 
-vk::raii::CommandPool Renderer::CreateCommandPool()
+[[nodiscard]] vk::raii::CommandPool Renderer::CreateCommandPool()
 {
     vk::CommandPoolCreateInfo poolInfo {
         .flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
@@ -216,7 +201,7 @@ vk::raii::CommandPool Renderer::CreateCommandPool()
     return vk::raii::CommandPool(m_Device->GetDevice(), poolInfo);
 }
 
-std::vector<vk::raii::CommandBuffer> Renderer::CreateCommandBuffers()
+[[nodiscard]] std::vector<vk::raii::CommandBuffer> Renderer::CreateCommandBuffers()
 {
     m_CommandBuffers.clear();
     vk::CommandBufferAllocateInfo allocInfo {
@@ -233,8 +218,7 @@ void Renderer::CreateSyncObjects()
     m_RenderSemaphores.clear();
     m_Fences.clear();
 
-    for (size_t i = 0; i < nFramesInFlight; i++)
-    {
+    for (size_t i = 0; i < nFramesInFlight; i++) {
         m_PresentSemaphores.emplace_back(m_Device->GetDevice(), vk::SemaphoreCreateInfo());
         m_RenderSemaphores.emplace_back(m_Device->GetDevice(), vk::SemaphoreCreateInfo());
         m_Fences.emplace_back(m_Device->GetDevice(), vk::FenceCreateInfo { .flags = vk::FenceCreateFlagBits::eSignaled });
@@ -243,6 +227,7 @@ void Renderer::CreateSyncObjects()
 
 void Renderer::RecreateSwapChain()
 {
+    CORE_LOG_INFO("Recreating swap chain...");
     int width = 0, height = 0;
     glfwGetFramebufferSize(m_Window.GetWindowHandle(), &width, &height);
     while (width == 0 || height == 0) {

@@ -18,8 +18,8 @@ public:
     uint32_t GetExtentHeight() const { return m_Extent.height; };
     vk::Format GetImageFormat() const { return m_ImageFormat; };
 private:
-    vk::Format ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
-    vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
+    vk::Format ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& aFormats);
+    vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& aPresentModes);
 private:
     vk::raii::SwapchainKHR m_SwapChain = nullptr;
     std::vector<vk::Image> m_Images;

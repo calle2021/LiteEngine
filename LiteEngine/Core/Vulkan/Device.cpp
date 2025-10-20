@@ -26,6 +26,7 @@ void Device::PickPhysicalDevice(const vk::raii::Instance& instance)
         m_PhysicalDevice = dev;
         break;
     }
+
     if (m_PhysicalDevice == nullptr) {
         throw std::runtime_error("Failed to find suitable device!");
     }
