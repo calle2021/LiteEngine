@@ -11,14 +11,17 @@ Pipeline::Pipeline(const Device& device)
 
 void Pipeline::CreateDescriptorLayout()
 {
-    std::array bindings
-        = { vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1,
-                                           vk::ShaderStageFlagBits::eVertex, nullptr),
-            vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1,
-                                           vk::ShaderStageFlagBits::eFragment, nullptr) };
-    vk::DescriptorSetLayoutCreateInfo layoutInfo { .bindingCount = bindings.size(),
-                                                   .pBindings = bindings.data() };
-    m_DescriptorLayout = vk::raii::DescriptorSetLayout(m_DeviceRef.GetDevice(), layoutInfo);
+    auto uniBufferBinding = vk::DescriptorSetLayoutBinding(
+        0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr);
+    auto samplerBinding
+        = vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1,
+                                         vk::ShaderStageFlagBits::eFragment, nullptr);
+    std::array descBindings = { uniBufferBinding, samplerBinding };
+    vk::DescriptorSetLayoutCreateInfo descLayout = {};
+    descLayout.bindingCount = descBindings.size();
+    descLayout.pBindings = descBindings.data();
+    m_DescriptorLayout = vk::raii::DescriptorSetLayout(m_DeviceRef.GetDevice(), descLayout);
+    CORE_LOG_INFO("Descriptor layout created");
 }
 
 void Pipeline::CreateDescriptorSets(const uint32_t nFramesInFlight,
@@ -26,97 +29,116 @@ void Pipeline::CreateDescriptorSets(const uint32_t nFramesInFlight,
                                     const vk::raii::ImageView& textureImageView,
                                     const std::vector<vk::raii::Buffer>& uniformBuffer)
 {
-    std::vector<vk::DescriptorSetLayout> layouts(nFramesInFlight, m_DescriptorLayout);
-    vk::DescriptorSetAllocateInfo allocInfo { .descriptorPool = m_DescriptorPool,
-                                              .descriptorSetCount
-                                              = static_cast<uint32_t>(layouts.size()),
-                                              .pSetLayouts = layouts.data() };
+    std::vector<vk::DescriptorSetLayout> descLayouts(nFramesInFlight, m_DescriptorLayout);
+    vk::DescriptorSetAllocateInfo descAlloc = {};
+    descAlloc.descriptorPool = m_DescriptorPool;
+    descAlloc.descriptorSetCount = static_cast<uint32_t>(descLayouts.size());
+    descAlloc.pSetLayouts = descLayouts.data();
 
     m_DescriptorSets.clear();
-    m_DescriptorSets = m_DeviceRef.GetDevice().allocateDescriptorSets(allocInfo);
+    m_DescriptorSets = m_DeviceRef.GetDevice().allocateDescriptorSets(descAlloc);
 
     for (size_t i = 0; i < nFramesInFlight; i++) {
-        vk::DescriptorBufferInfo bufferInfo { .buffer = uniformBuffer[i],
-                                              .offset = 0,
-                                              .range = sizeof(Buffers::UniformBufferObject) };
-        vk::DescriptorImageInfo imageInfo { .sampler = textureSampler,
-                                            .imageView = textureImageView,
-                                            .imageLayout
-                                            = vk::ImageLayout::eShaderReadOnlyOptimal };
-        std::array descriptorWrites {
-            vk::WriteDescriptorSet { .dstSet = m_DescriptorSets[i],
-                                     .dstBinding = 0,
-                                     .dstArrayElement = 0,
-                                     .descriptorCount = 1,
-                                     .descriptorType = vk::DescriptorType::eUniformBuffer,
-                                     .pBufferInfo = &bufferInfo },
-            vk::WriteDescriptorSet { .dstSet = m_DescriptorSets[i],
-                                     .dstBinding = 1,
-                                     .dstArrayElement = 0,
-                                     .descriptorCount = 1,
-                                     .descriptorType = vk::DescriptorType::eCombinedImageSampler,
-                                     .pImageInfo = &imageInfo }
-        };
-        m_DeviceRef.GetDevice().updateDescriptorSets(descriptorWrites, {});
+        vk::DescriptorBufferInfo descBuffer = {};
+        descBuffer.buffer = uniformBuffer[i];
+        descBuffer.offset = 0;
+        descBuffer.range = sizeof(Buffers::UniformBufferObject);
+
+        vk::DescriptorImageInfo descImage = {};
+        descImage.sampler = textureSampler;
+        descImage.imageView = textureImageView;
+        descImage.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+        vk::WriteDescriptorSet uniWriteDesc = {};
+        uniWriteDesc.dstSet = m_DescriptorSets[i];
+        uniWriteDesc.dstBinding = 0;
+        uniWriteDesc.dstArrayElement = 0;
+        uniWriteDesc.descriptorCount = 1;
+        uniWriteDesc.descriptorType = vk::DescriptorType::eUniformBuffer;
+        uniWriteDesc.pBufferInfo = &descBuffer;
+
+        vk::WriteDescriptorSet samplerWriteDesc = {};
+        samplerWriteDesc.dstSet = m_DescriptorSets[i];
+        samplerWriteDesc.dstBinding = 1;
+        samplerWriteDesc.dstArrayElement = 0;
+        samplerWriteDesc.descriptorCount = 1;
+        samplerWriteDesc.descriptorType = vk::DescriptorType::eCombinedImageSampler;
+        samplerWriteDesc.pImageInfo = &descImage;
+
+        std::array descWrites = { uniWriteDesc, samplerWriteDesc };
+        m_DeviceRef.GetDevice().updateDescriptorSets(descWrites, {});
     }
+    CORE_LOG_INFO("Descriptor sets created");
 }
 void Pipeline::CreateDescriptorPool(const uint32_t nFramesInFlight)
 {
-    std::array pool { vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, nFramesInFlight),
-                      vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler,
-                                             nFramesInFlight) };
-    vk::DescriptorPoolCreateInfo poolInfo { .flags
-                                            = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
-                                            .maxSets = nFramesInFlight,
-                                            .poolSizeCount = static_cast<uint32_t>(pool.size()),
-                                            .pPoolSizes = pool.data() };
-    m_DescriptorPool = vk::raii::DescriptorPool(m_DeviceRef.GetDevice(), poolInfo);
+    auto uniDescPool = vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, nFramesInFlight);
+    auto samplerDescPool
+        = vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, nFramesInFlight);
+    std::array descPools = { uniDescPool, samplerDescPool };
+
+    vk::DescriptorPoolCreateInfo descPool = {};
+    descPool.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
+    descPool.maxSets = nFramesInFlight;
+    descPool.poolSizeCount = static_cast<uint32_t>(descPools.size());
+    descPool.pPoolSizes = descPools.data();
+    m_DescriptorPool = vk::raii::DescriptorPool(m_DeviceRef.GetDevice(), descPool);
+    CORE_LOG_INFO("Descriptor pool created");
 }
 
 void Pipeline::CreatePipeline(const vk::Format imageFormat, const vk::Format depthFormat)
 {
     vk::raii::ShaderModule shaderModule = CreateShaderModule(ReadFile("Assets/Shaders/slang.spv"));
-    vk::PipelineShaderStageCreateInfo vertShaderStageInfo {
-        .stage = vk::ShaderStageFlagBits::eVertex, .module = shaderModule, .pName = "vertMain"
-    };
-    vk::PipelineShaderStageCreateInfo fragShaderStageInfo {
-        .stage = vk::ShaderStageFlagBits::eFragment, .module = shaderModule, .pName = "fragMain"
-    };
-    vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-    auto bindingDescription = Buffers::Vertex::GetBindingDescription();
-    auto attributeDescriptions = Buffers::Vertex::GetAttributeDescriptions();
-    vk::PipelineVertexInputStateCreateInfo vertexInputInfo {
-        .vertexBindingDescriptionCount = 1,
-        .pVertexBindingDescriptions = &bindingDescription,
-        .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
-        .pVertexAttributeDescriptions = attributeDescriptions.data()
-    };
+    vk::PipelineShaderStageCreateInfo vertShaderStage = {};
+    vertShaderStage.stage = vk::ShaderStageFlagBits::eVertex;
+    vertShaderStage.module = shaderModule;
+    vertShaderStage.pName = "vertMain";
 
-    vk::PipelineInputAssemblyStateCreateInfo inputAssembly { .topology
-                                                             = vk::PrimitiveTopology::eTriangleList,
-                                                             .primitiveRestartEnable = vk::False };
-    vk::PipelineViewportStateCreateInfo viewportState { .viewportCount = 1, .scissorCount = 1 };
+    vk::PipelineShaderStageCreateInfo fragShaderStage = {};
+    fragShaderStage.stage = vk::ShaderStageFlagBits::eFragment;
+    fragShaderStage.module = shaderModule;
+    fragShaderStage.pName = "fragMain";
 
-    vk::PipelineRasterizationStateCreateInfo rasterizer { .depthClampEnable = vk::False,
-                                                          .rasterizerDiscardEnable = vk::False,
-                                                          .polygonMode = vk::PolygonMode::eFill,
-                                                          .cullMode = vk::CullModeFlagBits::eBack,
-                                                          .frontFace
-                                                          = vk::FrontFace::eCounterClockwise,
-                                                          .depthBiasEnable = vk::False };
-    rasterizer.lineWidth = 1;
+    vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStage, fragShaderStage };
+
+    auto vertBindDesc = Buffers::Vertex::GetBindingDescription();
+    auto vertAttribDesc = Buffers::Vertex::GetAttributeDescriptions();
+    vk::PipelineVertexInputStateCreateInfo vertexInfo = {};
+    vertexInfo.vertexBindingDescriptionCount = 1;
+    vertexInfo.pVertexBindingDescriptions = &vertBindDesc;
+    vertexInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertAttribDesc.size());
+    vertexInfo.pVertexAttributeDescriptions = vertAttribDesc.data();
+
+    vk::PipelineInputAssemblyStateCreateInfo inputAssembly = {};
+    inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
+    inputAssembly.primitiveRestartEnable = vk::False;
+
+    vk::PipelineViewportStateCreateInfo viewportState = {};
+    viewportState.viewportCount = 1;
+    viewportState.scissorCount = 1;
+
+    vk::PipelineRasterizationStateCreateInfo rasterizerState = {};
+    rasterizerState.depthClampEnable = vk::False;
+    rasterizerState.rasterizerDiscardEnable = vk::False;
+    rasterizerState.polygonMode = vk::PolygonMode::eFill;
+    rasterizerState.cullMode = vk::CullModeFlagBits::eBack;
+    rasterizerState.frontFace = vk::FrontFace::eCounterClockwise;
+    rasterizerState.depthBiasEnable = vk::False;
+    rasterizerState.lineWidth = 1;
+
     // sampleShadingEnable and minSampleShading = 1.0f might be costly
-    vk::PipelineMultisampleStateCreateInfo multisampling { .rasterizationSamples
-                                                           = m_DeviceRef.GetMsaaSamples(),
-                                                           .sampleShadingEnable = vk::True,
-                                                           .minSampleShading = 1.0f };
+    vk::PipelineMultisampleStateCreateInfo multisampling = {};
+    multisampling.rasterizationSamples = m_DeviceRef.GetMsaaSamples();
+    multisampling.sampleShadingEnable = vk::True;
+    multisampling.minSampleShading = 1.0f;
 
-    vk::PipelineDepthStencilStateCreateInfo depthStencil { .depthTestEnable = vk::True,
-                                                           .depthWriteEnable = vk::True,
-                                                           .depthCompareOp = vk::CompareOp::eLess,
-                                                           .depthBoundsTestEnable = vk::False,
-                                                           .stencilTestEnable = vk::False };
+    vk::PipelineDepthStencilStateCreateInfo depthStencil = {};
+    depthStencil.depthTestEnable = vk::True;
+    depthStencil.depthWriteEnable = vk::True;
+    depthStencil.depthCompareOp = vk::CompareOp::eLess;
+    depthStencil.depthBoundsTestEnable = vk::False;
+    depthStencil.stencilTestEnable = vk::False;
 
     vk::PipelineColorBlendAttachmentState colorBlendAttachment;
     colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR
@@ -124,53 +146,55 @@ void Pipeline::CreatePipeline(const vk::Format imageFormat, const vk::Format dep
         | vk::ColorComponentFlagBits::eA;
     colorBlendAttachment.blendEnable = vk::False;
 
-    vk::PipelineColorBlendStateCreateInfo colorBlending { .logicOpEnable = vk::False,
-                                                          .logicOp = vk::LogicOp::eCopy,
-                                                          .attachmentCount = 1,
-                                                          .pAttachments = &colorBlendAttachment };
+    vk::PipelineColorBlendStateCreateInfo colorBlending = {};
+    colorBlending.logicOpEnable = vk::False;
+    colorBlending.logicOp = vk::LogicOp::eCopy;
+    colorBlending.attachmentCount = 1;
+    colorBlending.pAttachments = &colorBlendAttachment;
 
     std::vector dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
-    vk::PipelineDynamicStateCreateInfo dynamicState { .dynamicStateCount
-                                                      = static_cast<uint32_t>(dynamicStates.size()),
-                                                      .pDynamicStates = dynamicStates.data() };
+    vk::PipelineDynamicStateCreateInfo dynamicState = {};
+    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+    dynamicState.pDynamicStates = dynamicStates.data();
 
-    vk::PipelineLayoutCreateInfo pipelineLayoutInfo { .setLayoutCount = 1,
-                                                      .pSetLayouts = &*m_DescriptorLayout,
-                                                      .pushConstantRangeCount = 0 };
+    vk::PipelineLayoutCreateInfo pipeLayout = {};
+    pipeLayout.setLayoutCount = 1;
+    pipeLayout.pSetLayouts = &*m_DescriptorLayout;
+    pipeLayout.pushConstantRangeCount = 0;
 
-    m_PipelineLayout = vk::raii::PipelineLayout(m_DeviceRef.GetDevice(), pipelineLayoutInfo);
-    CORE_LOG_INFO("Pipeline layout created.");
+    m_PipelineLayout = vk::raii::PipelineLayout(m_DeviceRef.GetDevice(), pipeLayout);
 
-    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo { .colorAttachmentCount = 1,
-                                                                  .pColorAttachmentFormats
-                                                                  = &imageFormat,
-                                                                  .depthAttachmentFormat
-                                                                  = depthFormat };
-    vk::GraphicsPipelineCreateInfo pipelineInfo { .pNext = &pipelineRenderingCreateInfo,
-                                                  .stageCount = 2,
-                                                  .pStages = shaderStages,
-                                                  .pVertexInputState = &vertexInputInfo,
-                                                  .pInputAssemblyState = &inputAssembly,
-                                                  .pViewportState = &viewportState,
-                                                  .pRasterizationState = &rasterizer,
-                                                  .pMultisampleState = &multisampling,
-                                                  .pDepthStencilState = &depthStencil,
-                                                  .pColorBlendState = &colorBlending,
-                                                  .pDynamicState = &dynamicState,
-                                                  .layout = m_PipelineLayout,
-                                                  .renderPass = nullptr };
+    vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo = {};
+    pipelineRenderingCreateInfo.colorAttachmentCount = 1;
+    pipelineRenderingCreateInfo.pColorAttachmentFormats = &imageFormat;
+    pipelineRenderingCreateInfo.depthAttachmentFormat = depthFormat;
+
+    vk::GraphicsPipelineCreateInfo pipelineInfo = {};
+    pipelineInfo.pNext = &pipelineRenderingCreateInfo;
+    pipelineInfo.stageCount = 2;
+    pipelineInfo.pStages = shaderStages;
+    pipelineInfo.pVertexInputState = &vertexInfo;
+    pipelineInfo.pInputAssemblyState = &inputAssembly;
+    pipelineInfo.pViewportState = &viewportState;
+    pipelineInfo.pRasterizationState = &rasterizerState;
+    pipelineInfo.pMultisampleState = &multisampling;
+    pipelineInfo.pDepthStencilState = &depthStencil;
+    pipelineInfo.pColorBlendState = &colorBlending;
+    pipelineInfo.pDynamicState = &dynamicState;
+    pipelineInfo.layout = m_PipelineLayout;
+    pipelineInfo.renderPass = nullptr;
 
     m_Pipeline = vk::raii::Pipeline(m_DeviceRef.GetDevice(), nullptr, pipelineInfo);
-    CORE_LOG_INFO("Graphics pipeline created.");
+    CORE_LOG_INFO("Pipeline created");
 }
 
 vk::raii::ShaderModule Pipeline::CreateShaderModule(const std::vector<char>& code) const
 {
-    vk::ShaderModuleCreateInfo createInfo { .codeSize = code.size() * sizeof(char),
-                                            .pCode
-                                            = reinterpret_cast<const uint32_t*>(code.data()) };
-    vk::raii::ShaderModule shaderModule { m_DeviceRef.GetDevice(), createInfo };
-    CORE_LOG_INFO("Shadermodule created.");
+    vk::ShaderModuleCreateInfo shaderInfo = {};
+    shaderInfo.codeSize = code.size() * sizeof(char);
+    shaderInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+    vk::raii::ShaderModule shaderModule = { m_DeviceRef.GetDevice(), shaderInfo };
+    CORE_LOG_INFO("Shadermodule created");
     return shaderModule;
 }
 
@@ -178,14 +202,13 @@ std::vector<char> Pipeline::ReadFile(const std::string& filename)
 {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
     if (!file.is_open()) {
-        CORE_LOG_ERROR("Failed to open {}", filename);
-        throw std::runtime_error("Failed to open file.");
+        throw std::runtime_error("Failed to open file!");
     }
     std::vector<char> buffer(file.tellg());
     file.seekg(0, std::ios::beg);
     file.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
     file.close();
-    CORE_LOG_INFO("File {} loaded.", filename);
+    CORE_LOG_INFO("File {} loaded", filename);
     return buffer;
 }
 }
