@@ -1,6 +1,7 @@
 #include "Pipeline.h"
 #include "Buffers.h"
 #include "Core/Logging/Logger.h"
+#include "Vertex.h"
 #include <fstream>
 
 namespace LiteVulkan {
@@ -24,12 +25,12 @@ void Pipeline::CreateDescriptorLayout()
     CORE_LOG_INFO("Descriptor layout created");
 }
 
-void Pipeline::CreateDescriptorSets(const uint32_t nFramesInFlight,
+void Pipeline::CreateDescriptorSets(const uint32_t MAX_FRAMES_IN_FLIGHT,
                                     const vk::raii::Sampler& textureSampler,
                                     const vk::raii::ImageView& textureImageView,
                                     const std::vector<vk::raii::Buffer>& uniformBuffer)
 {
-    std::vector<vk::DescriptorSetLayout> descLayouts(nFramesInFlight, m_DescriptorLayout);
+    std::vector<vk::DescriptorSetLayout> descLayouts(MAX_FRAMES_IN_FLIGHT, m_DescriptorLayout);
     vk::DescriptorSetAllocateInfo descAlloc = {};
     descAlloc.descriptorPool = m_DescriptorPool;
     descAlloc.descriptorSetCount = static_cast<uint32_t>(descLayouts.size());
@@ -38,7 +39,7 @@ void Pipeline::CreateDescriptorSets(const uint32_t nFramesInFlight,
     m_DescriptorSets.clear();
     m_DescriptorSets = m_DeviceRef.GetDevice().allocateDescriptorSets(descAlloc);
 
-    for (size_t i = 0; i < nFramesInFlight; i++) {
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vk::DescriptorBufferInfo descBuffer = {};
         descBuffer.buffer = uniformBuffer[i];
         descBuffer.offset = 0;
@@ -70,16 +71,17 @@ void Pipeline::CreateDescriptorSets(const uint32_t nFramesInFlight,
     }
     CORE_LOG_INFO("Descriptor sets created");
 }
-void Pipeline::CreateDescriptorPool(const uint32_t nFramesInFlight)
+void Pipeline::CreateDescriptorPool(const uint32_t MAX_FRAMES_IN_FLIGHT)
 {
-    auto uniDescPool = vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, nFramesInFlight);
+    auto uniDescPool
+        = vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT);
     auto samplerDescPool
-        = vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, nFramesInFlight);
+        = vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, MAX_FRAMES_IN_FLIGHT);
     std::array descPools = { uniDescPool, samplerDescPool };
 
     vk::DescriptorPoolCreateInfo descPool = {};
     descPool.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
-    descPool.maxSets = nFramesInFlight;
+    descPool.maxSets = MAX_FRAMES_IN_FLIGHT;
     descPool.poolSizeCount = static_cast<uint32_t>(descPools.size());
     descPool.pPoolSizes = descPools.data();
     m_DescriptorPool = vk::raii::DescriptorPool(m_DeviceRef.GetDevice(), descPool);
@@ -102,8 +104,8 @@ void Pipeline::CreatePipeline(const vk::Format imageFormat, const vk::Format dep
 
     vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStage, fragShaderStage };
 
-    auto vertBindDesc = Buffers::Vertex::GetBindingDescription();
-    auto vertAttribDesc = Buffers::Vertex::GetAttributeDescriptions();
+    auto vertBindDesc = Vertex::GetBindingDescription();
+    auto vertAttribDesc = Vertex::GetAttributeDescriptions();
     vk::PipelineVertexInputStateCreateInfo vertexInfo = {};
     vertexInfo.vertexBindingDescriptionCount = 1;
     vertexInfo.pVertexBindingDescriptions = &vertBindDesc;

@@ -3,118 +3,125 @@
 #include <unordered_map>
 
 namespace LiteVulkan {
-Buffers::Buffers(const Device& device, const LiteEngine::Camera& camera)
+Buffers::Buffers(const Device& device)
     : m_DeviceRef(device)
-    , m_CameraRef(camera)
 {
 }
 
 void Buffers::CreateBuffer(const Device& device, vk::DeviceSize size, vk::BufferUsageFlags usage,
                            vk::MemoryPropertyFlags properties, vk::raii::Buffer& buffer,
-                           vk::raii::DeviceMemory& bufferMemory)
+                           vk::raii::DeviceMemory& buffer_memory)
 {
-    vk::BufferCreateInfo bufferInfo { .size = size,
-                                      .usage = usage,
-                                      .sharingMode = vk::SharingMode::eExclusive };
-    buffer = vk::raii::Buffer(device.GetDevice(), bufferInfo);
-    vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
-    vk::MemoryAllocateInfo allocInfo { .allocationSize = memRequirements.size,
-                                       .memoryTypeIndex = FindMemoryType(
-                                           device.GetPhysicalDevice().getMemoryProperties(),
-                                           memRequirements.memoryTypeBits, properties) };
-    bufferMemory = vk::raii::DeviceMemory(device.GetDevice(), allocInfo);
-    buffer.bindMemory(bufferMemory, 0);
+    vk::BufferCreateInfo buffer_info = {};
+    buffer_info.size = size;
+    buffer_info.usage = usage;
+    buffer_info.sharingMode = vk::SharingMode::eExclusive;
+
+    buffer = vk::raii::Buffer(device.GetDevice(), buffer_info);
+    vk::MemoryRequirements mem_requirements = buffer.getMemoryRequirements();
+    vk::MemoryAllocateInfo mem_alloc_info = {};
+    mem_alloc_info.allocationSize = mem_requirements.size;
+    mem_alloc_info.memoryTypeIndex
+        = FindMemoryType(device.GetPhysicalDevice().getMemoryProperties(),
+                         mem_requirements.memoryTypeBits, properties);
+
+    buffer_memory = vk::raii::DeviceMemory(device.GetDevice(), mem_alloc_info);
+    buffer.bindMemory(buffer_memory, 0);
 }
 
 void Buffers::CreateVertexBuffer(const vk::raii::CommandPool& command_pool)
 {
-    vk::DeviceSize bufferSize = sizeof(m_Verticies[0]) * m_Verticies.size();
-    vk::raii::Buffer stagingBuffer({});
-    vk::raii::DeviceMemory stagingBufferMemory({});
-    CreateBuffer(m_DeviceRef, bufferSize, vk::BufferUsageFlagBits::eTransferSrc,
+    vk::DeviceSize buffer_sz = sizeof(m_Verticies[0]) * m_Verticies.size();
+    vk::raii::Buffer staging_buffer({});
+    vk::raii::DeviceMemory staging_buffer_memory({});
+    CreateBuffer(m_DeviceRef, buffer_sz, vk::BufferUsageFlagBits::eTransferSrc,
                  vk::MemoryPropertyFlagBits::eHostVisible
                      | vk::MemoryPropertyFlagBits::eHostCoherent,
-                 stagingBuffer, stagingBufferMemory);
+                 staging_buffer, staging_buffer_memory);
 
-    void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
-    memcpy(dataStaging, m_Verticies.data(), bufferSize);
-    stagingBufferMemory.unmapMemory();
+    void* data = staging_buffer_memory.mapMemory(0, buffer_sz);
+    memcpy(data, m_Verticies.data(), buffer_sz);
+    staging_buffer_memory.unmapMemory();
 
-    CreateBuffer(m_DeviceRef, bufferSize,
+    CreateBuffer(m_DeviceRef, buffer_sz,
                  vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
                  vk::MemoryPropertyFlagBits::eDeviceLocal, m_Buffers, m_BuffersMemory);
 
-    CopyBuffer(command_pool, stagingBuffer, m_Buffers, bufferSize);
-    CORE_LOG_INFO("Create VertexBuffer");
+    CopyBuffer(command_pool, staging_buffer, m_Buffers, buffer_sz);
+    CORE_LOG_INFO("Vertex buffer created");
 }
 
 void Buffers::CreateIndexBuffer(const vk::raii::CommandPool& command_pool)
 {
-    vk::DeviceSize bufferSize = sizeof(m_Indices[0]) * m_Indices.size();
+    vk::DeviceSize buffer_sz = sizeof(m_Indices[0]) * m_Indices.size();
 
-    vk::raii::Buffer stagingBuffer({});
-    vk::raii::DeviceMemory stagingBufferMemory({});
-    CreateBuffer(m_DeviceRef, bufferSize, vk::BufferUsageFlagBits::eTransferSrc,
+    vk::raii::Buffer staging_buffer({});
+    vk::raii::DeviceMemory staging_buffer_memory({});
+    CreateBuffer(m_DeviceRef, buffer_sz, vk::BufferUsageFlagBits::eTransferSrc,
                  vk::MemoryPropertyFlagBits::eHostVisible
                      | vk::MemoryPropertyFlagBits::eHostCoherent,
-                 stagingBuffer, stagingBufferMemory);
+                 staging_buffer, staging_buffer_memory);
 
-    void* data = stagingBufferMemory.mapMemory(0, bufferSize);
-    memcpy(data, m_Indices.data(), (size_t)bufferSize);
-    stagingBufferMemory.unmapMemory();
+    void* data = staging_buffer_memory.mapMemory(0, buffer_sz);
+    memcpy(data, m_Indices.data(), (size_t)buffer_sz);
+    staging_buffer_memory.unmapMemory();
 
-    CreateBuffer(m_DeviceRef, bufferSize,
+    CreateBuffer(m_DeviceRef, buffer_sz,
                  vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
                  vk::MemoryPropertyFlagBits::eDeviceLocal, m_IndexBuffer, m_IndexBufferMemory);
 
-    CopyBuffer(command_pool, stagingBuffer, m_IndexBuffer, bufferSize);
+    CopyBuffer(command_pool, staging_buffer, m_IndexBuffer, buffer_sz);
+    CORE_LOG_INFO("Index buffer created");
 }
 
-void Buffers::CreateUniformBuffers(const uint32_t nFramesInFlight)
+void Buffers::CreateUniformBuffers(const uint32_t MAX_FRAMES_IN_FLIGHT)
 {
     m_UniformBuffers.clear();
     m_UniformBuffersMemory.clear();
     m_UniformBuffersMapped.clear();
 
-    for (size_t i = 0; i < nFramesInFlight; i++) {
-        vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        vk::DeviceSize buffer_sz = sizeof(UniformBufferObject);
         vk::raii::Buffer buffer({});
-        vk::raii::DeviceMemory bufferMem({});
-        CreateBuffer(m_DeviceRef, bufferSize, vk::BufferUsageFlagBits::eUniformBuffer,
+        vk::raii::DeviceMemory buffer_memory({});
+        CreateBuffer(m_DeviceRef, buffer_sz, vk::BufferUsageFlagBits::eUniformBuffer,
                      vk::MemoryPropertyFlagBits::eHostVisible
                          | vk::MemoryPropertyFlagBits::eHostCoherent,
-                     buffer, bufferMem);
+                     buffer, buffer_memory);
         m_UniformBuffers.emplace_back(std::move(buffer));
-        m_UniformBuffersMemory.emplace_back(std::move(bufferMem));
-        m_UniformBuffersMapped.emplace_back(m_UniformBuffersMemory[i].mapMemory(0, bufferSize));
+        m_UniformBuffersMemory.emplace_back(std::move(buffer_memory));
+        m_UniformBuffersMapped.emplace_back(m_UniformBuffersMemory[i].mapMemory(0, buffer_sz));
     }
+    CORE_LOG_INFO("Uniform buffers created");
 }
 
-void Buffers::UpdateUniformBuffer(uint32_t curr)
+void Buffers::UpdateUniformBuffer(const glm::mat4 view_matrix, const glm::mat4 proj_matrix,
+                                  uint32_t curr)
 {
     UniformBufferObject ubo {};
     ubo.model = glm::mat4(1.0f);
-    ubo.view = m_CameraRef.GetView();
-    ubo.proj = m_CameraRef.GetProjection();
+    ubo.view = view_matrix;
+    ubo.proj = proj_matrix;
     ubo.proj[1][1] *= -1;
-
     memcpy(m_UniformBuffersMapped[curr], &ubo, sizeof(ubo));
 }
 
 void Buffers::CopyBuffer(const vk::raii::CommandPool& command_pool, vk::raii::Buffer& src,
                          vk::raii::Buffer& dst, vk::DeviceSize size)
 {
-    vk::CommandBufferAllocateInfo allocInfo { .commandPool = command_pool,
-                                              .level = vk::CommandBufferLevel::ePrimary,
-                                              .commandBufferCount = 1 };
-    vk::raii::CommandBuffer commandCopyBuffer
-        = std::move(m_DeviceRef.GetDevice().allocateCommandBuffers(allocInfo).front());
-    commandCopyBuffer.begin(
+    vk::CommandBufferAllocateInfo command_buffer_alloc = {};
+    command_buffer_alloc.commandPool = command_pool;
+    command_buffer_alloc.level = vk::CommandBufferLevel::ePrimary;
+    command_buffer_alloc.commandBufferCount = 1;
+
+    vk::raii::CommandBuffer command_copy_buffer
+        = std::move(m_DeviceRef.GetDevice().allocateCommandBuffers(command_buffer_alloc).front());
+    command_copy_buffer.begin(
         vk::CommandBufferBeginInfo { .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit });
-    commandCopyBuffer.copyBuffer(*src, *dst, vk::BufferCopy { .size = size });
-    commandCopyBuffer.end();
+    command_copy_buffer.copyBuffer(*src, *dst, vk::BufferCopy { .size = size });
+    command_copy_buffer.end();
     m_DeviceRef.GetQueue().submit(
-        vk::SubmitInfo { .commandBufferCount = 1, .pCommandBuffers = &*commandCopyBuffer },
+        vk::SubmitInfo { .commandBufferCount = 1, .pCommandBuffers = &*command_copy_buffer },
         nullptr);
     m_DeviceRef.GetQueue().waitIdle();
 }
@@ -128,15 +135,15 @@ void Buffers::BufferModels(const std::vector<tinyobj::shape_t>& shapes,
         for (const auto& index : shape.mesh.indices) {
             Vertex vertex {};
 
-            vertex.m_Pos = { attrib.vertices[3 * index.vertex_index + 0],
-                             attrib.vertices[3 * index.vertex_index + 1],
-                             attrib.vertices[3 * index.vertex_index + 2] };
+            vertex.pos = { attrib.vertices[3 * index.vertex_index + 0],
+                           attrib.vertices[3 * index.vertex_index + 1],
+                           attrib.vertices[3 * index.vertex_index + 2] };
 
-            vertex.m_Tex = { attrib.texcoords[2 * index.texcoord_index + 0],
-                             // obj format defines 0 as bottom but in vulkan 0 is top
-                             // so we flip the vertical component
-                             1.0 - attrib.texcoords[2 * index.texcoord_index + 1] };
-            vertex.m_Color = { 1.0f, 1.0f, 1.0f };
+            vertex.tex_coord = { attrib.texcoords[2 * index.texcoord_index + 0],
+                                 // obj format defines 0 as bottom but in vulkan 0 is top
+                                 // so we flip the vertical component
+                                 1.0 - attrib.texcoords[2 * index.texcoord_index + 1] };
+            vertex.color = { 1.0f, 1.0f, 1.0f };
 
             if (unique_verticies.count(vertex) == 0) {
                 unique_verticies[vertex] = static_cast<uint32_t>(m_Verticies.size());
@@ -148,16 +155,15 @@ void Buffers::BufferModels(const std::vector<tinyobj::shape_t>& shapes,
     }
 }
 
-uint32_t Buffers::FindMemoryType(vk::PhysicalDeviceMemoryProperties memProperties,
-                                 const uint32_t typeFilter, vk::MemoryPropertyFlags properties)
+uint32_t Buffers::FindMemoryType(vk::PhysicalDeviceMemoryProperties memory_props,
+                                 const uint32_t type_filter, vk::MemoryPropertyFlags props)
 {
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & (1 << i))
-            && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+    for (uint32_t i = 0; i < memory_props.memoryTypeCount; i++) {
+        if ((type_filter & (1 << i))
+            && (memory_props.memoryTypes[i].propertyFlags & props) == props) {
             return i;
         }
     }
-    CORE_LOG_ERROR("Failed to find suitable memory type");
-    throw std::runtime_error("failed to find suitable memory type");
+    throw std::runtime_error("Failed to find suitable memory type!");
 }
 }

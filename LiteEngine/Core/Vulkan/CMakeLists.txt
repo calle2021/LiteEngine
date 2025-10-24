@@ -7,6 +7,8 @@ target_sources(LiteEngine PRIVATE
     SwapChain.h
     Pipeline.cpp
     Pipeline.h
+    Vertex.cpp
+    Vertex.h
     Buffers.cpp
     Buffers.h
     Assets.cpp

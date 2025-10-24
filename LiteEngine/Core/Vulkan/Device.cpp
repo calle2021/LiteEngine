@@ -75,6 +75,7 @@ void Device::CreateLogicalDevice(const vk::raii::SurfaceKHR& surface)
     std::vector<vk::QueueFamilyProperties> qFamilies = m_PhysicalDevice.getQueueFamilyProperties();
 
     uint32_t qIndex = 0;
+    // Add support for separate graphics and present queues
     for (const auto& qFamily : qFamilies) {
         bool gSupport = (qFamily.queueFlags & vk::QueueFlagBits::eGraphics) != vk::QueueFlags {};
         bool pSupport = m_PhysicalDevice.getSurfaceSupportKHR(qIndex, *surface);

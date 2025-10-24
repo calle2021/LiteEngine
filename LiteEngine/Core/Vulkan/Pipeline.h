@@ -13,11 +13,11 @@ public:
     Pipeline(const Device& device);
     void CreateDescriptorLayout();
     void CreatePipeline(const vk::Format imageFormat, const vk::Format depthFormat);
-    void CreateDescriptorSets(const uint32_t nFramesInFlight,
+    void CreateDescriptorSets(const uint32_t MAX_FRAMES_IN_FLIGHT,
                               const vk::raii::Sampler& textureSampler,
                               const vk::raii::ImageView& textureImageView,
                               const std::vector<vk::raii::Buffer>& uniformBuffer);
-    void CreateDescriptorPool(const uint32_t nFramesInFlight);
+    void CreateDescriptorPool(const uint32_t MAX_FRAMES_IN_FLIGHT);
     const vk::raii::Pipeline& GetPipeline() const { return m_Pipeline; }
 
 private:

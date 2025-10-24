@@ -6,7 +6,7 @@ const std::vector validationLayers = {
     "VK_LAYER_KHRONOS_validation",
 };
 
-constexpr uint32_t nFramesInFlight = 2;
+constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 #ifdef NDEBUG
 constexpr bool dbgLayers = false;
@@ -49,14 +49,14 @@ void Renderer::Init()
     m_Assets->CreateTextureSampler();
     m_Assets->LoadModel();
 
-    m_Buffers = std::make_unique<Buffers>(*m_Device, m_Camera);
+    m_Buffers = std::make_unique<Buffers>(*m_Device);
     m_Buffers->BufferModels(m_Assets->GetShapes(), m_Assets->GetAttributes());
     m_Buffers->CreateVertexBuffer(m_CommandPool);
     m_Buffers->CreateIndexBuffer(m_CommandPool);
-    m_Buffers->CreateUniformBuffers(nFramesInFlight);
+    m_Buffers->CreateUniformBuffers(MAX_FRAMES_IN_FLIGHT);
 
-    m_Pipeline->CreateDescriptorPool(nFramesInFlight);
-    m_Pipeline->CreateDescriptorSets(nFramesInFlight, m_Assets->GetSampler(),
+    m_Pipeline->CreateDescriptorPool(MAX_FRAMES_IN_FLIGHT);
+    m_Pipeline->CreateDescriptorSets(MAX_FRAMES_IN_FLIGHT, m_Assets->GetSampler(),
                                      m_Assets->GetTextureImageView(),
                                      m_Buffers->GetUniformBuffers());
 
@@ -84,7 +84,7 @@ void Renderer::DrawFrame()
         return;
     }
 
-    m_Buffers->UpdateUniformBuffer(m_CurrentFrame);
+    m_Buffers->UpdateUniformBuffer(m_Camera.GetView(), m_Camera.GetProjection(), m_CurrentFrame);
 
     m_Device->GetDevice().resetFences(*m_Fences[m_CurrentFrame]);
     m_CommandBuffers[m_CurrentFrame].reset();
@@ -119,7 +119,7 @@ void Renderer::DrawFrame()
         throw std::runtime_error("Failed to present image!");
     }
 
-    m_CurrentFrame = (m_CurrentFrame + 1) % nFramesInFlight;
+    m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void Renderer::Shutdown()
@@ -225,7 +225,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
     vk::CommandBufferAllocateInfo allocInfo {
         .commandPool = m_CommandPool,
         .level = vk::CommandBufferLevel::ePrimary,
-        .commandBufferCount = nFramesInFlight,
+        .commandBufferCount = MAX_FRAMES_IN_FLIGHT,
     };
     return vk::raii::CommandBuffers(m_Device->GetDevice(), allocInfo);
 }
@@ -236,7 +236,7 @@ void Renderer::CreateSyncObjects()
     m_RenderSemaphores.clear();
     m_Fences.clear();
 
-    for (size_t i = 0; i < nFramesInFlight; i++) {
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         m_PresentSemaphores.emplace_back(m_Device->GetDevice(), vk::SemaphoreCreateInfo());
         m_RenderSemaphores.emplace_back(m_Device->GetDevice(), vk::SemaphoreCreateInfo());
         m_Fences.emplace_back(m_Device->GetDevice(),
